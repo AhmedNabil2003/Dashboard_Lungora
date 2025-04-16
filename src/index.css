@@ -1,0 +1,25 @@
+@import "tailwindcss";
+/* src/index.css */
+
+/* الوضع الافتراضي - Light Mode */
+:root {
+    --background: #ffffff;
+    --foreground: #111111;
+  }
+  
+  /* Dark Mode */
+  [data-theme="dark"] {
+    --background: #121212;
+    --foreground: #ffffff;
+  }
+  
+  /* تطبيق المتغيرات */
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    background-color: var(--background);
+    color: var(--foreground);
+    transition: background 0.3s, color 0.3s;
+  }
+  
