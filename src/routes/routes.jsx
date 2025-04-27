@@ -15,13 +15,26 @@ import ModelHistoryPage from "../pages/ModelHistoryPage";
 import Settings from "../pages/Settings";
 import PageNotFound from "../pages/PageNotFound";
 import LungoraModel from "../pages/LungoraModel";
+import PublicRoute from "./PublicRoute";
 
 const AppRoute = () => (
   <Routes>
     {/* مسارات عامة */}
-    <Route path="/" element={<Login />} />
-    <Route path="/forget-password" element={<ForgetPassword />} />
-    <Route path="/reset-password" element={<ResetPassword />} />
+    <Route path="/" element={
+       <PublicRoute>
+      <Login />
+       </PublicRoute>
+      } />
+    <Route path="/forget-password" element={
+       <PublicRoute>
+      <ForgetPassword />
+       </PublicRoute>
+      } />
+    <Route path="/reset-password" element={
+       <PublicRoute>
+         <ResetPassword />
+       </PublicRoute>
+      } />
 
     {/* مسارات محمية مع DashboardLayout */}
     <Route

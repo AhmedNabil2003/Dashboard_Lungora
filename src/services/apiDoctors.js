@@ -1,28 +1,28 @@
-import axios from "axios";
+import axiosInstance from "./axiosInstance";
 
-const API_URL = "http/doctors";
 
 export const getAllDoctors = async () => {
-  const res = await axios.get(API_URL);
-  return res.data;
+  const res = await axiosInstance.get("/Doctor/GetAllDoctorsWithMobile");
+  console.log(res.data.result.doctor);
+  return res.data.result.doctor;
 };
 
 export const getDoctorById = async (id) => {
-  const res = await axios.get(`${API_URL}/${id}`);
+  const res = await axiosInstance.get(`${res}/${id}`);
   return res.data;
 };
 
 export const createDoctor = async (data) => {
-  const res = await axios.post(API_URL, data);
+  const res = await axiosInstance.post( data);
   return res.data;
 };
 
 export const updateDoctor = async (id, data) => {
-  const res = await axios.put(`${API_URL}/${id}`, data);
+  const res = await axiosInstance.put(`${data}/${id}`, data);
   return res.data;
 };
 
 export const deleteDoctor = async (id) => {
-  const res = await axios.delete(`${API_URL}/${id}`);
+  const res = await axiosInstance.delete(`${res}/${id}`);
   return res.data;
 };

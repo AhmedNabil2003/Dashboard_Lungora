@@ -1,7 +1,7 @@
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { registerUser } from "../../services/apiAuth";  // استيراد registerUser من apiAuth
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import { Card, CardContent } from "../../components/ui/Card";
@@ -52,19 +52,15 @@ const RegisterForm = () => {
     initialValues: { name: "", email: "", password: "", confirmPassword: "" },
     validationSchema,
     onSubmit: async (values) => {
-      const loadingId = toast.loading("Waiting");
+      const loadingId = toast.loading("Signing Up...");
       try {
-        const options = {
-          url: "https://lungora.runasp.net/api/Auth/Register",
-          method: "POST",
-          data: values,
-        };
+        // استخدم registerUser من apiAuth.js
+        const data = await registerUser(values);
 
-        const { data } = await axios.request(options);
         if (data.statusCode === 201) {
           toast.success("Signup successful! Please log in.");
           setTimeout(() => {
-            navigate("/");
+            navigate("/login");  // Redirect to login page
           }, 2000);
         }
       } catch (error) {

@@ -2,41 +2,26 @@ import { useEffect, useState } from "react";
 import { Doughnut } from "react-chartjs-2";
 import "chart.js/auto";
 import { motion } from "framer-motion";
+import { useArticles } from "../features/articles/useArticles";
 
 const Dashboard = () => {
   const [modelResults] = useState("Processing...");
-  const [articles, setArticles] = useState([]); // State to hold the articles
-  const [loading, setLoading] = useState(true); // State to handle loading state
-  const [error, setError] = useState(null);
+  const { articles, loading, error, fetchAllArticles } = useArticles();
+  const [displayArticles, setDisplayArticles] = useState([]);
 
-  // جلب المقالات من الـ API عند تحميل الصفحة
+  // Fetch articles when component mounts
   useEffect(() => {
-    const fetchArticles = async () => {
-      try {
-        const response = await fetch(
-          "https://lungora.runasp.net/api/Article/GetAllArticles",
-          {
-            method: "GET",
-            headers: {
-              accept: "*/*",
-            },
-          }
-        );
-        const data = await response.json();
-        if (data.statusCode === 200 && data.isSuccess) {
-          setArticles(data.result.article); // تخزين المقالات في حالة state
-        } else {
-          setError("Failed to load articles");
-        }
-      } catch (err) {
-        setError("An error occurred while fetching articles.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchArticles();
+    fetchAllArticles();
   }, []);
+
+  // Process articles to display only a subset (latest 5)
+  useEffect(() => {
+    if (articles && articles.length > 0) {
+      // Take only the first 5 articles
+      const latestArticles = articles.slice(0, 5);
+      setDisplayArticles(latestArticles);
+    }
+  }, [articles]);
 
   const analysisData = [
     {
@@ -95,74 +80,76 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-white-300 to-white-200 p-4">
-      <main className="flex-1 p-4 ml-2 pt-0">
-        {/* Analysis Cards */}
-        <section className="flex flex-wrap gap-7 mb-4 justify-center ">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-2">
+      <main className="flex-1 p-3 max-w-full mx-auto">
+        {/* Analysis Cards - More compact with responsive layout */}
+        <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mb-4">
           {analysisData.map((stat, index) => (
             <motion.div
               key={index}
-              className={`relative bg-gradient-to-r ${stat.color} p-4 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 ease-in-out flex flex-col items-center justify-center w-48 h-28`}
+              className={`relative bg-gradient-to-r ${stat.color} p-3 rounded-lg shadow hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center h-24`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: index * 0.2 }}
+              transition={{ delay: index * 0.1 }}
             >
-              <i className={`fas ${stat.icon} text-2xl text-white`} />
-              <div className="text-white text-center mt-2">
+              <i className={`fas ${stat.icon} text-xl text-white`} />
+              <div className="text-white text-center mt-1">
                 <h3 className="text-xs font-semibold">{stat.label}</h3>
                 <p className="text-lg font-bold">{stat.value}</p>
               </div>
-              <div className="absolute bottom-0 left-0 w-full h-4 bg-white opacity-20 rounded-b-xl"></div>
+              <div className="absolute bottom-0 left-0 w-full h-2 bg-white opacity-20 rounded-b-lg"></div>
             </motion.div>
           ))}
         </section>
 
-        {/* Chart and Doctors & Articles List */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mb-4 ">
-          {/* Chart Section */}
+        {/* Main Content Area - Better layout for charts and lists */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+          {/* Chart Section - Smaller but still prominent */}
           <motion.div
-            className="bg-white p-4 rounded-lg shadow-md"
+            className="bg-white p-3 rounded-lg shadow lg:col-span-1"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.2 }}
           >
-            <h3 className="text-sm font-semibold text-gray-800 mb-4">
-              Patient Analysis Chart
+            <h3 className="text-sm font-semibold text-gray-800 mb-2">
+              Patient Analysis
             </h3>
-            <div className="relative w-full h-70 ">
+            <div className="relative w-full h-56">
               <Doughnut
                 data={chartData}
                 options={{
                   plugins: {
                     legend: {
-                      position: "right",
+                      position: "bottom",
                       labels: {
-                        boxWidth: 12,
+                        boxWidth: 10,
+                        padding: 10,
                         font: {
-                          size: 12,
+                          size: 10,
                         },
                       },
                     },
                   },
                   maintainAspectRatio: false,
+                  cutout: '65%',
                 }}
               />
             </div>
           </motion.div>
 
-          {/* Doctors and Articles Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
-            {/* Doctors Section */}
+          {/* Right side content - Doctors and Articles */}
+          <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Doctors Section - Cleaner layout */}
             <motion.div
-              className="bg-white p-4 rounded-lg shadow-md"
+              className="bg-white p-3 rounded-lg shadow h-full"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
+              transition={{ delay: 0.3 }}
             >
-              <h3 className="text-sm font-semibold text-gray-800 mb-3">
+              <h3 className="text-sm font-semibold text-gray-800 mb-2 pb-1 border-b">
                 Doctors List
               </h3>
-              <ul className="space-y-3">
+              <ul className="space-y-2 overflow-y-auto max-h-64">
                 {[
                   {
                     name: "Dr. Ahmed Mostafa",
@@ -180,165 +167,180 @@ const Dashboard = () => {
                 ].map((doctor, index) => (
                   <li
                     key={index}
-                    className="flex items-center space-x-3 text-xs"
+                    className="flex items-center space-x-2 text-xs hover:bg-gray-50 p-1 rounded"
                   >
                     <img
-                      src="https://via.placeholder.com/40"
+                      src="https://via.placeholder.com/36"
                       alt={doctor.name}
-                      className="rounded-full"
+                      className="rounded-full w-9 h-9"
                     />
                     <div>
                       <h4 className="font-semibold">{doctor.name}</h4>
-                      <p className="text-gray-600">{doctor.specialty}</p>
+                      <p className="text-gray-600 text-xs">{doctor.specialty}</p>
                     </div>
                   </li>
                 ))}
               </ul>
             </motion.div>
 
-            {/* Articles Section */}
+            {/* Articles Section - Improved readability */}
             <motion.div
-              className="bg-white p-4 rounded-lg shadow-md"
+              className="bg-white p-3 rounded-lg shadow h-full"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: 0.4 }}
             >
-              <h3 className="text-sm font-semibold text-gray-800 mb-2">
-                Disease Articles
+              <h3 className="text-sm font-semibold text-gray-800 mb-2 pb-1 border-b">
+                Latest Disease Articles
               </h3>
 
-              {/* حالة التحميل */}
+              {/* Loading state */}
               {loading ? (
-                <p>Loading articles...</p>
+                <p className="text-center text-gray-500 py-4 text-xs">Loading articles...</p>
               ) : error ? (
-                <p className="text-red-600">{error}</p> // عرض رسالة الخطأ في حال فشل الجلب
+                <p className="text-red-500 text-center py-4 text-xs">{error}</p>
               ) : (
-                <ul className="space-y-4">
-                  {articles.length > 0 ? (
-                    articles.map((article, index) => (
+                <ul className="space-y-2 overflow-y-auto max-h-64">
+                  {displayArticles.length > 0 ? (
+                    displayArticles.map((article, index) => (
                       <li
                         key={index}
-                        className="flex items-center space-x-4 border-b pb-4 mb-4"
+                        className="flex items-start space-x-2 border-b pb-2 last:border-b-0 hover:bg-gray-50 rounded p-1"
                       >
-                        {/* عرض صورة المقال صغيرة */}
+                        {/* Article image */}
                         {article.coverImage && (
                           <img
                             src={article.coverImage}
                             alt={article.title}
-                            className="w-16 h-16 object-cover rounded-md"
+                            className="w-12 h-12 object-cover rounded"
                           />
                         )}
 
-                        {/* عرض محتوى المقال */}
-                        <div className="flex flex-col">
-                          {/* عرض عنوان المقال */}
-                          <h4 className="text-sm font-semibold text-gray-800">
+                        {/* Article content */}
+                        <div className="flex flex-col flex-1">
+                          <h4 className="text-xs font-semibold text-gray-800">
                             {article.title}
                           </h4>
-                          {/* عرض وصف المقال */}
-                          <p className="text-xs text-gray-600">
+                          <p className="text-xs text-gray-600 line-clamp-2">
                             {article.description}
                           </p>
                         </div>
                       </li>
                     ))
                   ) : (
-                    <li>No articles available</li> // في حالة عدم وجود مقالات
+                    <li className="text-center text-gray-500 py-4 text-xs">No articles available</li>
                   )}
                 </ul>
               )}
+              {displayArticles.length > 0 && (
+                <div className="text-right mt-2">
+                  <a href="/dashboard/categories" className="text-xs text-blue-500 hover:underline">
+                    View all articles →
+                  </a>
+                </div>
+              )}
             </motion.div>
           </div>
-        </section>
+        </div>
 
-        {/* AI Model Results and User Medical History */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mb-4 ">
-          {/* AI Model Results Section */}
+        {/* Bottom Section - AI Model Results and Medical History */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* AI Model Results Section - Better animations */}
           <motion.div
-            className="bg-white p-4 rounded-md shadow-sm flex-grow"
+            className="bg-white p-3 rounded-lg shadow"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <h3 className="text-sm font-semibold text-gray-800 mb-2 pb-1 border-b">
+              AI Model Results
+            </h3>
+            <p className="text-xs font-medium text-gray-700 mb-3">
+              {modelResults}
+            </p>
+
+            {/* Start of Result Animation - More subtle animations */}
+            <motion.div
+              className="flex flex-col space-y-3"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.8 }}
+            >
+              {/* Results with better visual hierarchy */}
+              <div className="bg-blue-50 p-2 rounded border-l-4 border-blue-400">
+                <motion.p
+                  className="text-sm text-gray-800 font-medium"
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.3, duration: 0.5 }}
+                >
+                  <span className="text-blue-700 font-semibold">Diagnosis:</span> COVID-19
+                </motion.p>
+              </div>
+
+              <div className="bg-gray-50 p-2 rounded border-l-4 border-gray-300">
+                <motion.p
+                  className="text-sm text-gray-800 font-medium"
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.4, duration: 0.5 }}
+                >
+                  <span className="text-gray-700 font-semibold">Date:</span> 2025-03-23
+                </motion.p>
+              </div>
+
+              <div className="bg-green-50 p-2 rounded border-l-4 border-green-400">
+                <motion.p
+                  className="text-sm text-gray-800 font-medium"
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.5, duration: 0.5 }}
+                >
+                  <span className="text-green-700 font-semibold">Doctor:</span> Dr. John Doe
+                </motion.p>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          {/* User History Section - Better formatting */}
+          <motion.div
+            className="bg-white p-3 rounded-lg shadow"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
           >
-            <h3 className="text-sm font-semibold text-gray-800 mb-2">
-              AI Model Results
-            </h3>
-            <p className="text-xs font-semibold text-gray-700 mb-4">
-              {modelResults}
-            </p>
-
-            {/* Start of Result Animation */}
-            <motion.div
-              className="flex flex-col space-y-4 justify-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 1 }}
-            >
-              {/* Animated Text 1 */}
-              <motion.p
-                className="text-sm text-gray-700 font-medium"
-                initial={{ y: -50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.7, duration: 0.8 }}
-              >
-                Diagnosis: COVID-19
-              </motion.p>
-
-              {/* Animated Text 2 */}
-              <motion.p
-                className="text-sm text-gray-700 font-medium"
-                initial={{ y: -50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.9, duration: 0.8 }}
-              >
-                Date: 2025-03-23
-              </motion.p>
-
-              {/* Animated Text 3 */}
-              <motion.p
-                className="text-sm text-gray-700 font-medium"
-                initial={{ y: -50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 1.1, duration: 0.8 }}
-              >
-                Doctor: Dr. John Doe
-              </motion.p>
-            </motion.div>
-            {/* End of Result Animation */}
-          </motion.div>
-
-          {/* User History Section */}
-          <motion.div
-            className="bg-white p-4 rounded-md shadow-sm flex-grow"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
-          >
-            <h3 className="text-sm font-semibold text-gray-800 mb-2">
+            <h3 className="text-sm font-semibold text-gray-800 mb-2 pb-1 border-b">
               User Medical History
             </h3>
-            <ul className="space-y-1 text-gray-700 text-xs">
+            <ul className="divide-y divide-gray-100">
               {[
                 {
                   date: "2025-03-23",
                   diagnosis: "COVID-19",
                   doctor: "Dr. John Doe",
+                  color: "bg-red-100 text-red-800",
                 },
                 {
                   date: "2025-03-21",
                   diagnosis: "Pneumonia",
                   doctor: "Dr. Emily Taylor",
+                  color: "bg-yellow-100 text-yellow-800",
                 },
                 {
                   date: "2025-03-18",
                   diagnosis: "Normal",
                   doctor: "Dr. Jane Smith",
+                  color: "bg-green-100 text-green-800",
                 },
               ].map((record, index) => (
-                <li key={index} className="flex justify-between">
-                  <span className="font-semibold">{record.date}</span>
-                  <span>{record.diagnosis}</span>
-                  <span className="italic">{record.doctor}</span>
+                <li key={index} className="py-2 text-xs hover:bg-gray-50">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium text-gray-700">{record.date}</span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${record.color}`}>
+                      {record.diagnosis}
+                    </span>
+                    <span className="text-gray-600">{record.doctor}</span>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -350,3 +352,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+

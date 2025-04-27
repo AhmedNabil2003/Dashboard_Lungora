@@ -1,15 +1,26 @@
-import axios from "axios";
+import axiosInstance from '../services/axiosInstance';  // استيراد axiosInstance
 
-const API_URL = "http/model";
-
-// Send image or input to AI model
-export const runModel = async (inputData) => {
-  const res = await axios.post(`${API_URL}/run`, inputData);
-  return res.data;
+const uploadImage = async (imageFile) => {
+  const formData = new FormData();
+  formData.append('image', imageFile);
+  
+  try {
+    console.log("Making API call...");
+    const response = await axiosInstance.post(
+      '/ModelAI/AI_Model',  // استخدام axiosInstance مع المسار النسبي
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',  // نوع البيانات عند رفع صورة
+        }
+      }
+    );
+    console.log("API response:", response);
+    return response.data;
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    throw error;
+  }
 };
 
-// Get model info (if needed)
-export const getModelInfo = async () => {
-  const res = await axios.get(`${API_URL}/info`);
-  return res.data;
-};
+export { uploadImage };

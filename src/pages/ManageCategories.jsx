@@ -369,67 +369,160 @@
 //     </motion.div>
 //   );
 // }
+// **************************************
+// import { useState } from "react";
+// import { motion } from "framer-motion";
+// import { useCategories } from "../features/categories/useCategories";
+// import { useArticles } from "../features/articles/useArticles";
+// import CategoryList from "../features/categories/CategoryList";
+// import ArticleList from "../features/articles/ArticleList";
+
+// export default function ManageCategories() {
+//   const initialCategories = [
+//     { id: 1, name: "Technology", articlesCount: 3 },
+//     { id: 2, name: "Health", articlesCount: 5 },
+//     { id: 3, name: "Science", articlesCount: 2 },
+//   ];
+
+//   const articlesData = {
+//     1: [
+//       { id: 1, title: "Latest Tech Trends", categoryId: 1 },
+//       { id: 2, title: "AI and the Future", categoryId: 1 },
+//       { id: 3, title: "Cybersecurity", categoryId: 1 },
+//     ],
+//     2: [
+//       { id: 4, title: "Health Tips", categoryId: 2 },
+//       { id: 5, title: "Mental Health Awareness", categoryId: 2 },
+//       { id: 6, title: "Fitness for Everyone", categoryId: 2 },
+//       { id: 7, title: "The Benefits of Yoga", categoryId: 2 },
+//       { id: 8, title: "Healthy Eating", categoryId: 2 },
+//     ],
+//     3: [
+//       { id: 9, title: "Quantum Mechanics", categoryId: 3 },
+//       { id: 10, title: "Space Exploration", categoryId: 3 },
+//     ],
+//   };
+
+//   const {
+//     categories,
+//     addCategory,
+//     editCategory,
+//     deleteCategory,
+//     incrementArticleCount,
+//   } = useCategories(initialCategories);
+
+//   const {
+//     articles,
+//     loadArticlesByCategory,
+//     addArticle,
+//     editArticle,
+//     deleteArticle,
+//   } = useArticles(articlesData);
+
+//   const [showArticles, setShowArticles] = useState(null);
+
+//   const handleViewArticles = (categoryId) => {
+//     if (showArticles === categoryId) {
+//       setShowArticles(null); 
+//     } else {
+//       setShowArticles(categoryId);
+//       loadArticlesByCategory(categoryId);
+//     }
+//   };
+  
+
+//   return (
+//     <motion.div className="flex justify-center items-start min-h-screen bg-gradient-to-br from-white-300 to-white-200 p-4">
+//       <motion.div
+//         className="w-full max-w-7xl bg-white p-6 sm:p-4 rounded-2xl shadow-2xl flex flex-col space-y-4"
+//         initial={{ opacity: 0 }}
+//         animate={{ opacity: 1 }}
+//         transition={{ duration: 0.8 }}
+//       >
+//       <h2 className="text-3xl font-bold text-center text-sky-600 mb-6">
+//         Manage Categories and Articles
+//       </h2>
+
+//       {/* Category List - handles its own modals */}
+//       <CategoryList
+//         categories={categories}
+//         onView={handleViewArticles}
+//         onAdd={addCategory}
+//         onEdit={editCategory}
+//         onDelete={deleteCategory}
+//       />
+
+//       {/* Articles List with its own modal handling */}
+//       {showArticles && (
+//         <ArticleList
+//           articles={articles}
+//           categoryId={showArticles}
+//           categoryName={categories.find((c) => c.id === showArticles)?.name}
+//           onEdit={editArticle}
+//           onDelete={(article) => deleteArticle(article.id)}
+//           onAdd={(title, catId) => {
+//             addArticle(title, catId);
+//             incrementArticleCount(catId);
+//           }}
+//         />
+//       )}
+//     </motion.div>
+// </motion.div>
+//   );
+// }
 
 import { useState } from "react";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { useCategories } from "../features/categories/useCategories";
 import { useArticles } from "../features/articles/useArticles";
 import CategoryList from "../features/categories/CategoryList";
 import ArticleList from "../features/articles/ArticleList";
+import { Loader2 } from "lucide-react";
 
 export default function ManageCategories() {
-  const initialCategories = [
-    { id: 1, name: "Technology", articlesCount: 3 },
-    { id: 2, name: "Health", articlesCount: 5 },
-    { id: 3, name: "Science", articlesCount: 2 },
-  ];
-
-  const articlesData = {
-    1: [
-      { id: 1, title: "Latest Tech Trends", categoryId: 1 },
-      { id: 2, title: "AI and the Future", categoryId: 1 },
-      { id: 3, title: "Cybersecurity", categoryId: 1 },
-    ],
-    2: [
-      { id: 4, title: "Health Tips", categoryId: 2 },
-      { id: 5, title: "Mental Health Awareness", categoryId: 2 },
-      { id: 6, title: "Fitness for Everyone", categoryId: 2 },
-      { id: 7, title: "The Benefits of Yoga", categoryId: 2 },
-      { id: 8, title: "Healthy Eating", categoryId: 2 },
-    ],
-    3: [
-      { id: 9, title: "Quantum Mechanics", categoryId: 3 },
-      { id: 10, title: "Space Exploration", categoryId: 3 },
-    ],
-  };
-
   const {
     categories,
+    loading: categoriesLoading,
+    error: categoriesError,
     addCategory,
     editCategory,
-    deleteCategory,
-    incrementArticleCount,
-  } = useCategories(initialCategories);
+    removeCategory
+  } = useCategories();
 
   const {
     articles,
+    loading: articlesLoading,
+    error: articlesError,
     loadArticlesByCategory,
     addArticle,
     editArticle,
-    deleteArticle,
-  } = useArticles(articlesData);
+    removeArticle
+  } = useArticles();
 
-  const [showArticles, setShowArticles] = useState(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+  const [selectedCategoryName, setSelectedCategoryName] = useState("");
 
   const handleViewArticles = (categoryId) => {
-    if (showArticles === categoryId) {
-      setShowArticles(null); 
+    const category = categories.find(c => c.id === categoryId);
+    if (category) {
+      setSelectedCategoryName(category.categoryName);
+    }
+    
+    if (selectedCategoryId === categoryId) {
+      setSelectedCategoryId(null);
+      setSelectedCategoryName("");
     } else {
-      setShowArticles(categoryId);
+      setSelectedCategoryId(categoryId);
       loadArticlesByCategory(categoryId);
     }
   };
-  
+
+  const handleAddArticle = async (formData, categoryId) => {
+    // إذا تم تمرير categoryId، استخدمه، وإلا استخدم selectedCategoryId
+    const targetCategoryId = categoryId || selectedCategoryId;
+    await addArticle(formData, targetCategoryId);
+  };
 
   return (
     <motion.div className="flex justify-center items-start min-h-screen bg-gradient-to-br from-white-300 to-white-200 p-4">
@@ -439,34 +532,55 @@ export default function ManageCategories() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
       >
-      <h2 className="text-3xl font-bold text-center text-sky-600 mb-6">
+        <h2 className="text-3xl font-bold text-center text-sky-600 mb-6">
         Manage Categories and Articles
-      </h2>
+        </h2>
 
-      {/* Category List - handles its own modals */}
-      <CategoryList
-        categories={categories}
-        onView={handleViewArticles}
-        onAdd={addCategory}
-        onEdit={editCategory}
-        onDelete={deleteCategory}
-      />
+        {categoriesError && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {categoriesError}
+          </div>
+        )}
 
-      {/* Articles List with its own modal handling */}
-      {showArticles && (
-        <ArticleList
-          articles={articles}
-          categoryId={showArticles}
-          categoryName={categories.find((c) => c.id === showArticles)?.name}
-          onEdit={editArticle}
-          onDelete={(article) => deleteArticle(article.id)}
-          onAdd={(title, catId) => {
-            addArticle(title, catId);
-            incrementArticleCount(catId);
-          }}
-        />
-      )}
+        {categoriesLoading ? (
+          <div className="flex justify-center items-center h-32">
+            <Loader2 className="animate-spin w-8 h-8 text-sky-600" />
+          </div>
+        ) : (
+          <CategoryList
+            categories={categories}
+            onView={handleViewArticles}
+            onAdd={addCategory}
+            onEdit={editCategory}
+            onDelete={removeCategory}
+          />
+        )}
+
+        {selectedCategoryId && (
+          <>
+            {articlesError && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {articlesError}
+              </div>
+            )}
+
+            {articlesLoading ? (
+              <div className="flex justify-center items-center h-32">
+                <Loader2 className="animate-spin w-8 h-8 text-sky-600" />
+              </div>
+            ) : (
+              <ArticleList
+                articles={articles}
+                categoryId={selectedCategoryId}
+                categoryName={selectedCategoryName}
+                onEdit={editArticle}
+                onDelete={removeArticle}
+                onAdd={handleAddArticle}
+              />
+            )}
+          </>
+        )}
+      </motion.div>
     </motion.div>
-</motion.div>
   );
 }
