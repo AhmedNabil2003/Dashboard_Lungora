@@ -1,4 +1,4 @@
-// ✅ حفظ في localStorage
+
 export const saveToLocalStorage = (key, value) => {
   try {
     const valueToStore = typeof value === "object" ? JSON.stringify(value) : value;
@@ -8,7 +8,7 @@ export const saveToLocalStorage = (key, value) => {
   }
 };
 
-// ✅ حفظ في sessionStorage
+
 export const saveToSessionStorage = (key, value) => {
   try {
     const valueToStore = typeof value === "object" ? JSON.stringify(value) : value;
@@ -31,7 +31,7 @@ export const getTokenFromStorage = (key) => {
     return null;
   }
 };
-// ✅ حذف التوكن من المكانين
+
 export const removeTokenFromStorage = (key) => {
   try {
     localStorage.removeItem(key);
@@ -41,7 +41,6 @@ export const removeTokenFromStorage = (key) => {
   }
 };
 
-// ✅ تخزين التوكن تلقائيًا حسب rememberMe
 export const storeToken = (token, rememberMe = false, isRefreshToken = false) => {
   if (isRefreshToken) {
     console.log("Storing refresh token...");
