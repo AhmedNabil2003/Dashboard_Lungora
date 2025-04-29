@@ -1,19 +1,25 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Doughnut } from "react-chartjs-2";
 import "chart.js/auto";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { useArticles } from "../features/articles/useArticles";
+import { ThemeContext } from "../context/ThemeContext";
 
 const Dashboard = () => {
   const [modelResults] = useState("Processing...");
   const { articles, loading, error, fetchAllArticles } = useArticles();
   const [displayArticles, setDisplayArticles] = useState([]);
-
+  const { theme } = useContext(ThemeContext);
   // Fetch articles when component mounts
   useEffect(() => {
     fetchAllArticles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    localStorage.setItem("theme", theme);
+  }, [theme]);
   // Process articles to display only a subset (latest 5)
   useEffect(() => {
     if (articles && articles.length > 0) {
@@ -80,7 +86,13 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-2">
+    <div
+      className={`flex min-h-screen p-2 ${
+        theme === "light"
+          ? "bg-gradient-to-br from-gray-50 to-gray-100"
+          : "bg-gradient-to-br from-gray-800 to-gray-900"
+      }`}
+    >
       <main className="flex-1 p-3 max-w-full mx-auto">
         {/* Analysis Cards - More compact with responsive layout */}
         <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mb-4">
@@ -92,8 +104,16 @@ const Dashboard = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: index * 0.1 }}
             >
-              <i className={`fas ${stat.icon} text-xl text-white`} />
-              <div className="text-white text-center mt-1">
+              <i
+                className={`fas ${stat.icon} text-xl ${
+                  theme === "light" ? "text-white" : "text-gray-200"
+                }`}
+              />
+              <div
+                className={`${
+                  theme === "light" ? "text-white" : "text-gray-200"
+                } text-center mt-1`}
+              >
                 <h3 className="text-xs font-semibold">{stat.label}</h3>
                 <p className="text-lg font-bold">{stat.value}</p>
               </div>
@@ -106,12 +126,20 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
           {/* Chart Section - Smaller but still prominent */}
           <motion.div
-            className="bg-white p-3 rounded-lg shadow lg:col-span-1"
+            className={`p-3 rounded-lg shadow lg:col-span-1 ${
+              theme === "light"
+                ? "bg-white text-gray-800"
+                : "bg-gray-800 text-gray-100"
+            }`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
-            <h3 className="text-sm font-semibold text-gray-800 mb-2">
+            <h3
+              className={`${
+                theme === "light" ? "text-gray-800" : "text-gray-100"
+              } text-sm font-semibold mb-2`}
+            >
               Patient Analysis
             </h3>
             <div className="relative w-full h-56">
@@ -126,12 +154,14 @@ const Dashboard = () => {
                         padding: 10,
                         font: {
                           size: 10,
+                          family: "Arial, sans-serif",
                         },
+                        color: theme === "light" ? "#4B5563" : "#D1D5DB", // Set legend text color
                       },
                     },
                   },
                   maintainAspectRatio: false,
-                  cutout: '65%',
+                  cutout: "65%",
                 }}
               />
             </div>
@@ -141,12 +171,20 @@ const Dashboard = () => {
           <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Doctors Section - Cleaner layout */}
             <motion.div
-              className="bg-white p-3 rounded-lg shadow h-full"
+              className={`p-3 rounded-lg shadow h-full ${
+                theme === "light"
+                  ? "bg-white text-gray-800"
+                  : "bg-gray-800 text-gray-100"
+              }`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              <h3 className="text-sm font-semibold text-gray-800 mb-2 pb-1 border-b">
+              <h3
+                className={`${
+                  theme === "light" ? "text-gray-800" : "text-gray-100"
+                } text-sm font-semibold mb-2 pb-1 border-b`}
+              >
                 Doctors List
               </h3>
               <ul className="space-y-2 overflow-y-auto max-h-64">
@@ -167,7 +205,11 @@ const Dashboard = () => {
                 ].map((doctor, index) => (
                   <li
                     key={index}
-                    className="flex items-center space-x-2 text-xs hover:bg-gray-50 p-1 rounded"
+                    className={`flex items-center space-x-2 text-xs hover:bg-gray-50 p-1 rounded ${
+                      theme === "light"
+                        ? "hover:bg-gray-100"
+                        : "hover:bg-gray-700"
+                    }`}
                   >
                     <img
                       src="https://via.placeholder.com/36"
@@ -176,7 +218,9 @@ const Dashboard = () => {
                     />
                     <div>
                       <h4 className="font-semibold">{doctor.name}</h4>
-                      <p className="text-gray-600 text-xs">{doctor.specialty}</p>
+                      <p className="text-gray-600 text-xs">
+                        {doctor.specialty}
+                      </p>
                     </div>
                   </li>
                 ))}
@@ -185,18 +229,28 @@ const Dashboard = () => {
 
             {/* Articles Section - Improved readability */}
             <motion.div
-              className="bg-white p-3 rounded-lg shadow h-full"
+              className={`p-3 rounded-lg shadow h-full ${
+                theme === "light"
+                  ? "bg-white text-gray-800"
+                  : "bg-gray-800 text-gray-100"
+              }`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
             >
-              <h3 className="text-sm font-semibold text-gray-800 mb-2 pb-1 border-b">
+              <h3
+                className={`${
+                  theme === "light" ? "text-gray-800" : "text-gray-100"
+                } text-sm font-semibold mb-2 pb-1 border-b`}
+              >
                 Latest Disease Articles
               </h3>
 
               {/* Loading state */}
               {loading ? (
-                <p className="text-center text-gray-500 py-4 text-xs">Loading articles...</p>
+                <p className="text-center text-gray-500 py-4 text-xs">
+                  Loading articles...
+                </p>
               ) : error ? (
                 <p className="text-red-500 text-center py-4 text-xs">{error}</p>
               ) : (
@@ -205,7 +259,11 @@ const Dashboard = () => {
                     displayArticles.map((article, index) => (
                       <li
                         key={index}
-                        className="flex items-start space-x-2 border-b pb-2 last:border-b-0 hover:bg-gray-50 rounded p-1"
+                        className={`flex items-start space-x-2 border-b pb-2 last:border-b-0 hover:bg-gray-50 rounded p-1 ${
+                          theme === "light"
+                            ? "hover:bg-gray-100"
+                            : "hover:bg-gray-700"
+                        }`}
                       >
                         {/* Article image */}
                         {article.coverImage && (
@@ -218,23 +276,40 @@ const Dashboard = () => {
 
                         {/* Article content */}
                         <div className="flex flex-col flex-1">
-                          <h4 className="text-xs font-semibold text-gray-800">
+                          <h4
+                            className={`${
+                              theme === "light"
+                                ? "text-gray-800"
+                                : "text-gray-100"
+                            } text-xs font-semibold`}
+                          >
                             {article.title}
                           </h4>
-                          <p className="text-xs text-gray-600 line-clamp-2">
+                          <p
+                            className={`${
+                              theme === "light"
+                                ? "text-gray-600"
+                                : "text-gray-300"
+                            } text-xs line-clamp-2`}
+                          >
                             {article.description}
                           </p>
                         </div>
                       </li>
                     ))
                   ) : (
-                    <li className="text-center text-gray-500 py-4 text-xs">No articles available</li>
+                    <li className="text-center text-gray-500 py-4 text-xs">
+                      No articles available
+                    </li>
                   )}
                 </ul>
               )}
               {displayArticles.length > 0 && (
                 <div className="text-right mt-2">
-                  <a href="/dashboard/categories" className="text-xs text-blue-500 hover:underline">
+                  <a
+                    href="/dashboard/categories"
+                    className="text-xs text-blue-500 hover:underline"
+                  >
                     View all articles →
                   </a>
                 </div>
@@ -247,15 +322,27 @@ const Dashboard = () => {
         <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* AI Model Results Section - Better animations */}
           <motion.div
-            className="bg-white p-3 rounded-lg shadow"
+            className={`p-3 rounded-lg shadow ${
+              theme === "light"
+                ? "bg-white text-gray-800"
+                : "bg-gray-800 text-gray-100"
+            }`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            <h3 className="text-sm font-semibold text-gray-800 mb-2 pb-1 border-b">
+            <h3
+              className={`${
+                theme === "light" ? "text-gray-800" : "text-gray-100"
+              } text-sm font-semibold mb-2 pb-1 border-b`}
+            >
               AI Model Results
             </h3>
-            <p className="text-xs font-medium text-gray-700 mb-3">
+            <p
+              className={`${
+                theme === "light" ? "text-gray-700" : "text-gray-300"
+              } text-xs font-medium mb-3`}
+            >
               {modelResults}
             </p>
 
@@ -267,36 +354,81 @@ const Dashboard = () => {
               transition={{ delay: 0.2, duration: 0.8 }}
             >
               {/* Results with better visual hierarchy */}
-              <div className="bg-blue-50 p-2 rounded border-l-4 border-blue-400">
+              <div
+                className={`p-2 rounded border-l-4 ${
+                  theme === "light"
+                    ? "bg-blue-50 border-blue-400"
+                    : "bg-blue-700 border-blue-500"
+                }`}
+              >
                 <motion.p
-                  className="text-sm text-gray-800 font-medium"
+                  className={`${
+                    theme === "light" ? "text-gray-800" : "text-gray-100"
+                  } text-sm font-medium`}
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.3, duration: 0.5 }}
                 >
-                  <span className="text-blue-700 font-semibold">Diagnosis:</span> COVID-19
+                  <span
+                    className={`${
+                      theme === "light" ? "text-blue-700" : "text-blue-300"
+                    } font-semibold`}
+                  >
+                    Diagnosis:
+                  </span>{" "}
+                  COVID-19
                 </motion.p>
               </div>
 
-              <div className="bg-gray-50 p-2 rounded border-l-4 border-gray-300">
+              <div
+                className={`p-2 rounded border-l-4 ${
+                  theme === "light"
+                    ? "bg-gray-50 border-gray-300"
+                    : "bg-gray-700 border-gray-600"
+                }`}
+              >
                 <motion.p
-                  className="text-sm text-gray-800 font-medium"
+                  className={`${
+                    theme === "light" ? "text-gray-800" : "text-gray-100"
+                  } text-sm font-medium`}
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.4, duration: 0.5 }}
                 >
-                  <span className="text-gray-700 font-semibold">Date:</span> 2025-03-23
+                  <span
+                    className={`${
+                      theme === "light" ? "text-gray-700" : "text-gray-300"
+                    } font-semibold`}
+                  >
+                    Date:
+                  </span>{" "}
+                  2025-03-23
                 </motion.p>
               </div>
 
-              <div className="bg-green-50 p-2 rounded border-l-4 border-green-400">
+              <div
+                className={`p-2 rounded border-l-4 ${
+                  theme === "light"
+                    ? "bg-green-50 border-green-400"
+                    : "bg-green-700 border-green-500"
+                }`}
+              >
                 <motion.p
-                  className="text-sm text-gray-800 font-medium"
+                  className={`${
+                    theme === "light" ? "text-gray-800" : "text-gray-100"
+                  } text-sm font-medium`}
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.5, duration: 0.5 }}
                 >
-                  <span className="text-green-700 font-semibold">Doctor:</span> Dr. John Doe
+                  <span
+                    className={`${
+                      theme === "light" ? "text-green-700" : "text-green-300"
+                    } font-semibold`}
+                  >
+                    Doctor:
+                  </span>{" "}
+                  Dr. John Doe
                 </motion.p>
               </div>
             </motion.div>
@@ -304,12 +436,20 @@ const Dashboard = () => {
 
           {/* User History Section - Better formatting */}
           <motion.div
-            className="bg-white p-3 rounded-lg shadow"
+            className={`p-3 rounded-lg shadow ${
+              theme === "light"
+                ? "bg-white text-gray-800"
+                : "bg-gray-800 text-gray-100"
+            }`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
           >
-            <h3 className="text-sm font-semibold text-gray-800 mb-2 pb-1 border-b">
+            <h3
+              className={`${
+                theme === "light" ? "text-gray-800" : "text-gray-100"
+              } text-sm font-semibold mb-2 pb-1 border-b`}
+            >
               User Medical History
             </h3>
             <ul className="divide-y divide-gray-100">
@@ -333,13 +473,34 @@ const Dashboard = () => {
                   color: "bg-green-100 text-green-800",
                 },
               ].map((record, index) => (
-                <li key={index} className="py-2 text-xs hover:bg-gray-50">
+                <li
+                  key={index}
+                  className={`py-2 text-xs hover:bg-gray-50 ${
+                    theme === "light"
+                      ? "hover:bg-gray-100"
+                      : "hover:bg-gray-700"
+                  }`}
+                >
                   <div className="flex justify-between items-center">
-                    <span className="font-medium text-gray-700">{record.date}</span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${record.color}`}>
+                    <span
+                      className={`${
+                        theme === "light" ? "text-gray-700" : "text-gray-300"
+                      } font-medium`}
+                    >
+                      {record.date}
+                    </span>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${record.color}`}
+                    >
                       {record.diagnosis}
                     </span>
-                    <span className="text-gray-600">{record.doctor}</span>
+                    <span
+                      className={`${
+                        theme === "light" ? "text-gray-600" : "text-gray-400"
+                      }`}
+                    >
+                      {record.doctor}
+                    </span>
                   </div>
                 </li>
               ))}
@@ -352,4 +513,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

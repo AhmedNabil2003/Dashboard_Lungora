@@ -70,13 +70,13 @@ const LungoraModel = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex bg-gray-50 min-h-screen">
       {/* Main Container */}
       <div className="w-full flex flex-col">
         {/* Content Container */}
-        <div className="flex flex-col items-center p-4 h-full">
+        <div className="flex flex-col items-center p-4">
           {/* Main White Box Container */}
-          <div className="w-full max-w-6xl bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
+          <div className="w-full max-w-6xl bg-white rounded-2xl shadow-2xl p-6 sm:p-8 mb-4">
             {/* Header Section with Title and Logo */}
             <div className="mb-4 flex flex-col sm:flex-row items-center justify-center sm:justify-between">
               <div className="flex items-center mb-3 sm:mb-0">

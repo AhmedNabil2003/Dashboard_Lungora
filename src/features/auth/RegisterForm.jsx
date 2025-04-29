@@ -54,7 +54,6 @@ const RegisterForm = () => {
     onSubmit: async (values) => {
       const loadingId = toast.loading("Signing Up...");
       try {
-        // استخدم registerUser من apiAuth.js
         const data = await registerUser(values);
 
         if (data.statusCode === 201) {
@@ -74,7 +73,7 @@ const RegisterForm = () => {
   });
 
   return (
-    <Card>
+    <Card className="max-w-sm mx-auto p-6 shadow-lg rounded-lg">
       <CardContent>
         <h2 className="text-2xl font-bold text-gray-800 text-center">Sign Up</h2>
         <form onSubmit={formik.handleSubmit} className="space-y-4">

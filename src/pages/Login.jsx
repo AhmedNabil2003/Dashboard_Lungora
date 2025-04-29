@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import LoginForm from "../features/auth/LoginForm";
 import { BrainCircuit } from "lucide-react";
@@ -9,15 +10,16 @@ const Login = () => {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="relative z-10 w-full max-w-2xl grid grid-cols-2 bg-white rounded-2xl shadow-xl overflow-hidden"
+        className="relative z-10 w-full max-w-2xl grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white rounded-2xl shadow-xl overflow-hidden p-4"
       >
         <LoginForm />
 
+        {/* Hide "Welcome" section on small screens */}
         <motion.div
           initial={{ x: 50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 1 }}
-          className="flex flex-col items-center justify-center bg-gradient-to-r from-sky-500 to-indigo-500 text-white p-8 text-center rounded-br-2xl rounded-tr-2xl shadow-lg"
+          className="flex flex-col items-center justify-center bg-gradient-to-r from-sky-500 to-indigo-500 text-white p-8 text-center rounded-br-2xl rounded-tr-2xl shadow-lg hidden md:block"
         >
           <motion.div
             animate={{ y: [0, -10, 0] }}

@@ -76,7 +76,6 @@ const LoginForm = () => {
         }
       } catch (error) {
         const msg = error?.response?.data?.message || error.message || "Login error";
-        // التركيز على الحقل المناسب حسب الخطأ
         if (msg.includes("email")) {
           formik.setFieldTouched("email", true);
           emailRef.current?.focus();
@@ -93,68 +92,69 @@ const LoginForm = () => {
 
   return (
     <Card className="shadow-xl rounded-lg p-8 max-w-md mx-auto bg-white">
-      <CardContent>
-        <div className="text-center mb-6 mt-4">
-          <h1 className="text-3xl font-semibold text-gray-800">LOGIN</h1>
-          <p className="text-sm text-gray-500 mt-2">Please sign in to continue.</p>
-        </div>
+  <CardContent>
+    <div className="text-center mb-6 mt-4">
+      <h1 className="text-3xl font-semibold text-gray-800">LOGIN</h1>
+      <p className="text-sm text-gray-500 mt-2">Please sign in to continue.</p>
+    </div>
 
-        <form onSubmit={formik.handleSubmit} className="space-y-6" noValidate>
-          <div>
-            <Input
-              type="email"
-              name="email"
-              placeholder="Email"
-              {...formik.getFieldProps("email")}
-              onBlur={formik.handleBlur}
-              ref={emailRef}
-              className={`w-full border ${formik.touched.email && formik.errors.email ? 'border-red-500' : 'border-gray-300'} rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all duration-300 ease-in-out shadow-sm`}
-            />
-            {formik.touched.email && formik.errors.email && (
-              <p className="text-red-500 text-sm mt-1">{formik.errors.email}</p>
-            )}
-          </div>
+    <form onSubmit={formik.handleSubmit} className="space-y-6" noValidate>
+      <div>
+        <Input
+          type="email"
+          name="email"
+          placeholder="Email"
+          {...formik.getFieldProps("email")}
+          onBlur={formik.handleBlur}
+          ref={emailRef}
+          className={`w-full border-transparent ${formik.touched.email && formik.errors.email ? 'border-red-500' : 'border-gray-300'} rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all duration-300 ease-in-out shadow-sm`}
+        />
+        {formik.touched.email && formik.errors.email && (
+          <p className="text-red-500 text-sm mt-1">{formik.errors.email}</p>
+        )}
+      </div>
 
-          <div>
-            <PasswordInput
-              name="password"
-              placeholder="Password"
-              value={formik.values.password}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.password && formik.errors.password}
-              ref={passwordRef}
-            />
-            {formik.touched.password && formik.errors.password && (
-              <p className="text-red-500 text-sm mt-1">{formik.errors.password}</p>
-            )}
-          </div>
+      <div>
+        <PasswordInput
+          name="password"
+          placeholder="Password"
+          value={formik.values.password}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.touched.password && formik.errors.password}
+          ref={passwordRef}
+        />
+        {formik.touched.password && formik.errors.password && (
+          <p className="text-red-500 text-sm mt-1">{formik.errors.password}</p>
+        )}
+      </div>
 
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              name="rememberMe"
-              checked={formik.values.rememberMe}
-              onChange={formik.handleChange}
-              className="mr-2 rounded-sm"
-            />
-            <label className="text-sm text-gray-700">Remember Me</label>
-          </div>
+      <div className="flex items-center">
+        <input
+          type="checkbox"
+          name="rememberMe"
+          checked={formik.values.rememberMe}
+          onChange={formik.handleChange}
+          className="mr-2 rounded-sm"
+        />
+        <label className="text-sm text-gray-700">Remember Me</label>
+      </div>
 
-          <p className="text-right text-sm text-sky-500 mt-2 cursor-pointer hover:underline">
-            Forgot your password?
-          </p>
+      <p className="text-right text-sm text-sky-500 mt-2 cursor-pointer hover:underline">
+        Forgot your password?
+      </p>
 
-          <button
-            type="submit"
-            className="w-full py-3 px-4 bg-gradient-to-r from-sky-500 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:from-sky-600 hover:to-indigo-700 transition duration-300 ease-in-out"
-            disabled={loading}
-          >
-            {loading ? "Logging in..." : "LOGIN"}
-          </button>
-        </form>
-      </CardContent>
-    </Card>
+      <button
+        type="submit"
+        className="w-full py-3 px-4 bg-gradient-to-r from-sky-500 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:from-sky-600 hover:to-indigo-700 transition duration-300 ease-in-out"
+        disabled={loading}
+      >
+        {loading ? "Logging in..." : "LOGIN"}
+      </button>
+    </form>
+  </CardContent>
+</Card>
+
   );
 };
 
