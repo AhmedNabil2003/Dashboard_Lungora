@@ -18,7 +18,6 @@ export const saveToSessionStorage = (key, value) => {
   }
 };
 
-// ✅ استرجاع التوكن من localStorage أو sessionStorage
 export const getTokenFromStorage = (key) => {
   try {
     let value = localStorage.getItem(key);  
@@ -55,12 +54,10 @@ export const storeToken = (token, rememberMe = false, isRefreshToken = false) =>
   }
 };
 
-// ✅ معرفة إذا كان rememberMe مفعّل
 export const isRememberMe = () => {
   return localStorage.getItem("rememberMe") === "true";
 };
 
-// ✅ حذف كل شيء متعلق بالتوكن عند تسجيل الخروج
 export const clearAuthStorage = () => {
   try {
     localStorage.removeItem("token");
