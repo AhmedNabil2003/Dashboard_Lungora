@@ -161,17 +161,21 @@ const Sidebar = () => {
         {/* Toggle sidebar button for tablets - outside border */}
         {isTablet && (
           <motion.button
-            onClick={() => setSidebarOpen(!isSidebarOpen)}
-            className="absolute pb-0 pt-0 -right-0 top-20 bg-sky-600 cursor-pointer z-10 hover:bg-sky-600 text-white p-2 rounded-full shadow-lg border-2 border-white"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <i
-              className={`fa-solid ${
-                isSidebarOpen ? "fa-angle-left" : "fa-angle-right"
-              } text-sm text-lg text-white transition-all duration-300`}
-            ></i>
-          </motion.button>
+          onClick={() => setSidebarOpen(!isSidebarOpen)}
+          className={`absolute pb-0 pt-0 -right-0 top-20 cursor-pointer z-10 p-2 rounded-full shadow-lg border-2 transition-all duration-300 ${
+            theme === "light"
+              ? "bg-sky-600 hover:bg-sky-700 text-white border-white"  
+              : "bg-gray-700 hover:bg-gray-600 text-white border-gray-600"  
+          }`}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <i
+            className={`fa-solid ${
+              isSidebarOpen ? "fa-angle-left" : "fa-angle-right"
+            } text-sm text-lg transition-all duration-300`}
+          ></i>
+        </motion.button>
         )}
 
         {/* Profile Section */}

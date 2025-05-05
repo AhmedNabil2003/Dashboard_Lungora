@@ -29,10 +29,10 @@ const LungoraModel = () => {
         const response = await uploadImage(file);
         
         if (response && response.isSuccess) {
-          if (response.result.message === "Image Again") {
-            setResult("The image is unclear. Please upload a clearer image.");
+          if (response.result.predicted === "") {
+            setResult(response.result.message);
           } else {
-            setResult(response.result.predicted || "Analysis completed successfully.");
+            setResult(response.result.predicted);
           }
         } else {
           setResult("Error: Unable to process the image. Please try again.");
@@ -172,7 +172,7 @@ const LungoraModel = () => {
                 {preview && (
                   <div className="flex justify-center gap-3 mt-4">
                     <motion.button
-                      className={`flex items-center px-4 py-2 rounded-lg text-white ${file ? 'bg-sky-600 hover:bg-sky-700' : 'bg-gray-400 cursor-not-allowed'}`}
+                      className={`flex items-center px-4 py-2 cursor-pointer rounded-lg text-white ${file ? 'bg-sky-600 hover:bg-sky-700' : 'bg-gray-400 cursor-not-allowed'}`}
                       whileHover={file ? { scale: 1.05 } : {}}
                       disabled={!file}
                       onClick={handleSubmit}
@@ -184,7 +184,7 @@ const LungoraModel = () => {
                     </motion.button>
 
                     <motion.button
-                      className="flex items-center px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
+                      className="flex items-center px-4 py-2 cursor-pointer rounded-lg bg-red-500 text-white hover:bg-red-600"
                       whileHover={{ scale: 1.05 }}
                       onClick={handleReset}
                     >
@@ -223,7 +223,7 @@ const LungoraModel = () => {
                         <p className="text-gray-700">{result}</p>
                       </div>
                       <motion.button
-                        className="flex items-center justify-center px-4 py-2 rounded-lg bg-sky-500 text-white hover:bg-sky-600 w-full"
+                        className="flex items-center justify-center px-4 py-2 cursor-pointer rounded-lg bg-sky-500 text-white hover:bg-sky-600 w-full"
                         whileHover={{ scale: 1.02 }}
                         onClick={handleDownload}
                       >

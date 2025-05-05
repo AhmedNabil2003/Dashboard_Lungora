@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
   getUsers,
-  createUser,
   updateUser,
   deleteUser,
 } from '../../services/apiUsers';
@@ -27,10 +26,6 @@ export function useUsers() {
     }
   };
 
-  const addUser = async (userData) => {
-    const newUser = await createUser(userData);
-    setUsers((prev) => [...prev, newUser]);
-  };
 
   const editUser = async (id, updatedData) => {
     const updatedUser = await updateUser(id, updatedData);
@@ -44,5 +39,5 @@ export function useUsers() {
     setUsers((prev) => prev.filter((user) => user.id !== id));
   };
 
-  return { users, isLoading, error, addUser, editUser, removeUser };
+  return { users, isLoading, error, editUser, removeUser };
 }

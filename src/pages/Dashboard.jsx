@@ -93,7 +93,7 @@ const Dashboard = () => {
           : "bg-gradient-to-br from-gray-800 to-gray-900"
       }`}
     >
-      <main className="flex-1 p-3 max-w-full mx-auto">
+      <main className="flex-1 max-w-full mx-auto">
         {/* Analysis Cards - More compact with responsive layout */}
         <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mb-4">
           {analysisData.map((stat, index) => (

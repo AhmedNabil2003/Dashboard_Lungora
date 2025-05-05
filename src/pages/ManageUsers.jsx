@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import UserForm from '../features/users/UserForm';
@@ -10,8 +11,8 @@ const ManageUsers = () => {
     { id: 2, name: 'Ahmed_Nabil', email: 'a7med@gmail.com', status: 'Not Connected', date: '2023-07-15' },
     { id: 4, name: 'Ahmed_N', email: 'ahmedNn@gmail.com', status: 'Active', date: '2023-08-10' },
     { id: 5, name: 'Adel', email: 'adelmm@gmail.com', status: 'Not Connected', date: '2023-08-10' },
-    { id: 6, name: 'Ahmed hamdy', email: 'ahmedhamdy@gmail.com', status: 'Pending', date: '2023-08-10' },
-    { id: 7, name: 'omar', email: 'omar7@gmail.com', status: 'Pending', date: '2023-08-10' },
+    { id: 6, name: 'Ahmed hamdy', email: 'ahmedhamdy@gmail.com', status: 'Not Active', date: '2023-08-10' },
+    { id: 7, name: 'omar', email: 'omar7@gmail.com', status: 'Not Active', date: '2023-08-10' },
   ]);
 
   const [search, setSearch] = useState('');

@@ -16,6 +16,7 @@ import Settings from "../pages/Settings";
 import PageNotFound from "../pages/PageNotFound";
 import LungoraModel from "../pages/LungoraModel";
 import PublicRoute from "./PublicRoute";
+import Profile from "../pages/Profile";
 
 const AppRoute = () => (
   <Routes>
@@ -46,6 +47,7 @@ const AppRoute = () => (
       }
     >
       <Route index element={<Dashboard />} />
+      <Route path="profile" element={<Profile />} />
       <Route path="signup" element={<Register />} />
       <Route path="users" element={<ManageUsers />} />
       <Route path="doctors" element={<ManageDoctors />} />

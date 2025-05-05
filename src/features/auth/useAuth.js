@@ -9,7 +9,6 @@ import {
 import AuthContext from "../../context/AuthContext";
 import toast from "react-hot-toast";
 
-// استرجاع التوكن من التخزين
 const getTokenFromStorage = () => {
   return localStorage.getItem("token") || sessionStorage.getItem("token");
 };
@@ -19,7 +18,6 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
   const { setToken,updateToken } = useContext(AuthContext);
 
-  // ✅ تسجيل الدخول
   const login = async ({ email, password, rememberMe }) => {
     try {
       const response = await loginUser({ email, password, rememberMe });

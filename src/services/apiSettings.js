@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ManageArticles = () => {
+const ApiSettings = () => {
     return (
         <div>
             
@@ -8,4 +8,4 @@ const ManageArticles = () => {
     );
 }
 
-export default ManageArticles;
+export default ApiSettings;

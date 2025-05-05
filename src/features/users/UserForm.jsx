@@ -63,8 +63,8 @@ const UserForm = ({ isOpen, onClose, onSave, title, user }) => {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                 >
                   <option value="Active">Active</option>
+                  <option value="Not Active">Not Active</option>
                   <option value="Not Connected">Not Connected</option>
-                  <option value="Pending">Pending</option>
                 </Field>
                 <ErrorMessage name="status" component="div" className="text-red-500 text-sm" />
               </div>

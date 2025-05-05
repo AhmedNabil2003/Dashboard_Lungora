@@ -113,14 +113,36 @@ export const changePassword = async (data) => {
 
 // Get user data
 export const getUserData = async () => {
-  return await axiosInstance.get(`/Auth/GetDataUser`);
+  const res = await axiosInstance.get(`/Auth/GetDataUser`);
+  console.log("User data response:", res.data.result);
+  if(res.data && res.data.result && res.data.isSuccess){
+  return res.data.result;
+}else {
+  throw new Error("Failed to get user data");
+}
 };
 
 // Edit user info
 export const editUserInfo = async (data) => {
-  return await axiosInstance.post(`/Auth/EditInfo`, data);
-};
+  const formData = new FormData();
+  
+  formData.append('FullName', data.name);
+  if (data.avatar) {
+    formData.append('ImageUser', data.avatar); 
+  }
 
+  try {
+    const response = await axiosInstance.post(`/Auth/EditInfo`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data', 
+      },
+    });
+    return response.data;
+  // eslint-disable-next-line no-unused-vars
+  } catch (error) {
+    throw new Error('Error updating user info');
+  }
+};
 // Logout from all devices
 export const logoutAll = async () => {
   try {

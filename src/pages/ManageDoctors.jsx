@@ -4,51 +4,17 @@ import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import DoctorForm from '../features/doctors/DoctorForm';
 import DoctorList from '../features/doctors/DoctorList';
+import useDoctors from '../features/doctors/useDoctors'; // استيراد useDoctors
 
 const ManageDoctors = () => {
-  const [doctors, setDoctors] = useState([
-    { 
-      id: 1, 
-      name: 'Dr. Ahmed Mostafa', 
-      emailDoctor: 'AhmedMostafa@gmail.com', 
-      phone: '1234567890', 
-      teliphone: '01012345678',
-      experienceYears: 10, 
-      location: 'Cairo, Egypt', 
-      whatsAppLink: 'https://wa.me/1234567890', 
-      imageDoctor: 'https://via.placeholder.com/100', 
-      createdAt: '2023-08-01', 
-      status: 'Active', 
-      specialization: 'Cardiologist',
-      about: 'Expert in heart surgery', 
-      locationLink: 'https://maps.google.com?q=Cairo', 
-      numOfPatients: 2000
-    },
-    { 
-      id: 2, 
-      name: 'Dr. Mona Ali', 
-      emailDoctor: 'monaali@gmail.com', 
-      phone: '0987654321', 
-      teliphone: '01298765432',
-      experienceYears: 5, 
-      location: 'Alexandria, Egypt', 
-      whatsAppLink: 'https://wa.me/0987654321', 
-      imageDoctor: 'https://via.placeholder.com/100', 
-      createdAt: '2023-07-15',
-      status: 'Not Available', 
-      specialization: 'Neurologist',
-      about: 'Specialized in brain disorders',
-      locationLink: 'https://maps.google.com?q=Alexandria',
-      numOfPatients: 500
-    },
-  ]);
+  const { doctors, addDoctor, editDoctor, removeDoctor } = useDoctors(); // استخدام hook
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [editDoctor, setEditDoctor] = useState(null);
+  const [editDoctorData, setEditDoctorData] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newDoctor, setNewDoctor] = useState({
+  const [newDoctor] = useState({
     name: '', emailDoctor: '', phone: '', teliphone: '', experienceYears: '', location: '', whatsAppLink: '', imageDoctor: '', createdAt: '', specialization: '', status: '', about: '', locationLink: '', numOfPatients: ''
   });
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -65,24 +31,20 @@ const ManageDoctors = () => {
       doctor.phone.includes(search) ||
       doctor.teliphone.includes(search) ||
       doctor.whatsAppLink.includes(search);
-  
+
     const statusMatch = statusFilter ? doctor.status === statusFilter : true;
-  
+
     return searchMatch && statusMatch;
   });
 
   const handleAddDoctor = (newDoctor) => {
-    const newId = doctors.length + 1;
-    setDoctors([...doctors, { id: newId, ...newDoctor, createdAt: new Date().toISOString().split('T')[0], status: 'Active' }]);
+    addDoctor(newDoctor); // استخدام دالة الإضافة من hook
     setIsAddModalOpen(false);
-    setNewDoctor({
-      name: '', emailDoctor: '', phone: '', teliphone: '', experienceYears: '', location: '', whatsAppLink: '', imageDoctor: '', createdAt: '', specialization: '', status: 'Active', about: '', locationLink: '', numOfPatients: ''
-    });
     toast.success('Doctor added successfully!');
   };
 
   const handleSaveEdit = () => {
-    setDoctors(doctors.map((doctor) => (doctor.id === editDoctor.id ? editDoctor : doctor)));
+    editDoctor(editDoctorData); // استخدام دالة التعديل من hook
     setIsEditModalOpen(false);
     toast.success('Doctor updated successfully!');
   };
@@ -93,7 +55,7 @@ const ManageDoctors = () => {
   };
 
   const confirmDelete = () => {
-    setDoctors(doctors.filter((doctor) => doctor.id !== deleteDoctorId));
+    removeDoctor(deleteDoctorId); // استخدام دالة الحذف من hook
     setIsDeleteModalOpen(false);
     setDeleteDoctorId(null);
     toast.success('Doctor deleted successfully!');
@@ -116,7 +78,7 @@ const ManageDoctors = () => {
           <DoctorList
             filteredDoctors={filteredDoctors}
             onEdit={(doctor) => {
-              setEditDoctor(doctor);
+              setEditDoctorData(doctor);
               setIsEditModalOpen(true);
             }}
             onDelete={handleDelete}
@@ -127,7 +89,7 @@ const ManageDoctors = () => {
         </div>
       </motion.div>
 
-      {/* نافذة إضافة أو تعديل الطبيب */}
+      {/* Modal for Add and Edit Doctor */}
       <DoctorForm
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
@@ -140,10 +102,10 @@ const ManageDoctors = () => {
         onClose={() => setIsEditModalOpen(false)}
         onSave={handleSaveEdit}
         title="Edit Doctor"
-        doctor={editDoctor} // Pass editDoctor to ensure correct values
+        doctor={editDoctorData} // Pass editDoctorData for editing
       />
-      
-      {/* نافذة التأكيد للحذف */}
+
+      {/* Confirmation Modal for Deleting Doctor */}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">

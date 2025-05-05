@@ -129,15 +129,15 @@ const LoginForm = () => {
         )}
       </div>
 
-      <div className="flex items-center">
+      <div className="flex items-center ">
         <input
           type="checkbox"
           name="rememberMe"
           checked={formik.values.rememberMe}
           onChange={formik.handleChange}
-          className="mr-2 rounded-sm"
+          className="mr-2 rounded-sm cursor-pointer"
         />
-        <label className="text-sm text-gray-700">Remember Me</label>
+        <label className="text-sm text-gray-700 ">Remember Me</label>
       </div>
 
       <p className="text-right text-sm text-sky-500 mt-2 cursor-pointer hover:underline">
@@ -146,7 +146,7 @@ const LoginForm = () => {
 
       <button
         type="submit"
-        className="w-full py-3 px-4 bg-gradient-to-r from-sky-500 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:from-sky-600 hover:to-indigo-700 transition duration-300 ease-in-out"
+        className="w-full py-3 px-4 bg-gradient-to-r from-sky-500 to-indigo-600 text-white font-semibold cursor-pointer rounded-lg shadow-md hover:from-sky-600 hover:to-indigo-700 transition duration-300 ease-in-out"
         disabled={loading}
       >
         {loading ? "Logging in..." : "LOGIN"}

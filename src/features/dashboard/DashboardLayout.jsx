@@ -6,7 +6,6 @@ import { useContext } from "react";
 import { ThemeContext } from "../../context/ThemeContext";
 
 const DashboardLayout = () => {
-  // الحصول على قيمة theme من ThemeContext
   const { theme } = useContext(ThemeContext);
 
   return (
@@ -29,11 +28,11 @@ const DashboardLayout = () => {
 
           {/* Main content */}
           <main
-            className={`flex-1 overflow-auto p-4 ${
+            className={`flex-1 overflow-auto p-2 ${
               theme === "light" ? "bg-gray-100" : "bg-gray-900"
             }`}
           >
-            <div className="max-w-screen-2xl mx-auto pb-4">
+            <div className="max-w-screen-2xl mx-auto">
               {/* Outlet for child routes */}
               <Outlet />
             </div>

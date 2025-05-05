@@ -6,7 +6,6 @@ const UserList = ({
   onEdit,
   onDelete,
   onSearch,
-  onAddUser,
 }) => {
   const [menuOpen, setMenuOpen] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -19,10 +18,10 @@ const UserList = ({
     switch (status.toLowerCase()) {
       case "active":
         return "text-green-500"; // اللون الأخضر
-      case "not connected":
+        case "not active":
         return "text-red-400"; // اللون الأحمر
-      case "pending":
-        return "text-yellow-400"; // اللون الأصفر
+        case "not connected":
+          return "text-yellow-400"; // اللون الأصفر
       default:
         return "text-black"; // اللون الافتراضي
     }
@@ -99,17 +98,9 @@ const UserList = ({
             <option value="">All Statuses</option>
             <option value="Active">Active</option>
             <option value="Not Connected">Not Connected</option>
-            <option value="Pending">Pending</option>
+            <option value="Not Active">Not Active</option>
           </select>
         </div>
-
-        {/* زر إضافة مستخدم */}
-        <button
-          onClick={onAddUser}
-          className="bg-sky-600 text-white px-4 py-2 rounded-lg hover:bg-sky-700 w-full md:w-auto"
-        >
-          Add User
-        </button>
       </div>
 
       {/* جدول المستخدمين */}

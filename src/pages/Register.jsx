@@ -4,7 +4,7 @@ import RegisterForm from "../features/auth/RegisterForm";
 
 const Register = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 to-indigo-200 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-brfrom-gray-50 to-gray-100 p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
