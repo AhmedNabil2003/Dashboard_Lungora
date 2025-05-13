@@ -114,7 +114,6 @@ export const changePassword = async (data) => {
 // Get user data
 export const getUserData = async () => {
   const res = await axiosInstance.get(`/Auth/GetDataUser`);
-  console.log("User data response:", res.data.result);
   if(res.data && res.data.result && res.data.isSuccess){
   return res.data.result;
 }else {

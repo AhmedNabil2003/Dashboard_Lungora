@@ -12,6 +12,7 @@ const Profile = () => {
   const [formData, setFormData] = useState({
     name: "",
     avatar: "",
+    email: "",
   });
   const [error, setError] = useState("");
   const [avatarFile, setAvatarFile] = useState(null);
@@ -28,6 +29,7 @@ const Profile = () => {
         setFormData({
           name: userData.fullName || "",
           avatar: userData.imageUser || "",
+          email: userData.email || "",
         });
       } catch (err) {
         setError("Failed to load user data");
@@ -88,6 +90,7 @@ const Profile = () => {
     setFormData({
       name: user?.fullName || "",
       avatar: user?.imageUser || "",
+      email:user?.email||"",
     });
     setAvatarPreview(null);
     setAvatarFile(null);
@@ -337,6 +340,26 @@ const Profile = () => {
                     }`}
                   >
                     {formData.name || "No name specified"}
+                  </p>
+                </div>
+                <div
+                  className={`p-4 rounded-lg ${
+                    theme === "light" ? "bg-sky-50" : "bg-gray-700"
+                  }`}
+                >
+                  <p
+                    className={`text-sm ${
+                      theme === "light" ? "text-gray-500" : "text-gray-300"
+                    } mb-1`}
+                  >
+                    Email
+                  </p>
+                  <p
+                    className={`text-lg font-medium ${
+                      theme === "light" ? "text-gray-900" : "text-white"
+                    }`}
+                  >
+                    {formData.email || "No email specified"}
                   </p>
                 </div>
 

@@ -102,21 +102,19 @@ const Sidebar = () => {
       {/* Mobile menu toggle button - sits outside the sidebar */}
       {isMobile && !showMobileSidebar && (
         <motion.button
-        onClick={toggleMobileSidebar}
-        className={`fixed top-3 left-3 z-40 cursor-pointer hover:bg-sky-800 text-white p-2.5 rounded-full shadow-lg ${
-          theme === "light"
-            ? "bg-sky-700 hover:bg-sky-800"
-            : "bg-gray-700 hover:bg-gray-800"
-        }`}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
-        <i
-          className={`fa-solid fa-bars text-lg ${theme === "light" ? "text-white" : "text-gray-300"}`}
-        ></i>
-      </motion.button>
+          onClick={toggleMobileSidebar}
+          className={`fixed top-1/2 left-2 -translate-y-1/2 z-40 p-2 cursor-pointer rounded-full shadow-2xl border-2 ${
+            theme === "light"
+              ? "bg-white bg-opacity-20 text-sky-700 border-sky-500 hover:bg-opacity-30"
+              : "bg-gray-800 bg-opacity-20 text-white border-gray-600 hover:bg-opacity-30"
+          }`}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <i className="fa-solid fa-circle-chevron-right text-lg"></i>
+        </motion.button>
       )}
 
       {/* Mobile overlay */}
@@ -161,21 +159,21 @@ const Sidebar = () => {
         {/* Toggle sidebar button for tablets - outside border */}
         {isTablet && (
           <motion.button
-          onClick={() => setSidebarOpen(!isSidebarOpen)}
-          className={`absolute pb-0 pt-0 -right-0 top-20 cursor-pointer z-10 p-2 rounded-full shadow-lg border-2 transition-all duration-300 ${
-            theme === "light"
-              ? "bg-sky-600 hover:bg-sky-700 text-white border-white"  
-              : "bg-gray-700 hover:bg-gray-600 text-white border-gray-600"  
-          }`}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <i
-            className={`fa-solid ${
-              isSidebarOpen ? "fa-angle-left" : "fa-angle-right"
-            } text-sm text-lg transition-all duration-300`}
-          ></i>
-        </motion.button>
+            onClick={() => setSidebarOpen(!isSidebarOpen)}
+            className={`absolute pb-0 pt-0 -right-0 top-20 cursor-pointer z-10 p-2 rounded-full shadow-lg border-2 transition-all duration-300 ${
+              theme === "light"
+                ? "bg-sky-600 hover:bg-sky-700 text-white border-white"
+                : "bg-gray-700 hover:bg-gray-600 text-white border-gray-600"
+            }`}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <i
+              className={`fa-solid ${
+                isSidebarOpen ? "fa-angle-left" : "fa-angle-right"
+              } text-sm text-lg transition-all duration-300`}
+            ></i>
+          </motion.button>
         )}
 
         {/* Profile Section */}
@@ -330,7 +328,7 @@ const MenuItem = ({ item, isActive, isSidebarOpen, theme, onClick }) => {
 /**
  * Logout modal component
  */
-const LogoutModal = ({ onConfirm, onCancel,theme }) => (
+const LogoutModal = ({ onConfirm, onCancel, theme }) => (
   <motion.div
     className="fixed inset-0 flex items-center justify-center z-50"
     initial={{ opacity: 0 }}
@@ -339,7 +337,9 @@ const LogoutModal = ({ onConfirm, onCancel,theme }) => (
   >
     <motion.div
       className={`w-80 overflow-hidden rounded-xl shadow-2xl ${
-        theme === "light" ? "bg-white text-gray-800" : "bg-gray-800 text-gray-200"
+        theme === "light"
+          ? "bg-white text-gray-800"
+          : "bg-gray-800 text-gray-200"
       }`}
       initial={{ scale: 0.8, y: 30, opacity: 0 }}
       animate={{ scale: 1, y: 0, opacity: 1 }}
@@ -347,7 +347,11 @@ const LogoutModal = ({ onConfirm, onCancel,theme }) => (
       transition={{ type: "spring", stiffness: 350 }}
     >
       {/* Modal header */}
-      <div className={`p-4 ${theme === "light" ? "bg-sky-600 text-white" : "bg-gray-700 text-white"}`}>
+      <div
+        className={`p-4 ${
+          theme === "light" ? "bg-sky-600 text-white" : "bg-gray-700 text-white"
+        }`}
+      >
         <h2 className="text-lg font-semibold flex items-center">
           <i className="fa-solid fa-sign-out-alt mr-2"></i>
           Confirm Logout
@@ -356,7 +360,11 @@ const LogoutModal = ({ onConfirm, onCancel,theme }) => (
 
       {/* Modal body */}
       <div className="p-5">
-        <p className={`text-gray-600 ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
+        <p
+          className={`text-gray-600 ${
+            theme === "dark" ? "text-gray-300" : "text-gray-600"
+          }`}
+        >
           Are you sure you want to logout from your account?
         </p>
 
@@ -373,7 +381,9 @@ const LogoutModal = ({ onConfirm, onCancel,theme }) => (
           <motion.button
             onClick={onConfirm}
             className={`px-4 py-2 rounded-lg cursor-pointer hover:bg-red-700 transition-colors ${
-              theme === "light" ? "bg-red-500 text-white" : "bg-red-700 text-gray-100"
+              theme === "light"
+                ? "bg-red-500 text-white"
+                : "bg-red-700 text-gray-100"
             }`}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
