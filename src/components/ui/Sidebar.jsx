@@ -291,7 +291,7 @@ const MenuItem = ({ item, isActive, isSidebarOpen, theme, onClick }) => {
         onClick={onClick}
         className={`flex ${
           !isSidebarOpen ? "justify-center" : "justify-start"
-        } items-center py-4.5 px-3 w-full rounded-lg transition-all duration-300 ${
+        } items-center py-4 px-3 w-full rounded-lg transition-all duration-300 ${
           isActive
             ? theme === "light"
               ? "bg-gradient-to-r from-sky-500 to-sky-700 shadow-lg text-white"

@@ -1,9 +1,46 @@
-import { useState, useEffect } from "react"
-import { MapPin, Clock } from "lucide-react"
-import WorkingHoursEditor from "./WorkingHoursEditor" 
+import { useState, useEffect, useContext } from "react";
+import { MapPin, Clock } from "lucide-react";
+import { ThemeContext } from "../../context/ThemeContext";
+import WorkingHoursEditor from "./WorkingHoursEditor";
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import L from "leaflet";
 
+// Custom marker icon setup
+const createCustomIcon = () => {
+  return L.icon({
+    iconUrl:
+      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+    iconRetinaUrl:
+      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+    shadowUrl:
+      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+  });
+};
+
+// Location picker component within the map
+const LocationPicker = ({ onLocationSelect, initialPosition }) => {
+  const map = useMapEvents({
+    click: (e) => {
+      const { lat, lng } = e.latlng;
+      onLocationSelect(lat, lng);
+    },
+  });
+
+  useEffect(() => {
+    if (initialPosition) {
+      map.flyTo(initialPosition, map.getZoom());
+    }
+  }, [initialPosition, map]);
+
+  return null;
+};
 
 const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
+  const { theme } = useContext(ThemeContext);
   const [formData, setFormData] = useState({
     name: "",
     emailDoctor: "",
@@ -19,12 +56,58 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
     latitude: 30.0444,
     longitude: 31.2357,
     categoryId: "",
-  })
+  });
 
-  const [activeTab, setActiveTab] = useState("basic")
-  const [errors, setErrors] = useState({})
-  const [imagePreview, setImagePreview] = useState(null)
-  const [showWorkingHours, setShowWorkingHours] = useState(false)
+  const [activeTab, setActiveTab] = useState("basic");
+  const [errors, setErrors] = useState({});
+  const [imagePreview, setImagePreview] = useState(null);
+  const [showWorkingHours, setShowWorkingHours] = useState(false);
+  const [mapKey, setMapKey] = useState(Date.now()); // Used to force remount the map
+
+  // Map of governorate coordinates to names (for Egypt)
+  const egyptGovernorates = [
+    { name: "Cairo", lat: 30.0444, lng: 31.2357 },
+    { name: "Alexandria", lat: 31.2001, lng: 29.9187 },
+    { name: "Giza", lat: 30.0131, lng: 31.2089 },
+    { name: "Sharm El Sheikh", lat: 27.9158, lng: 34.33 },
+    { name: "Luxor", lat: 25.6872, lng: 32.6396 },
+    { name: "Aswan", lat: 24.0889, lng: 32.8998 },
+    { name: "Hurghada", lat: 27.2579, lng: 33.8116 },
+    { name: "Port Said", lat: 31.2565, lng: 32.2841 },
+    { name: "Suez", lat: 29.9737, lng: 32.5263 },
+    { name: "Ismailia", lat: 30.5965, lng: 32.2715 },
+    { name: "Mansoura", lat: 31.0409, lng: 31.3785 },
+    { name: "Tanta", lat: 30.7865, lng: 31.0004 },
+    { name: "Menofia", lat: 30.4313, lng: 30.7441 },
+    { name: "Asyut", lat: 27.1783, lng: 31.1859 },
+    { name: "Sohag", lat: 26.5591, lng: 31.6957 },
+    { name: "Damanhur", lat: 31.0341, lng: 30.468 },
+    { name: "Minya", lat: 28.1099, lng: 30.7503 },
+    { name: "Damietta", lat: 31.4175, lng: 31.8144 },
+    { name: "Beni Suef", lat: 29.0661, lng: 31.0994 },
+    { name: "Fayoum", lat: 29.3084, lng: 30.8428 },
+    { name: "Zagazig", lat: 30.5883, lng: 31.5019 },
+  ];
+
+  // Function to find nearest governorate
+  const findNearestGovernorate = (lat, lng) => {
+    let nearest = null;
+    let minDistance = Number.MAX_VALUE;
+
+    egyptGovernorates.forEach((gov) => {
+      // Simple Euclidean distance - sufficient for demo purposes
+      const distance = Math.sqrt(
+        Math.pow(gov.lat - lat, 2) + Math.pow(gov.lng - lng, 2)
+      );
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearest = gov;
+      }
+    });
+
+    return nearest;
+  };
 
   // Update form data when doctor changes
   useEffect(() => {
@@ -34,7 +117,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
         emailDoctor: doctor.emailDoctor || "",
         phone: doctor.phone || "",
         teliphone: doctor.teliphone || "",
-        experianceYears: doctor.experianceYears || 0,
+        experienceYears: doctor.experianceYears || 0,
         numOfPatients: doctor.numOfPatients || 0,
         location: doctor.location || "",
         about: doctor.about || "",
@@ -44,15 +127,18 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
         latitude: doctor.latitude || 30.0444,
         longitude: doctor.longitude || 31.2357,
         categoryId: doctor.categoryId || "",
-      })
+      });
 
       if (doctor.imageDoctor) {
-        setImagePreview(doctor.imageDoctor)
+        setImagePreview(doctor.imageDoctor);
       }
-    }
-  }, [doctor])
 
-  if (!isOpen) return null
+      // Force map to rerender with new location
+      setMapKey(Date.now());
+    }
+  }, [doctor]);
+
+  if (!isOpen) return null;
 
   const handleChange = (e) => {
     const { name, value, type } = e.target;
@@ -82,155 +168,240 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
   };
 
   const handleLocationSelect = (lat, lng) => {
-    setFormData({
+    // Update coordinates
+    const updatedFormData = {
       ...formData,
       latitude: lat,
       longitude: lng,
-    })
-  }
+    };
+
+    // Create Google Maps link
+    const googleMapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
+    updatedFormData.locationLink = googleMapsLink;
+
+    // Find nearest governorate/province
+    const nearestGov = findNearestGovernorate(lat, lng);
+    if (nearestGov) {
+      updatedFormData.location = nearestGov.name;
+    }
+
+    setFormData(updatedFormData);
+  };
 
   const validateForm = () => {
-    const newErrors = {}
+    const newErrors = {};
 
     if (!formData.name?.trim()) {
-      newErrors.name = "Name is required"
+      newErrors.name = "Name is required";
     }
 
     if (!formData.emailDoctor?.trim()) {
-      newErrors.emailDoctor = "Email is required"
+      newErrors.emailDoctor = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.emailDoctor)) {
-      newErrors.emailDoctor = "Email is invalid"
+      newErrors.emailDoctor = "Email is invalid";
     }
 
     if (!formData.phone?.trim()) {
-      newErrors.phone = "Phone is required"
+      newErrors.phone = "Phone is required";
     }
 
     if (!formData.teliphone?.trim()) {
-      newErrors.teliphone = "Mobile is required"
+      newErrors.teliphone = "Mobile is required";
     }
 
-    if (!formData.experianceYears) {
-      newErrors.experianceYears = "Experience years is required"
+    if (!formData.experienceYears) {
+      newErrors.experienceYears = "Experience years is required";
     }
 
     if (!formData.location?.trim()) {
-      newErrors.location = "Location is required"
+      newErrors.location = "Location is required";
     }
 
     if (!formData.about?.trim()) {
-      newErrors.about = "About is required"
+      newErrors.about = "About is required";
     }
 
     if (!formData.categoryId || formData.categoryId === "") {
-      newErrors.categoryId = "Category is required"
+      newErrors.categoryId = "Category is required";
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (validateForm()) {
-      onSave(formData)
+      onSave(formData);
     } else {
       // Switch to the tab with errors
       if (
         Object.keys(errors).some((key) =>
-          ["name", "emailDoctor", "phone", "teliphone", "experianceYears", "categoryId"].includes(key),
+          [
+            "name",
+            "emailDoctor",
+            "phone",
+            "teliphone",
+            "experienceYears",
+            "categoryId",
+          ].includes(key)
         )
       ) {
-        setActiveTab("basic")
+        setActiveTab("basic");
       } else if (
-        Object.keys(errors).some((key) => ["location", "locationLink", "latitude", "longitude"].includes(key))
+        Object.keys(errors).some((key) =>
+          ["location", "locationLink", "latitude", "longitude"].includes(key)
+        )
       ) {
-        setActiveTab("location")
-      } else if (Object.keys(errors).some((key) => ["about", "whatsAppLink", "imageDoctor"].includes(key))) {
-        setActiveTab("additional")
+        setActiveTab("location");
+      } else if (
+        Object.keys(errors).some((key) =>
+          ["about", "whatsAppLink", "imageDoctor"].includes(key)
+        )
+      ) {
+        setActiveTab("additional");
       }
     }
     console.log("Form data being sent:", formData);
-  }
+  };
 
-  // Map selector simulation - compact version
-  const CompactMapSelector = ({ initialLat, initialLng, onLocationSelect }) => {
-    // eslint-disable-next-line no-unused-vars
-    const handleMapClick = (e) => {
-      // Simulate selecting a random location near the initial location
-      const randomOffset = () => (Math.random() - 0.5) * 0.01
-      const lat = initialLat + randomOffset()
-      const lng = initialLng + randomOffset()
-      onLocationSelect(lat, lng)
-    }
+  // Real Map Selector component using react-leaflet
+  const RealMapSelector = ({ initialLat, initialLng, onLocationSelect }) => {
+    const position = [initialLat, initialLng];
+    const customIcon = createCustomIcon();
 
     return (
-      <div
-        className="w-full h-full relative bg-gray-200 cursor-crosshair"
-        onClick={handleMapClick}
-        style={{ minHeight: "150px" }}
-      >
-        <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
-          <p className="text-gray-400 text-xs">Click anywhere to set location.</p>
-        </div>
-        <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-red-500">
-          <MapPin className="h-6 w-6" />
-          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full whitespace-nowrap bg-white px-1 py-0.5 rounded text-xs shadow-sm">
-            {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
-          </div>
+      <div className="w-full h-full" style={{ minHeight: "150px" }}>
+        <MapContainer
+          center={position}
+          zoom={13}
+          style={{ height: "100%", minHeight: "150px", width: "100%" }}
+          key={mapKey}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <Marker position={position} icon={customIcon} />
+          <LocationPicker
+            onLocationSelect={onLocationSelect}
+            initialPosition={position}
+          />
+        </MapContainer>
+        <div
+          className={`absolute bottom-1 left-1/2 transform -translate-x-1/2 px-1 py-0.5 rounded text-[10px] shadow ${
+            theme === "light"
+              ? "bg-white text-gray-700"
+              : "bg-gray-800 text-gray-300"
+          }`}
+        >
+          Click anywhere on map to set location
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   // Open working hours editor
   const handleOpenWorkingHours = () => {
-    setShowWorkingHours(true)
-  }
+    setShowWorkingHours(true);
+  };
 
   // Close working hours editor
   const handleCloseWorkingHours = () => {
-    setShowWorkingHours(false)
-  }
+    setShowWorkingHours(false);
+  };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 ">
-      <div className="bg-white p-4 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-lg font-bold text-sky-700">{title}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+    <div className="fixed inset-0 flex items-center justify-center z-50">
+      <div
+        className={`p-4 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto ${
+          theme === "light" ? "bg-white" : "bg-gray-800"
+        }`}
+      >
+        <div className="flex justify-between items-center mb-2.5">
+          <h2
+            className={`text-base font-bold ${
+              theme === "light" ? "text-sky-600" : "text-sky-300"
+            }`}
+          >
+            {title}
+          </h2>
+          <button
+            onClick={onClose}
+            className={`${
+              theme === "light"
+                ? "text-gray-400 hover:text-gray-600"
+                : "text-gray-500 hover:text-gray-300"
+            } cursor-pointer`}
+          >
             ✕
           </button>
         </div>
 
         <form onSubmit={handleSubmit}>
           {/* Tabs - Compact */}
-          <div className="flex border-b mb-3 overflow-x-auto">
+          <div
+            className={`flex border-b mb-2.5 overflow-x-auto ${
+              theme === "light" ? "border-gray-200" : "border-gray-600"
+            }`}
+          >
             <button
               type="button"
-              className={`px-3 py-1 text-xs ${activeTab === "basic" ? "border-b-2 border-sky-500 text-sky-600" : "text-gray-500"}`}
+              className={`px-2.5 py-0.5 text-[10px] ${
+                activeTab === "basic"
+                  ? theme === "light"
+                    ? "border-b-2 border-sky-500 text-sky-600"
+                    : "border-b-2 border-sky-300 text-sky-300"
+                  : theme === "light"
+                  ? "text-gray-500"
+                  : "text-gray-400"
+              } cursor-pointer`}
               onClick={() => setActiveTab("basic")}
             >
               Basic
             </button>
             <button
               type="button"
-              className={`px-3 py-1 text-xs ${activeTab === "location" ? "border-b-2 border-sky-500 text-sky-600" : "text-gray-500"}`}
+              className={`px-2.5 py-0.5 text-[10px] ${
+                activeTab === "location"
+                  ? theme === "light"
+                    ? "border-b-2 border-sky-500 text-sky-600"
+                    : "border-b-2 border-sky-300 text-sky-300"
+                  : theme === "light"
+                  ? "text-gray-500"
+                  : "text-gray-400"
+              } cursor-pointer`}
               onClick={() => setActiveTab("location")}
             >
               Location
             </button>
             <button
               type="button"
-              className={`px-3 py-1 text-xs ${activeTab === "additional" ? "border-b-2 border-sky-500 text-sky-600" : "text-gray-500"}`}
+              className={`px-2.5 py-0.5 text-[10px] ${
+                activeTab === "additional"
+                  ? theme === "light"
+                    ? "border-b-2 border-sky-500 text-sky-600"
+                    : "border-b-2 border-sky-300 text-sky-300"
+                  : theme === "light"
+                  ? "text-gray-500"
+                  : "text-gray-400"
+              } cursor-pointer`}
               onClick={() => setActiveTab("additional")}
             >
               Additional
             </button>
             <button
               type="button"
-              className={`px-3 py-1 text-xs ${activeTab === "workinghours" ? "border-b-2 border-sky-500 text-sky-600" : "text-gray-500"}`}
+              className={`px-2.5 py-0.5 text-[10px] ${
+                activeTab === "workinghours"
+                  ? theme === "light"
+                    ? "border-b-2 border-sky-500 text-sky-600"
+                    : "border-b-2 border-sky-300 text-sky-300"
+                  : theme === "light"
+                  ? "text-gray-500"
+                  : "text-gray-400"
+              } cursor-pointer`}
               onClick={() => setActiveTab("workinghours")}
             >
               Working Hours
@@ -239,9 +410,14 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
 
           {/* Basic Tab Content - Compact */}
           {activeTab === "basic" && (
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <label htmlFor="name" className="block text-xs font-medium text-gray-700">
+            <div className="grid grid-cols-2 gap-1.5">
+              <div className="space-y-0.5">
+                <label
+                  htmlFor="name"
+                  className={`block text-[10px] font-medium ${
+                    theme === "light" ? "text-gray-700" : "text-gray-300"
+                  }`}
+                >
                   Name
                 </label>
                 <input
@@ -250,37 +426,72 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   type="text"
                   value={formData.name}
                   onChange={handleChange}
-                  className={`w-full px-2 py-1 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${errors.name ? "border-red-500" : "border-gray-300"}`}
+                  className={`w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                    errors.name
+                      ? "border-red-500"
+                      : theme === "light"
+                      ? "border-gray-300"
+                      : "border-gray-600"
+                  }`}
                 />
-                {errors.name && <p className="text-red-500 text-xs">{errors.name}</p>}
+                {errors.name && (
+                  <p className="text-red-500 text-[9px]">{errors.name}</p>
+                )}
               </div>
 
               <div className="space-y-1">
-                <label htmlFor="categoryId" className="block text-xs font-medium text-gray-700">
+                <label
+                  htmlFor="categoryId"
+                  className={`block text-xs font-medium ${
+                    theme === "light" ? "text-gray-700" : "text-gray-200"
+                  }`}
+                >
                   Category
                 </label>
                 <select
                   id="categoryId"
                   name="categoryId"
                   value={formData.categoryId}
-                  onChange={(e)=>{
-                    handleChange(e);
-                  }}
-                  className={`w-full px-2 py-1 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${errors.categoryId ? "border-red-500" : "border-gray-300"}`}
+                  onChange={handleChange}
+                  className={`w-full px-2 py-1 text-xs border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer transition duration-150 ease-in-out appearance-none ${
+                    errors.categoryId
+                      ? "border-red-500"
+                      : theme === "light"
+                      ? "border-gray-300 bg-white"
+                      : "border-gray-600 bg-gray-700 text-gray-200"
+                  }`}
                 >
-                  <option value="">Select Category</option>
+                  <option value="" disabled className="cursor-pointer">
+                    Select Category
+                  </option>
                   {categories &&
                     categories.map((category) => (
-                      <option key={category.id} value={category.id}>
+                      <option
+                        key={category.id}
+                        value={category.id}
+                        className={`cursor-pointer ${
+                          theme === "light"
+                            ? "bg-white text-gray-900"
+                            : "bg-gray-700 text-gray-200"
+                        }`}
+                      >
                         {category.categoryName}
                       </option>
                     ))}
                 </select>
-                {errors.categoryId && <p className="text-red-500 text-xs">{errors.categoryId}</p>}
+                {errors.categoryId && (
+                  <p className="text-red-500 text-[10px]">
+                    {errors.categoryId}
+                  </p>
+                )}
               </div>
-
-              <div className="space-y-1">
-                <label htmlFor="emailDoctor" className="block text-xs font-medium text-gray-700">
+              <div className="space-y-0.5">
+                <label
+                  htmlFor="emailDoctor"
+                  className={`block text-[10px] font-medium ${
+                    theme === "light" ? "text-gray-700" : "text-gray-300"
+                  }`}
+                >
                   Email
                 </label>
                 <input
@@ -289,13 +500,28 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   type="email"
                   value={formData.emailDoctor}
                   onChange={handleChange}
-                  className={`w-full px-2 py-1 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${errors.emailDoctor ? "border-red-500" : "border-gray-300"}`}
+                  className={`w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                    errors.emailDoctor
+                      ? "border-red-500"
+                      : theme === "light"
+                      ? "border-gray-300"
+                      : "border-gray-600"
+                  }`}
                 />
-                {errors.emailDoctor && <p className="text-red-500 text-xs">{errors.emailDoctor}</p>}
+                {errors.emailDoctor && (
+                  <p className="text-red-500 text-[9px]">
+                    {errors.emailDoctor}
+                  </p>
+                )}
               </div>
 
-              <div className="space-y-1">
-                <label htmlFor="phone" className="block text-xs font-medium text-gray-700">
+              <div className="space-y-0.5">
+                <label
+                  htmlFor="phone"
+                  className={`block text-[10px] font-medium ${
+                    theme === "light" ? "text-gray-700" : "text-gray-300"
+                  }`}
+                >
                   Phone
                 </label>
                 <input
@@ -304,13 +530,26 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   type="text"
                   value={formData.phone}
                   onChange={handleChange}
-                  className={`w-full px-2 py-1 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${errors.phone ? "border-red-500" : "border-gray-300"}`}
+                  className={`w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                    errors.phone
+                      ? "border-red-500"
+                      : theme === "light"
+                      ? "border-gray-300"
+                      : "border-gray-600"
+                  }`}
                 />
-                {errors.phone && <p className="text-red-500 text-xs">{errors.phone}</p>}
+                {errors.phone && (
+                  <p className="text-red-500 text-[9px]">{errors.phone}</p>
+                )}
               </div>
 
-              <div className="space-y-1">
-                <label htmlFor="teliphone" className="block text-xs font-medium text-gray-700">
+              <div className="space-y-0.5">
+                <label
+                  htmlFor="teliphone"
+                  className={`block text-[10px] font-medium ${
+                    theme === "light" ? "text-gray-700" : "text-gray-300"
+                  }`}
+                >
                   Mobile
                 </label>
                 <input
@@ -319,28 +558,56 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   type="text"
                   value={formData.teliphone}
                   onChange={handleChange}
-                  className={`w-full px-2 py-1 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${errors.teliphone ? "border-red-500" : "border-gray-300"}`}
+                  className={`w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                    errors.teliphone
+                      ? "border-red-500"
+                      : theme === "light"
+                      ? "border-gray-300"
+                      : "border-gray-600"
+                  }`}
                 />
-                {errors.teliphone && <p className="text-red-500 text-xs">{errors.teliphone}</p>}
+                {errors.teliphone && (
+                  <p className="text-red-500 text-[9px]">{errors.teliphone}</p>
+                )}
               </div>
 
-              <div className="space-y-1">
-                <label htmlFor="experianceYears" className="block text-xs font-medium text-gray-700">
+              <div className="space-y-0.5">
+                <label
+                  htmlFor="experienceYears"
+                  className={`block text-[10px] font-medium ${
+                    theme === "light" ? "text-gray-700" : "text-gray-300"
+                  }`}
+                >
                   Experience (years)
                 </label>
                 <input
-                  id="experianceYears"
-                  name="experianceYears"
+                  id="experienceYears"
+                  name="experienceYears"
                   type="number"
-                  value={formData.experianceYears}
+                  value={formData.experienceYears}
                   onChange={handleChange}
-                  className={`w-full px-2 py-1 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${errors.experianceYears ? "border-red-500" : "border-gray-300"}`}
+                  className={`w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                    errors.experienceYears
+                      ? "border-red-500"
+                      : theme === "light"
+                      ? "border-gray-300"
+                      : "border-gray-600"
+                  }`}
                 />
-                {errors.experianceYears && <p className="text-red-500 text-xs">{errors.experianceYears}</p>}
+                {errors.experienceYears && (
+                  <p className="text-red-500 text-[9px]">
+                    {errors.experienceYears}
+                  </p>
+                )}
               </div>
 
-              <div className="space-y-1">
-                <label htmlFor="numOfPatients" className="block text-xs font-medium text-gray-700">
+              <div className="space-y-0.5">
+                <label
+                  htmlFor="numOfPatients"
+                  className={`block text-[10px] font-medium ${
+                    theme === "light" ? "text-gray-700" : "text-gray-300"
+                  }`}
+                >
                   Number of Patients
                 </label>
                 <input
@@ -349,18 +616,25 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   type="number"
                   value={formData.numOfPatients}
                   onChange={handleChange}
-                  className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500"
+                  className={`w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                    theme === "light" ? "border-gray-300" : "border-gray-600"
+                  }`}
                 />
               </div>
             </div>
           )}
 
-          {/* Location Tab Content - Compact */}
+          {/* Location Tab Content - With Real Map */}
           {activeTab === "location" && (
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <label htmlFor="location" className="block text-xs font-medium text-gray-700">
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-1.5">
+                <div className="space-y-0.5">
+                  <label
+                    htmlFor="location"
+                    className={`block text-[10px] font-medium ${
+                      theme === "light" ? "text-gray-700" : "text-gray-300"
+                    }`}
+                  >
                     Location
                   </label>
                   <input
@@ -369,13 +643,26 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                     type="text"
                     value={formData.location}
                     onChange={handleChange}
-                    className={`w-full px-2 py-1 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${errors.location ? "border-red-500" : "border-gray-300"}`}
+                    className={`w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                      errors.location
+                        ? "border-red-500"
+                        : theme === "light"
+                        ? "border-gray-300"
+                        : "border-gray-600"
+                    }`}
                   />
-                  {errors.location && <p className="text-red-500 text-xs">{errors.location}</p>}
+                  {errors.location && (
+                    <p className="text-red-500 text-[9px]">{errors.location}</p>
+                  )}
                 </div>
 
-                <div className="space-y-1">
-                  <label htmlFor="locationLink" className="block text-xs font-medium text-gray-700">
+                <div className="space-y-0.5">
+                  <label
+                    htmlFor="locationLink"
+                    className={`block text-[10px] font-medium ${
+                      theme === "light" ? "text-gray-700" : "text-gray-300"
+                    }`}
+                  >
                     Location Link
                   </label>
                   <input
@@ -384,24 +671,42 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                     type="text"
                     value={formData.locationLink}
                     onChange={handleChange}
-                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500"
+                    className={`w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                      theme === "light" ? "border-gray-300" : "border-gray-600"
+                    }`}
                   />
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="flex items-center text-xs font-medium text-gray-700">
-                  <MapPin className="h-3 w-3 mr-1" />
+              <div className="space-y-0.5">
+                <label
+                  className={`flex items-center text-[10px] font-medium ${
+                    theme === "light" ? "text-gray-700" : "text-gray-300"
+                  }`}
+                >
+                  <MapPin
+                    className={`h-3 w-3 mr-1 ${
+                      theme === "light" ? "text-sky-500" : "text-sky-300"
+                    }`}
+                  />
                   Select Location on Map
                 </label>
-                <div className="h-[150px] w-full rounded-md border border-gray-300 overflow-hidden">
-                  <CompactMapSelector
+                <div
+                  className={`h-[150px] w-full relative rounded-md border overflow-hidden ${
+                    theme === "light" ? "border-gray-300" : "border-gray-600"
+                  }`}
+                >
+                  <RealMapSelector
                     initialLat={formData.latitude}
                     initialLng={formData.longitude}
                     onLocationSelect={handleLocationSelect}
                   />
                 </div>
-                <div className="flex gap-2 text-xs text-gray-500">
+                <div
+                  className={`flex gap-1.5 text-[10px] ${
+                    theme === "light" ? "text-gray-500" : "text-gray-400"
+                  }`}
+                >
                   <div>Lat: {formData.latitude.toFixed(6)}</div>
                   <div>Lng: {formData.longitude.toFixed(6)}</div>
                 </div>
@@ -411,9 +716,14 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
 
           {/* Additional Tab Content - Compact */}
           {activeTab === "additional" && (
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <label htmlFor="about" className="block text-xs font-medium text-gray-700">
+            <div className="space-y-2">
+              <div className="space-y-0.5">
+                <label
+                  htmlFor="about"
+                  className={`block text-[10px] font-medium ${
+                    theme === "light" ? "text-gray-700" : "text-gray-300"
+                  }`}
+                >
                   About Doctor
                 </label>
                 <textarea
@@ -421,14 +731,27 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   name="about"
                   value={formData.about}
                   onChange={handleChange}
-                  className={`w-full px-2 py-1 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 min-h-[60px] max-h-[100px] ${errors.about ? "border-red-500" : "border-gray-300"}`}
+                  className={`w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 min-h-[50px] max-h-[80px] ${
+                    errors.about
+                      ? "border-red-500"
+                      : theme === "light"
+                      ? "border-gray-300"
+                      : "border-gray-600"
+                  }`}
                 />
-                {errors.about && <p className="text-red-500 text-xs">{errors.about}</p>}
+                {errors.about && (
+                  <p className="text-red-500 text-[9px]">{errors.about}</p>
+                )}
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <label htmlFor="whatsAppLink" className="block text-xs font-medium text-gray-700">
+              <div className="grid grid-cols-2 gap-1.5">
+                <div className="space-y-0.5">
+                  <label
+                    htmlFor="whatsAppLink"
+                    className={`block text-[10px] font-medium ${
+                      theme === "light" ? "text-gray-700" : "text-gray-300"
+                    }`}
+                  >
                     WhatsApp Link
                   </label>
                   <input
@@ -437,31 +760,50 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                     type="text"
                     value={formData.whatsAppLink}
                     onChange={handleChange}
-                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500"
+                    className={`w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                      theme === "light" ? "border-gray-300" : "border-gray-600"
+                    }`}
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label htmlFor="imageDoctor" className="block text-xs font-medium text-gray-700">
+                  <label
+                    htmlFor="imageDoctor"
+                    className={`block text-xs font-medium ${
+                      theme === "light" ? "text-gray-700" : "text-gray-200"
+                    }`}
+                  >
                     Doctor Image
                   </label>
-                  <input
-                    id="imageDoctor"
-                    name="imageDoctor"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleChange}
-                    className="w-full px-2 py-1 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500"
-                  />
                   {imagePreview && (
-                    <div className="mt-1">
+                    <div className="mt-1 m-2 ">
                       <img
                         src={imagePreview || "/placeholder.svg"}
-                        alt="Preview"
-                        className="h-12 w-12 object-cover rounded-md"
+                        alt="Doctor Preview"
+                        className="h-10 w-10 object-cover rounded-full border border-sky-500"
                       />
                     </div>
                   )}
+                  <div className="relative">
+                    <input
+                      id="imageDoctor"
+                      name="imageDoctor"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleChange}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="imageDoctor"
+                      className={`inline-block px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer transition duration-150 ease-in-out ${
+                        theme === "light"
+                          ? "bg-sky-100 text-sky-700 hover:bg-sky-200 border border-gray-300"
+                          : "bg-sky-700  hover:bg-sky-800 "
+                      }`}
+                    >
+                      {imagePreview ? "Edit Image" : "Upload Image"}
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
@@ -469,34 +811,74 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
 
           {/* Working Hours Tab Content */}
           {activeTab === "workinghours" && (
-            <div className="space-y-3">
-              <div className="bg-sky-50 p-3 rounded-md border border-sky-100">
-                <div className="flex items-center mb-2">
-                  <Clock className="h-4 w-4 text-sky-500 mr-2" />
-                  <h3 className="text-sm font-medium text-sky-700">Doctor Working Hours</h3>
+            <div className="space-y-2">
+              <div
+                className={`p-2.5 rounded-md border ${
+                  theme === "light"
+                    ? "bg-sky-50 border-sky-100"
+                    : "bg-sky-900 border-sky-800"
+                }`}
+              >
+                <div className="flex items-center mb-1.5">
+                  <Clock
+                    className={`h-3 w-3 ${
+                      theme === "light" ? "text-sky-500" : "text-sky-300"
+                    } mr-1.5`}
+                  />
+                  <h3
+                    className={`text-[10px] font-medium ${
+                      theme === "light" ? "text-sky-700" : "text-sky-200"
+                    }`}
+                  >
+                    Doctor Working Hours
+                  </h3>
                 </div>
-                <p className="text-xs text-gray-600 mb-3">
-                  Set up your working days and hours to let your patients know when you're available.
+                <p
+                  className={`text-[9px] ${
+                    theme === "light" ? "text-gray-600" : "text-gray-400"
+                  } mb-2`}
+                >
+                  Set up your working days and hours to let your patients know
+                  when you're available.
                 </p>
-                
+
                 {/* Note about saving first */}
                 {!doctor?.id ? (
-                  <div className="bg-amber-50 p-2 rounded border border-amber-200 text-xs text-amber-800 mb-3">
-                    Please save the doctor profile first before adding working hours.
+                  <div
+                    className={`p-1.5 rounded border text-[9px] ${
+                      theme === "light"
+                        ? "bg-amber-50 border-amber-200 text-amber-800"
+                        : "bg-amber-900 border-amber-800 text-amber-200"
+                    } mb-2`}
+                  >
+                    Please save the doctor profile first before adding working
+                    hours.
                   </div>
                 ) : null}
-                
+
                 <button
                   type="button"
                   onClick={handleOpenWorkingHours}
                   disabled={!doctor?.id}
-                  className={`w-full flex items-center justify-center py-2 px-3 rounded-md text-sm font-medium ${
+                  className={`w-full flex items-center justify-center py-1.5 px-2.5 rounded-md text-[10px] font-medium ${
                     doctor?.id
-                      ? "bg-sky-600 text-white hover:bg-sky-700"
-                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      ? theme === "light"
+                        ? "bg-sky-600 text-white hover:bg-sky-700"
+                        : "bg-sky-700 text-white hover:bg-sky-800"
+                      : theme === "light"
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-gray-600 text-gray-400 cursor-not-allowed"
                   }`}
                 >
-                  <Clock className="h-4 w-4 mr-2" />
+                  <Clock
+                    className={`h-3 w-3 mr-1.5 ${
+                      doctor?.id
+                        ? "text-white"
+                        : theme === "light"
+                        ? "text-gray-500"
+                        : "text-gray-400"
+                    } `}
+                  />
                   {doctor?.id ? "Manage Working Hours" : "Save Profile First"}
                 </button>
               </div>
@@ -504,17 +886,29 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
           )}
 
           {/* Action Buttons - Compact */}
-          <div className="flex justify-end mt-3 pt-2 border-t border-gray-200">
+          <div
+            className={`flex justify-end mt-2.5 pt-1.5 border-t ${
+              theme === "light" ? "border-gray-200" : "border-gray-600"
+            }`}
+          >
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-400 text-white px-3 py-1 rounded-md hover:bg-gray-500 mr-2 transition duration-200 text-xs"
+              className={`${
+                theme === "light"
+                  ? "bg-gray-400 hover:bg-gray-500"
+                  : "bg-gray-600 hover:bg-gray-700"
+              } text-white px-2.5 py-0.5 rounded-md mr-1.5 transition duration-200 text-[10px] cursor-pointer`}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-sky-600 text-white px-3 py-1 rounded-md hover:bg-sky-700 transition duration-200 text-xs"
+              className={`${
+                theme === "light"
+                  ? "bg-sky-600 hover:bg-sky-700"
+                  : "bg-sky-700 hover:bg-sky-800"
+              } text-white px-2.5 py-0.5 rounded-md transition duration-200 text-[10px] cursor-pointer`}
             >
               Save
             </button>
@@ -524,14 +918,15 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
 
       {/* Working Hours Modal */}
       {showWorkingHours && doctor?.id && (
-        <WorkingHoursEditor 
-          isOpen={showWorkingHours} 
-          onClose={handleCloseWorkingHours} 
-          doctor={doctor} 
+        <WorkingHoursEditor
+          isOpen={showWorkingHours}
+          onClose={handleCloseWorkingHours}
+          doctor={doctor}
+          theme={theme}
         />
       )}
     </div>
-  )
-}
+  );
+};
 
-export default DoctorForm
+export default DoctorForm;

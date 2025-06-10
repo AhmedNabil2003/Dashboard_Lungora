@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const Header = () => {
   const { logout } = useContext(AuthContext);
-  const [user, setUser] = useState({ name: "", avatar: "", online: false });
+  const [user, setUser] = useState({ name: "", avatar: "",email: "", online: false });
   const [isOpen, setIsOpen] = useState(false);
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [showModal, setShowModal] = useState(false);
@@ -191,15 +191,15 @@ const Header = () => {
               >
                 <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
                   <p className="text-sm font-medium">{user.name || "Guest"}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">user@example.com</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{user.email||"user@example.com"}</p>
                 </div>
                 
                 <Link
                   to="/dashboard/profile"
                   className={`block rounded py-2 px-4 text-sm transition-colors flex items-center ${
                     theme === "light"
-                      ? "hover:bg-gray-100"
-                      : "hover:bg-gray-700"
+                      ? "hover:bg-sky-300"
+                      : "hover:bg-sky-700"
                   }`}
                 >
                   <i className="fa-solid fa-user-edit mr-2"></i>
@@ -210,8 +210,8 @@ const Header = () => {
                   to="/dashboard/settings"
                   className={`block rounded py-2 px-4 text-sm transition-colors flex items-center ${
                     theme === "light"
-                      ? "hover:bg-gray-100"
-                      : "hover:bg-gray-700"
+                      ? "hover:bg-sky-300"
+                      : "hover:bg-sky-700"
                   }`}
                 >
                   <i className="fa-solid fa-cog mr-2"></i>
@@ -223,8 +223,8 @@ const Header = () => {
                     onClick={() => setShowModal(true)}
                     className={`block w-full text-left rounded py-2 cursor-pointer px-4 text-sm transition-colors flex items-center text-red-500 hover:text-red-700 ${
                       theme === "light"
-                        ? "hover:bg-gray-100"
-                        : "hover:bg-gray-700"
+                        ? "hover:bg-red-300"
+                        : "hover:bg-red-300"
                     }`}
                   >
                     <i className="fa-solid fa-sign-out-alt mr-2"></i>

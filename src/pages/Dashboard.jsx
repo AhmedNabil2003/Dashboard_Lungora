@@ -4,127 +4,174 @@ import "chart.js/auto";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { useArticles } from "../features/articles/useArticles";
+import { useDoctors } from "../features/doctors/useDoctors";
 import { ThemeContext } from "../context/ThemeContext";
+import { Link } from "react-router-dom";
 
 const Dashboard = () => {
   const [modelResults] = useState("Processing...");
-  const { articles, loading, error, fetchAllArticles } = useArticles();
+  const {
+    articles,
+    loading: articlesLoading,
+    error: articlesError,
+    fetchAllArticles,
+  } = useArticles();
+  const {
+    doctors,
+    loading: doctorsLoading,
+    error: doctorsError,
+  } = useDoctors();
   const [displayArticles, setDisplayArticles] = useState([]);
   const { theme } = useContext(ThemeContext);
+
   // Fetch articles when component mounts
   useEffect(() => {
     fetchAllArticles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
     localStorage.setItem("theme", theme);
   }, [theme]);
+
   // Process articles to display only a subset (latest 5)
   useEffect(() => {
     if (articles && articles.length > 0) {
-      // Take only the first 5 articles
       const latestArticles = articles.slice(0, 5);
       setDisplayArticles(latestArticles);
     }
   }, [articles]);
 
   const analysisData = [
-    {
-      label: "Users",
-      value: "1500",
-      icon: "fa-users",
-      color: "from-indigo-500 to-blue-600",
-    },
-    {
-      label: "Doctors",
-      value: "120",
-      icon: "fa-user-md",
-      color: "from-green-500 to-green-400",
-    },
-    {
-      label: "COVID Patients",
-      value: "450",
-      icon: "fa-virus",
-      color: "from-red-500 to-red-400",
-    },
-    {
-      label: "Pneumonia Patients",
-      value: "300",
-      icon: "fa-lungs-virus",
-      color: "from-yellow-500 to-yellow-400",
-    },
-    {
-      label: "Normal Patients",
-      value: "650",
-      icon: "fa-heartbeat",
-      color: "from-blue-500 to-blue-400",
-    },
-    {
-      label: "AI Model",
-      value: "Active",
-      icon: "fa-robot",
-      color: "from-gray-500 to-gray-400",
-    },
-  ];
+  {
+    label: "Active Users",
+    value: "10",
+    icon: "fa-user-group",
+    color: "from-indigo-500 to-blue-600",
+    trend: "up",
+    change: "12%",
+  },
+  {
+    label: "Doctors",
+    value: doctors?.length.toString() || "0",
+    icon: "fa-user-doctor",
+    color: "from-green-500 to-green-400",
+    trend: "up",
+    change: "5%",
+  },
+  {
+    label: "COVID Cases",
+    value: "126",
+    icon: "fa-virus-covid",
+    color: "from-red-500 to-red-400",
+    trend: "down",
+    change: "8%",
+  },
+  {
+    label: "Pneumonia Cases",
+    value: "84",
+    icon: "fa-lungs",
+    color: "from-amber-500 to-yellow-500",
+    trend: "stable",
+    change: "0%",
+  },
+  {
+    label: "Normal Patients",
+    value: "102",
+    icon: "fa-heart-pulse",
+   color: "from-blue-500 to-blue-400",
+    trend: "up",
+    change: "15%",
+  },
+  {
+    label: "AI Accuracy",
+    value: "96.7%",
+    icon: "fa-microchip-ai",
+    color: "from-purple-500 to-fuchsia-500",
+    trend: "up",
+    change: "2%",
+  },
+];
 
-  const chartData = {
-    labels: ["Users", "Doctors", "COVID", "Pneumonia", "Normal"],
-    datasets: [
-      {
-        label: "Patient Analysis",
-        data: [1500, 120, 450, 300, 650],
-        backgroundColor: [
-          "#4F46E5",
-          "#22C55E",
-          "#EF4444",
-          "#FACC15",
-          "#3B82F6",
-        ],
-      },
-    ],
-  };
+const chartData = {
+  labels: ["Active Users", "Doctors", "COVID", "Pneumonia", "Normal"],
+  datasets: [
+    {
+      label: "Patient Analysis",
+      data: [10, doctors?.length || 0, 126, 84, 102],
+      backgroundColor: ["#6366F1", "#22C55E", "#F43F5E", "#F59E0B", "#3B82F6"],
+      borderWidth: 0,
+    },
+  ],
+};
 
-  return (
-    <div
-      className={`flex min-h-screen p-2 ${
-        theme === "light"
-          ? "bg-gradient-to-br from-gray-50 to-gray-100"
-          : "bg-gradient-to-br from-gray-800 to-gray-900"
-      }`}
-    >
-      <main className="flex-1 max-w-full mx-auto">
-        {/* Analysis Cards - More compact with responsive layout */}
-        <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mb-4">
-          {analysisData.map((stat, index) => (
-            <motion.div
-              key={index}
-              className={`relative bg-gradient-to-r ${stat.color} p-3 rounded-lg shadow hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center h-24`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: index * 0.1 }}
+return (
+  <div
+    className={`flex min-h-screen p-2 ${
+      theme === "light"
+        ? "bg-gradient-to-br from-gray-50 to-gray-100"
+        : "bg-gradient-to-br from-gray-800 to-gray-900"
+    }`}
+  >
+    <main className="flex-1 max-w-full mx-auto">
+      {/* Analysis Cards */}
+      <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mb-4">
+        {analysisData.map((stat, index) => (
+          <motion.div
+            key={index}
+            className={`relative bg-gradient-to-r ${stat.color} p-3 rounded-lg shadow hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center h-24`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: index * 0.1 }}
+          >
+            <i
+              className={`fas ${stat.icon} text-base ${
+                theme === "light" ? "text-white" : "text-gray-200"
+              }`}
+            />
+            <div
+              className={`${
+                theme === "light" ? "text-white" : "text-gray-200"
+              } text-center mt-0.5`}
             >
-              <i
-                className={`fas ${stat.icon} text-xl ${
-                  theme === "light" ? "text-white" : "text-gray-200"
+              <h3 className="text-[10px] font-semibold">{stat.label}</h3>
+              <p className="text-sm font-bold">{stat.value}</p>
+            </div>
+            <div
+              className={`mt-0.5 flex items-center text-[9px] ${
+                theme === "light" ? "text-white opacity-90" : "text-gray-200 opacity-90"
+              }`}
+            >
+              <span
+                className={`mr-0.5 ${
+                  stat.trend === "up"
+                    ? "text-green-300"
+                    : stat.trend === "down"
+                    ? "text-red-300"
+                    : "text-yellow-300"
                 }`}
-              />
-              <div
-                className={`${
-                  theme === "light" ? "text-white" : "text-gray-200"
-                } text-center mt-1`}
               >
-                <h3 className="text-xs font-semibold">{stat.label}</h3>
-                <p className="text-lg font-bold">{stat.value}</p>
-              </div>
-              <div className="absolute bottom-0 left-0 w-full h-2 bg-white opacity-20 rounded-b-lg"></div>
-            </motion.div>
-          ))}
-        </section>
+                <i
+                  className={`fas ${
+                    stat.trend === "up"
+                      ? "fa-arrow-up"
+                      : stat.trend === "down"
+                      ? "fa-arrow-down"
+                      : "fa-minus"
+                  } text-[10px]`}
+                />
+              </span>
+              <span>{stat.change} from last week</span>
+            </div>
+            <div className="absolute bottom-0 left-0 w-full h-2 bg-white opacity-20 rounded-b-lg"></div>
+          </motion.div>
+        ))}
+      </section>
 
-        {/* Main Content Area - Better layout for charts and lists */}
+        {/* Main Content Area */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-          {/* Chart Section - Smaller but still prominent */}
+          {/* Chart Section */}
           <motion.div
             className={`p-3 rounded-lg shadow lg:col-span-1 ${
               theme === "light"
@@ -156,7 +203,7 @@ const Dashboard = () => {
                           size: 10,
                           family: "Arial, sans-serif",
                         },
-                        color: theme === "light" ? "#4B5563" : "#D1D5DB", // Set legend text color
+                        color: theme === "light" ? "#4B5563" : "#D1D5DB",
                       },
                     },
                   },
@@ -169,7 +216,7 @@ const Dashboard = () => {
 
           {/* Right side content - Doctors and Articles */}
           <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Doctors Section - Cleaner layout */}
+            {/* Doctors Section - Now with real data */}
             <motion.div
               className={`p-3 rounded-lg shadow h-full ${
                 theme === "light"
@@ -187,47 +234,190 @@ const Dashboard = () => {
               >
                 Doctors List
               </h3>
-              <ul className="space-y-2 overflow-y-auto max-h-64">
-                {[
-                  {
-                    name: "Dr. Ahmed Mostafa",
-                    specialty: "Pulmonary Specialist",
-                  },
-                  { name: "Dr. Fatima Abdelrahman", specialty: "Cardiologist" },
-                  {
-                    name: "Dr. Mohamed Ali",
-                    specialty: "General Practitioner",
-                  },
-                  { name: "Dr. Youssef Hassan", specialty: "Neurologist" },
-                  { name: "Dr. Sarah Ibrahim", specialty: "Pediatrician" },
-                  { name: "Dr. Amr Tarek", specialty: "Orthopedic Surgeon" },
-                  { name: "Dr. Maha El-Sharif", specialty: "Dermatologist" },
-                ].map((doctor, index) => (
-                  <li
-                    key={index}
-                    className={`flex items-center space-x-2 text-xs hover:bg-gray-50 p-1 rounded ${
-                      theme === "light"
-                        ? "hover:bg-gray-100"
-                        : "hover:bg-gray-700"
-                    }`}
-                  >
-                    <img
-                      src="https://via.placeholder.com/36"
-                      alt={doctor.name}
-                      className="rounded-full w-9 h-9"
-                    />
-                    <div>
-                      <h4 className="font-semibold">{doctor.name}</h4>
-                      <p className="text-gray-600 text-xs">
-                        {doctor.specialty}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
+              {doctorsLoading ? (
+                <p className="text-center text-gray-500 py-4 text-xs">
+                  Loading doctors...
+                </p>
+              ) : doctorsError ? (
+                <p className="text-red-500 text-center py-4 text-xs">
+                  {doctorsError}
+                </p>
+              ) : (
+                <ul className="space-y-3 overflow-y-auto max-h-64">
+                  {doctors &&doctors?.length > 0 ? (
+                    doctors.slice(0, 5).map((doctor) => (
+                      <li
+                        key={doctor.id}
+                        className={`p-3 rounded-lg ${
+                          theme === "light"
+                            ? "bg-gray-50 hover:bg-gray-100"
+                            : "bg-gray-700 hover:bg-gray-600"
+                        } transition-colors duration-200`}
+                      >
+                        <div className="flex items-start space-x-3">
+                          <img
+                            src={
+                              doctor.imageDoctor ||
+                              "imageDoctor"
+                            }
+                            alt={doctor.name}
+                            className="rounded-full w-12 h-12 object-cover flex-shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-semibold text-sm">
+                                Dr. {doctor.name}
+                              </h4>
+                              <span
+                                className={`text-xs px-2 py-1 rounded-full ${
+                                  theme === "light"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : "bg-blue-900 text-blue-100"
+                                }`}
+                              >
+                                {doctor.category?.categoryName || "General"}
+                              </span>
+                            </div>
 
-            {/* Articles Section - Improved readability */}
+                            {/* Doctor Info */}
+                            <div className="mt-1 text-xs space-y-1">
+                              <div className="flex items-start">
+                                <i
+                                  className={`fas fa-info-circle mt-1 mr-2 w-4 text-center ${
+                                    theme === "light"
+                                      ? "text-gray-500"
+                                      : "text-gray-400"
+                                  }`}
+                                ></i>
+                                <p
+                                  className={`${
+                                    theme === "light"
+                                      ? "text-gray-600"
+                                      : "text-gray-300"
+                                  } line-clamp-2`}
+                                >
+                                  {doctor.about || "No description available"}
+                                </p>
+                              </div>
+
+                              <div className="flex items-center">
+                                <i
+                                  className={`fas fa-map-marker-alt mr-2 w-4 text-center ${
+                                    theme === "light"
+                                      ? "text-gray-500"
+                                      : "text-gray-400"
+                                  }`}
+                                ></i>
+                                <p
+                                  className={`${
+                                    theme === "light"
+                                      ? "text-gray-600"
+                                      : "text-gray-300"
+                                  }`}
+                                >
+                                  {doctor.location || "Location not specified"}
+                                </p>
+                              </div>
+
+                              <div className="flex items-center">
+                                <i
+                                  className={`fas fa-user-injured mr-2 w-4 text-center ${
+                                    theme === "light"
+                                      ? "text-gray-500"
+                                      : "text-gray-400"
+                                  }`}
+                                ></i>
+                                <p
+                                  className={`${
+                                    theme === "light"
+                                      ? "text-gray-600"
+                                      : "text-gray-300"
+                                  }`}
+                                >
+                                  Patients: {doctor.numOfPatients || 0}
+                                </p>
+                              </div>
+
+                              <div className="flex items-center">
+                                <i
+                                  className={`fas fa-briefcase mr-2 w-4 text-center ${
+                                    theme === "light"
+                                      ? "text-gray-500"
+                                      : "text-gray-400"
+                                  }`}
+                                ></i>
+                                <p
+                                  className={`${
+                                    theme === "light"
+                                      ? "text-gray-600"
+                                      : "text-gray-300"
+                                  }`}
+                                >
+                                  Experience: {doctor.experianceYears || 0}{" "}
+                                  years
+                                </p>
+                              </div>
+
+                              {/* Contact Icons */}
+                              <div className="flex flex-wrap gap-2 pt-2">
+                                {doctor.phone && (
+                                  <a
+                                    href={`tel:${doctor.phone}`}
+                                    className={`p-2 rounded-lg flex items-center ${
+                                      theme === "light"
+                                        ? "bg-green-50 text-green-600 hover:bg-green-100"
+                                        : "bg-green-900 text-green-300 hover:bg-green-800"
+                                    }`}
+                                    title="Mobile"
+                                  >
+                                    <i className="fas fa-mobile-alt mr-1"></i>
+                                    <span className="text-xs ml-1">
+                                      {doctor.phone}
+                                    </span>
+                                  </a>
+                                )}
+
+                                {doctor.teliphone && (
+                                  <a
+                                    href={`tel:${doctor.teliphone}`}
+                                    className={`p-2 rounded-lg flex items-center ${
+                                      theme === "light"
+                                        ? "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                                        : "bg-blue-900 text-blue-300 hover:bg-blue-800"
+                                    }`}
+                                    title="Telephone"
+                                  >
+                                    <i className="fas fa-phone mr-1"></i>
+                                    <span className="text-xs ml-1">
+                                      {doctor.teliphone}
+                                    </span>
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-center text-gray-500 py-4 text-xs">
+                      No doctors available
+                    </li>
+                  )}
+                </ul>
+              )}
+              {doctors.length > 0 && (
+                <div className="text-right mt-2">
+                  <Link
+                    to="/dashboard/doctors"
+                    className="text-xs text-blue-500 hover:underline"
+                  >
+                    View all doctors →
+                  </Link>
+                </div>
+              )}
+            </motion.div>
+            {/* Articles Section */}
             <motion.div
               className={`p-3 rounded-lg shadow h-full ${
                 theme === "light"
@@ -246,26 +436,26 @@ const Dashboard = () => {
                 Latest Disease Articles
               </h3>
 
-              {/* Loading state */}
-              {loading ? (
+              {articlesLoading ? (
                 <p className="text-center text-gray-500 py-4 text-xs">
                   Loading articles...
                 </p>
-              ) : error ? (
-                <p className="text-red-500 text-center py-4 text-xs">{error}</p>
+              ) : articlesError ? (
+                <p className="text-red-500 text-center py-4 text-xs">
+                  {articlesError}
+                </p>
               ) : (
                 <ul className="space-y-2 overflow-y-auto max-h-64">
                   {displayArticles.length > 0 ? (
-                    displayArticles.map((article, index) => (
+                    displayArticles.map((article) => (
                       <li
-                        key={index}
+                        key={article.id}
                         className={`flex items-start space-x-2 border-b pb-2 last:border-b-0 hover:bg-gray-50 rounded p-1 ${
                           theme === "light"
                             ? "hover:bg-gray-100"
                             : "hover:bg-gray-700"
                         }`}
                       >
-                        {/* Article image */}
                         {article.coverImage && (
                           <img
                             src={article.coverImage}
@@ -273,8 +463,6 @@ const Dashboard = () => {
                             className="w-12 h-12 object-cover rounded"
                           />
                         )}
-
-                        {/* Article content */}
                         <div className="flex flex-col flex-1">
                           <h4
                             className={`${
@@ -306,12 +494,12 @@ const Dashboard = () => {
               )}
               {displayArticles.length > 0 && (
                 <div className="text-right mt-2">
-                  <a
-                    href="/dashboard/categories"
+                  <Link
+                    to="/dashboard/categories"
                     className="text-xs text-blue-500 hover:underline"
                   >
                     View all articles →
-                  </a>
+                  </Link>
                 </div>
               )}
             </motion.div>
@@ -320,7 +508,7 @@ const Dashboard = () => {
 
         {/* Bottom Section - AI Model Results and Medical History */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* AI Model Results Section - Better animations */}
+          {/* AI Model Results Section */}
           <motion.div
             className={`p-3 rounded-lg shadow ${
               theme === "light"
@@ -346,14 +534,12 @@ const Dashboard = () => {
               {modelResults}
             </p>
 
-            {/* Start of Result Animation - More subtle animations */}
             <motion.div
               className="flex flex-col space-y-3"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.8 }}
             >
-              {/* Results with better visual hierarchy */}
               <div
                 className={`p-2 rounded border-l-4 ${
                   theme === "light"
@@ -428,13 +614,15 @@ const Dashboard = () => {
                   >
                     Doctor:
                   </span>{" "}
-                  Dr. John Doe
+                  {doctors?.[0]?.name
+                    ? `Dr. ${doctors[0].name}`
+                    : "Dr. John Doe"}
                 </motion.p>
               </div>
             </motion.div>
           </motion.div>
 
-          {/* User History Section - Better formatting */}
+          {/* User History Section */}
           <motion.div
             className={`p-3 rounded-lg shadow ${
               theme === "light"
@@ -457,19 +645,25 @@ const Dashboard = () => {
                 {
                   date: "2025-03-23",
                   diagnosis: "COVID-19",
-                  doctor: "Dr. John Doe",
+                  doctor: doctors?.[1]?.name
+                    ? `Dr. ${doctors[1].name}`
+                    : "Dr. Emily Taylor",
                   color: "bg-red-100 text-red-800",
                 },
                 {
                   date: "2025-03-21",
                   diagnosis: "Pneumonia",
-                  doctor: "Dr. Emily Taylor",
+                  doctor: doctors?.[2]?.name
+                    ? `Dr. ${doctors[2].name}`
+                    : "Dr. Jane Smith",
                   color: "bg-yellow-100 text-yellow-800",
                 },
                 {
                   date: "2025-03-18",
                   diagnosis: "Normal",
-                  doctor: "Dr. Jane Smith",
+                  doctor: doctors?.[0]?.name
+                    ? `Dr. ${doctors[0].name}`
+                    : "Dr. John Doe",
                   color: "bg-green-100 text-green-800",
                 },
               ].map((record, index) => (

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 
 const initialHistoryData = [
@@ -8,7 +9,7 @@ const initialHistoryData = [
         user: 'User1',
         time: '2025-04-13T15:30:00',
         result: 'Success',
-        imageUrl: 'https://via.placeholder.com/150',
+        imageUrl: 'image.jpg',
         modelName: 'Model A',
         description: 'تمت العملية بنجاح، نتائج دقيقة.',
     },
@@ -17,7 +18,7 @@ const initialHistoryData = [
         user: 'User2',
         time: '2025-04-12T18:20:00',
         result: 'Failure',
-        imageUrl: 'https://via.placeholder.com/150',
+        imageUrl: 'image.jpg',
         modelName: 'Model B',
         description: 'حدث خطأ أثناء المعالجة، يجب تحسين المدخلات.',
     },
@@ -26,7 +27,7 @@ const initialHistoryData = [
         user: 'User3',
         time: '2025-04-11T10:00:00',
         result: 'Success',
-        imageUrl: 'https://via.placeholder.com/150',
+        imageUrl: 'image.png',
         modelName: 'Model C',
         description: 'نجاح العملية، تم الحصول على النتائج المتوقعة.',
     },
