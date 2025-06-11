@@ -313,17 +313,17 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
+   <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30">
       <div
-        className={`p-4 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto ${
+        className={`p-3 rounded-lg shadow-xl w-full max-w-[320px] max-h-[90vh] overflow-y-auto ${
           theme === "light" ? "bg-white" : "bg-gray-800"
         }`}
       >
-        <div className="flex justify-between items-center mb-2.5">
+        <div className="flex justify-between items-center mb-2">
           <h2
-            className={`text-base font-bold ${
+            className={`text-sm font-bold ${
               theme === "light" ? "text-sky-600" : "text-sky-300"
-            }`}
+            } border-b pb-1`}
           >
             {title}
           </h2>
@@ -333,7 +333,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
               theme === "light"
                 ? "text-gray-400 hover:text-gray-600"
                 : "text-gray-500 hover:text-gray-300"
-            } cursor-pointer`}
+            } cursor-pointer text-sm`}
           >
             ✕
           </button>
@@ -342,20 +342,20 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
         <form onSubmit={handleSubmit}>
           {/* Tabs - Compact */}
           <div
-            className={`flex border-b mb-2.5 overflow-x-auto ${
+            className={`flex border-b mb-2 overflow-x-auto ${
               theme === "light" ? "border-gray-200" : "border-gray-600"
             }`}
           >
             <button
               type="button"
-              className={`px-2.5 py-0.5 text-[10px] ${
+              className={`px-2 py-0.5 text-[9px] ${
                 activeTab === "basic"
                   ? theme === "light"
                     ? "border-b-2 border-sky-500 text-sky-600"
                     : "border-b-2 border-sky-300 text-sky-300"
                   : theme === "light"
-                  ? "text-gray-500"
-                  : "text-gray-400"
+                    ? "text-gray-500"
+                    : "text-gray-400"
               } cursor-pointer`}
               onClick={() => setActiveTab("basic")}
             >
@@ -363,14 +363,14 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
             </button>
             <button
               type="button"
-              className={`px-2.5 py-0.5 text-[10px] ${
+              className={`px-2 py-0.5 text-[9px] ${
                 activeTab === "location"
                   ? theme === "light"
                     ? "border-b-2 border-sky-500 text-sky-600"
                     : "border-b-2 border-sky-300 text-sky-300"
                   : theme === "light"
-                  ? "text-gray-500"
-                  : "text-gray-400"
+                    ? "text-gray-500"
+                    : "text-gray-400"
               } cursor-pointer`}
               onClick={() => setActiveTab("location")}
             >
@@ -378,14 +378,14 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
             </button>
             <button
               type="button"
-              className={`px-2.5 py-0.5 text-[10px] ${
+              className={`px-2 py-0.5 text-[9px] ${
                 activeTab === "additional"
                   ? theme === "light"
                     ? "border-b-2 border-sky-500 text-sky-600"
                     : "border-b-2 border-sky-300 text-sky-300"
                   : theme === "light"
-                  ? "text-gray-500"
-                  : "text-gray-400"
+                    ? "text-gray-500"
+                    : "text-gray-400"
               } cursor-pointer`}
               onClick={() => setActiveTab("additional")}
             >
@@ -393,14 +393,14 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
             </button>
             <button
               type="button"
-              className={`px-2.5 py-0.5 text-[10px] ${
+              className={`px-2 py-0.5 text-[9px] ${
                 activeTab === "workinghours"
                   ? theme === "light"
                     ? "border-b-2 border-sky-500 text-sky-600"
                     : "border-b-2 border-sky-300 text-sky-300"
                   : theme === "light"
-                  ? "text-gray-500"
-                  : "text-gray-400"
+                    ? "text-gray-500"
+                    : "text-gray-400"
               } cursor-pointer`}
               onClick={() => setActiveTab("workinghours")}
             >
@@ -410,11 +410,11 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
 
           {/* Basic Tab Content - Compact */}
           {activeTab === "basic" && (
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-2 gap-1">
               <div className="space-y-0.5">
                 <label
                   htmlFor="name"
-                  className={`block text-[10px] font-medium ${
+                  className={`block text-[9px] font-medium ${
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
@@ -426,24 +426,24 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   type="text"
                   value={formData.name}
                   onChange={handleChange}
-                  className={`w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                  className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
                     errors.name
                       ? "border-red-500"
                       : theme === "light"
                       ? "border-gray-300"
                       : "border-gray-600"
-                  }`}
+                  } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
                 />
                 {errors.name && (
-                  <p className="text-red-500 text-[9px]">{errors.name}</p>
+                  <p className="text-red-500 text-[8px]">{errors.name}</p>
                 )}
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 <label
                   htmlFor="categoryId"
-                  className={`block text-xs font-medium ${
-                    theme === "light" ? "text-gray-700" : "text-gray-200"
+                  className={`block text-[9px] font-medium ${
+                    theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
                   Category
@@ -453,12 +453,12 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   name="categoryId"
                   value={formData.categoryId}
                   onChange={handleChange}
-                  className={`w-full px-2 py-1 text-xs border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer transition duration-150 ease-in-out appearance-none ${
+                  className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer transition-colors appearance-none ${
                     errors.categoryId
                       ? "border-red-500"
                       : theme === "light"
                       ? "border-gray-300 bg-white"
-                      : "border-gray-600 bg-gray-700 text-gray-200"
+                      : "border-gray-600 bg-gray-800 text-gray-200"
                   }`}
                 >
                   <option value="" disabled className="cursor-pointer">
@@ -472,7 +472,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                         className={`cursor-pointer ${
                           theme === "light"
                             ? "bg-white text-gray-900"
-                            : "bg-gray-700 text-gray-200"
+                            : "bg-gray-800 text-gray-200"
                         }`}
                       >
                         {category.categoryName}
@@ -480,15 +480,14 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                     ))}
                 </select>
                 {errors.categoryId && (
-                  <p className="text-red-500 text-[10px]">
-                    {errors.categoryId}
-                  </p>
+                  <p className="text-red-500 text-[8px]">{errors.categoryId}</p>
                 )}
               </div>
+
               <div className="space-y-0.5">
                 <label
                   htmlFor="emailDoctor"
-                  className={`block text-[10px] font-medium ${
+                  className={`block text-[9px] font-medium ${
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
@@ -500,25 +499,23 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   type="email"
                   value={formData.emailDoctor}
                   onChange={handleChange}
-                  className={`w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                  className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
                     errors.emailDoctor
                       ? "border-red-500"
                       : theme === "light"
                       ? "border-gray-300"
                       : "border-gray-600"
-                  }`}
+                  } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
                 />
                 {errors.emailDoctor && (
-                  <p className="text-red-500 text-[9px]">
-                    {errors.emailDoctor}
-                  </p>
+                  <p className="text-red-500 text-[8px]">{errors.emailDoctor}</p>
                 )}
               </div>
 
               <div className="space-y-0.5">
                 <label
                   htmlFor="phone"
-                  className={`block text-[10px] font-medium ${
+                  className={`block text-[9px] font-medium ${
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
@@ -530,23 +527,23 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   type="text"
                   value={formData.phone}
                   onChange={handleChange}
-                  className={`w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                  className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
                     errors.phone
                       ? "border-red-500"
                       : theme === "light"
                       ? "border-gray-300"
                       : "border-gray-600"
-                  }`}
+                  } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
                 />
                 {errors.phone && (
-                  <p className="text-red-500 text-[9px]">{errors.phone}</p>
+                  <p className="text-red-500 text-[8px]">{errors.phone}</p>
                 )}
               </div>
 
               <div className="space-y-0.5">
                 <label
                   htmlFor="teliphone"
-                  className={`block text-[10px] font-medium ${
+                  className={`block text-[9px] font-medium ${
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
@@ -558,23 +555,23 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   type="text"
                   value={formData.teliphone}
                   onChange={handleChange}
-                  className={`w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                  className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
                     errors.teliphone
                       ? "border-red-500"
                       : theme === "light"
                       ? "border-gray-300"
                       : "border-gray-600"
-                  }`}
+                  } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
                 />
                 {errors.teliphone && (
-                  <p className="text-red-500 text-[9px]">{errors.teliphone}</p>
+                  <p className="text-red-500 text-[8px]">{errors.teliphone}</p>
                 )}
               </div>
 
               <div className="space-y-0.5">
                 <label
                   htmlFor="experienceYears"
-                  className={`block text-[10px] font-medium ${
+                  className={`block text-[9px] font-medium ${
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
@@ -586,16 +583,16 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   type="number"
                   value={formData.experienceYears}
                   onChange={handleChange}
-                  className={`w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                  className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
                     errors.experienceYears
                       ? "border-red-500"
                       : theme === "light"
                       ? "border-gray-300"
                       : "border-gray-600"
-                  }`}
+                  } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
                 />
                 {errors.experienceYears && (
-                  <p className="text-red-500 text-[9px]">
+                  <p className="text-red-500 text-[8px]">
                     {errors.experienceYears}
                   </p>
                 )}
@@ -604,7 +601,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
               <div className="space-y-0.5">
                 <label
                   htmlFor="numOfPatients"
-                  className={`block text-[10px] font-medium ${
+                  className={`block text-[9px] font-medium ${
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
@@ -616,9 +613,9 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   type="number"
                   value={formData.numOfPatients}
                   onChange={handleChange}
-                  className={`w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                  className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
                     theme === "light" ? "border-gray-300" : "border-gray-600"
-                  }`}
+                  } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
                 />
               </div>
             </div>
@@ -626,12 +623,12 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
 
           {/* Location Tab Content - With Real Map */}
           {activeTab === "location" && (
-            <div className="space-y-2">
-              <div className="grid grid-cols-2 gap-1.5">
+            <div className="space-y-1.5">
+              <div className="grid grid-cols-2 gap-1">
                 <div className="space-y-0.5">
                   <label
                     htmlFor="location"
-                    className={`block text-[10px] font-medium ${
+                    className={`block text-[9px] font-medium ${
                       theme === "light" ? "text-gray-700" : "text-gray-300"
                     }`}
                   >
@@ -643,23 +640,23 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                     type="text"
                     value={formData.location}
                     onChange={handleChange}
-                    className={`w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                    className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
                       errors.location
                         ? "border-red-500"
                         : theme === "light"
                         ? "border-gray-300"
                         : "border-gray-600"
-                    }`}
+                    } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
                   />
                   {errors.location && (
-                    <p className="text-red-500 text-[9px]">{errors.location}</p>
+                    <p className="text-red-500 text-[8px]">{errors.location}</p>
                   )}
                 </div>
 
                 <div className="space-y-0.5">
                   <label
                     htmlFor="locationLink"
-                    className={`block text-[10px] font-medium ${
+                    className={`block text-[9px] font-medium ${
                       theme === "light" ? "text-gray-700" : "text-gray-300"
                     }`}
                   >
@@ -671,28 +668,28 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                     type="text"
                     value={formData.locationLink}
                     onChange={handleChange}
-                    className={`w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                    className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
                       theme === "light" ? "border-gray-300" : "border-gray-600"
-                    }`}
+                    } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
                   />
                 </div>
               </div>
 
               <div className="space-y-0.5">
                 <label
-                  className={`flex items-center text-[10px] font-medium ${
+                  className={`flex items-center text-[9px] font-medium ${
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
                   <MapPin
-                    className={`h-3 w-3 mr-1 ${
+                    className={`h-2.5 w-2.5 mr-1 ${
                       theme === "light" ? "text-sky-500" : "text-sky-300"
                     }`}
                   />
                   Select Location on Map
                 </label>
                 <div
-                  className={`h-[150px] w-full relative rounded-md border overflow-hidden ${
+                  className={`h-[120px] w-full relative rounded-md border overflow-hidden ${
                     theme === "light" ? "border-gray-300" : "border-gray-600"
                   }`}
                 >
@@ -703,7 +700,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   />
                 </div>
                 <div
-                  className={`flex gap-1.5 text-[10px] ${
+                  className={`flex gap-1 text-[9px] ${
                     theme === "light" ? "text-gray-500" : "text-gray-400"
                   }`}
                 >
@@ -716,11 +713,11 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
 
           {/* Additional Tab Content - Compact */}
           {activeTab === "additional" && (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <div className="space-y-0.5">
                 <label
                   htmlFor="about"
-                  className={`block text-[10px] font-medium ${
+                  className={`block text-[9px] font-medium ${
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
@@ -731,24 +728,24 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   name="about"
                   value={formData.about}
                   onChange={handleChange}
-                  className={`w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 min-h-[50px] max-h-[80px] ${
+                  className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 min-h-[40px] max-h-[60px] ${
                     errors.about
                       ? "border-red-500"
                       : theme === "light"
                       ? "border-gray-300"
                       : "border-gray-600"
-                  }`}
+                  } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
                 />
                 {errors.about && (
-                  <p className="text-red-500 text-[9px]">{errors.about}</p>
+                  <p className="text-red-500 text-[8px]">{errors.about}</p>
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-1.5">
+              <div className="grid grid-cols-2 gap-1">
                 <div className="space-y-0.5">
                   <label
                     htmlFor="whatsAppLink"
-                    className={`block text-[10px] font-medium ${
+                    className={`block text-[9px] font-medium ${
                       theme === "light" ? "text-gray-700" : "text-gray-300"
                     }`}
                   >
@@ -760,27 +757,27 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                     type="text"
                     value={formData.whatsAppLink}
                     onChange={handleChange}
-                    className={`w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                    className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
                       theme === "light" ? "border-gray-300" : "border-gray-600"
-                    }`}
+                    } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
                   />
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   <label
                     htmlFor="imageDoctor"
-                    className={`block text-xs font-medium ${
-                      theme === "light" ? "text-gray-700" : "text-gray-200"
+                    className={`block text-[9px] font-medium ${
+                      theme === "light" ? "text-gray-700" : "text-gray-300"
                     }`}
                   >
                     Doctor Image
                   </label>
                   {imagePreview && (
-                    <div className="mt-1 m-2 ">
+                    <div className="mt-0.5">
                       <img
                         src={imagePreview || "/placeholder.svg"}
                         alt="Doctor Preview"
-                        className="h-10 w-10 object-cover rounded-full border border-sky-500"
+                        className="h-8 w-8 object-cover rounded-full border border-sky-500"
                       />
                     </div>
                   )}
@@ -795,10 +792,10 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                     />
                     <label
                       htmlFor="imageDoctor"
-                      className={`inline-block px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer transition duration-150 ease-in-out ${
+                      className={`inline-block px-2 py-1 text-[9px] font-medium rounded-md cursor-pointer transition-colors ${
                         theme === "light"
                           ? "bg-sky-100 text-sky-700 hover:bg-sky-200 border border-gray-300"
-                          : "bg-sky-700  hover:bg-sky-800 "
+                          : "bg-sky-900 text-sky-300 hover:bg-sky-800 border border-gray-600"
                       }`}
                     >
                       {imagePreview ? "Edit Image" : "Upload Image"}
@@ -811,22 +808,22 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
 
           {/* Working Hours Tab Content */}
           {activeTab === "workinghours" && (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <div
-                className={`p-2.5 rounded-md border ${
+                className={`p-2 rounded-md border ${
                   theme === "light"
                     ? "bg-sky-50 border-sky-100"
                     : "bg-sky-900 border-sky-800"
                 }`}
               >
-                <div className="flex items-center mb-1.5">
+                <div className="flex items-center mb-1">
                   <Clock
-                    className={`h-3 w-3 ${
+                    className={`h-2.5 w-2.5 ${
                       theme === "light" ? "text-sky-500" : "text-sky-300"
-                    } mr-1.5`}
+                    } mr-1`}
                   />
                   <h3
-                    className={`text-[10px] font-medium ${
+                    className={`text-[9px] font-medium ${
                       theme === "light" ? "text-sky-700" : "text-sky-200"
                     }`}
                   >
@@ -834,9 +831,9 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   </h3>
                 </div>
                 <p
-                  className={`text-[9px] ${
+                  className={`text-[8px] ${
                     theme === "light" ? "text-gray-600" : "text-gray-400"
-                  } mb-2`}
+                  } mb-1.5`}
                 >
                   Set up your working days and hours to let your patients know
                   when you're available.
@@ -845,11 +842,11 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                 {/* Note about saving first */}
                 {!doctor?.id ? (
                   <div
-                    className={`p-1.5 rounded border text-[9px] ${
+                    className={`p-1 rounded border text-[8px] ${
                       theme === "light"
                         ? "bg-amber-50 border-amber-200 text-amber-800"
                         : "bg-amber-900 border-amber-800 text-amber-200"
-                    } mb-2`}
+                    } mb-1.5`}
                   >
                     Please save the doctor profile first before adding working
                     hours.
@@ -860,7 +857,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   type="button"
                   onClick={handleOpenWorkingHours}
                   disabled={!doctor?.id}
-                  className={`w-full flex items-center justify-center py-1.5 px-2.5 rounded-md text-[10px] font-medium ${
+                  className={`w-full flex items-center justify-center py-1 px-2 rounded-md text-[9px] font-medium ${
                     doctor?.id
                       ? theme === "light"
                         ? "bg-sky-600 text-white hover:bg-sky-700"
@@ -871,13 +868,13 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   }`}
                 >
                   <Clock
-                    className={`h-3 w-3 mr-1.5 ${
+                    className={`h-2.5 w-2.5 mr-1 ${
                       doctor?.id
                         ? "text-white"
                         : theme === "light"
                         ? "text-gray-500"
                         : "text-gray-400"
-                    } `}
+                    }`}
                   />
                   {doctor?.id ? "Manage Working Hours" : "Save Profile First"}
                 </button>
@@ -887,7 +884,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
 
           {/* Action Buttons - Compact */}
           <div
-            className={`flex justify-end mt-2.5 pt-1.5 border-t ${
+            className={`flex justify-end mt-2 pt-1 border-t ${
               theme === "light" ? "border-gray-200" : "border-gray-600"
             }`}
           >
@@ -898,7 +895,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                 theme === "light"
                   ? "bg-gray-400 hover:bg-gray-500"
                   : "bg-gray-600 hover:bg-gray-700"
-              } text-white px-2.5 py-0.5 rounded-md mr-1.5 transition duration-200 text-[10px] cursor-pointer`}
+              } text-white px-2 py-0.5 rounded-md mr-1 transition-colors text-[9px] cursor-pointer`}
             >
               Cancel
             </button>
@@ -908,7 +905,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                 theme === "light"
                   ? "bg-sky-600 hover:bg-sky-700"
                   : "bg-sky-700 hover:bg-sky-800"
-              } text-white px-2.5 py-0.5 rounded-md transition duration-200 text-[10px] cursor-pointer`}
+              } text-white px-2 py-0.5 rounded-md transition-colors text-[9px] cursor-pointer`}
             >
               Save
             </button>
@@ -930,3 +927,5 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
 };
 
 export default DoctorForm;
+
+

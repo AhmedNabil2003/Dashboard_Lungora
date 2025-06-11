@@ -10,7 +10,7 @@ import { useCategories } from "../features/categories/useCategories";
 import WorkingHoursEditor from "../features/doctors/WorkingHoursEditor";
 
 const ManageDoctors = () => {
-  const { theme } = useContext(ThemeContext); // استخدام ThemeContext للوصول إلى theme
+  const { theme } = useContext(ThemeContext);
   const { doctors, loading, error, addDoctor, updateDoctor, deleteDoctor } = useDoctors();
   const { categories, loading: categoriesLoading, error: categoriesError } = useCategories();
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -178,35 +178,69 @@ const ManageDoctors = () => {
       )}
 
       {/* Delete Confirmation Modal */}
-      {isDeleteModalOpen && (
-        <div className="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-50">
-          <div
-            className={`${
-              theme === "light" ? "bg-white text-gray-800" : "bg-gray-800 text-gray-100"
-            } p-6 rounded-lg shadow-lg w-full max-w-md`}
+     {isDeleteModalOpen && (
+  <motion.div
+    className="fixed inset-0 flex items-center justify-center z-50"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+  >
+    <motion.div
+      className={`w-72 overflow-hidden rounded-xl shadow-2xl ${
+        theme === "light" ? "bg-white text-gray-800" : "bg-gray-800 text-gray-200"
+      }`}
+      initial={{ scale: 0.8, y: 30, opacity: 0 }}
+      animate={{ scale: 1, y: 0, opacity: 1 }}
+      exit={{ scale: 0.8, y: 30, opacity: 0 }}
+      transition={{ type: "spring", stiffness: 350 }}
+    >
+      {/* Modal header */}
+      <div
+        className={`p-4 ${
+          theme === "light" ? "bg-sky-600 text-white" : "bg-gray-700 text-white"
+        }`}
+      >
+        <h2 className="text-lg font-semibold flex items-center">
+          <i className="fa-solid fa-trash-alt mr-2"></i>
+          Confirm Deletion
+        </h2>
+      </div>
+
+      {/* Modal body */}
+      <div className="p-5">
+        <p
+          className={`text-gray-600 ${
+            theme === "dark" ? "text-gray-300" : "text-gray-600"
+          }`}
+        >
+          Are you sure you want to delete this doctor?
+        </p>
+
+        {/* Action buttons */}
+        <div className="mt-6 flex justify-end space-x-3">
+          <motion.button
+            onClick={() => setIsDeleteModalOpen(false)}
+            className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg cursor-pointer hover:bg-gray-300 transition-colors"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <h2 className="text-xl mb-4 text-center">Are you sure you want to delete this doctor?</h2>
-            <div className="space-x-4 flex justify-center">
-              <button
-                onClick={confirmDelete}
-                className={`${
-                  theme === "light" ? "bg-red-600 hover:bg-red-700" : "bg-red-700 hover:bg-red-800"
-                } text-white px-4 py-2 rounded-lg`}
-              >
-                Yes, Delete
-              </button>
-              <button
-                onClick={() => setIsDeleteModalOpen(false)}
-                className={`${
-                  theme === "light" ? "bg-gray-600 hover:bg-gray-700" : "bg-gray-700 hover:bg-gray-800"
-                } text-white px-4 py-2 rounded-lg`}
-              >
-                No, Cancel
-              </button>
-            </div>
-          </div>
+            Cancel
+          </motion.button>
+          <motion.button
+            onClick={confirmDelete}
+            className={`px-4 py-2 rounded-lg cursor-pointer hover:bg-red-700 transition-colors ${
+              theme === "light" ? "bg-red-500 text-white" : "bg-red-700 text-gray-100"
+            }`}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Delete
+          </motion.button>
         </div>
-      )}
+      </div>
+    </motion.div>
+  </motion.div>
+)}
 
       {/* Working Hours Editor Modal */}
       {isWorkingHoursOpen && (

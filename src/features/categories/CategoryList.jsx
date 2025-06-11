@@ -252,9 +252,9 @@ export default function CategoryList({
         </div>
       )}
 
-      {isModalOpen && (
+     {isModalOpen && (
         <motion.div
-          className="fixed inset-0 flex justify-center items-center z-50"
+          className="fixed inset-0 flex justify-center items-center z-50 bg-black/30"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
@@ -262,7 +262,7 @@ export default function CategoryList({
           <motion.div
             className={`${
               theme === "light" ? "bg-white" : "bg-gray-800"
-            } p-6 rounded-lg shadow-lg w-96`}
+            } p-4 rounded-lg shadow-lg w-full max-w-[320px] mx-4 max-h-[90vh] overflow-y-auto`}
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.3 }}
@@ -270,7 +270,7 @@ export default function CategoryList({
             <h3
               className={`${
                 theme === "light" ? "text-sky-700" : "text-sky-400"
-              } text-xl font-semibold mb-4 border-b pb-2`}
+              } text-sm font-semibold mb-2 capitalize border-b pb-1`}
             >
               {modalType === "add" ? "Add Category" : "Edit Category"}
             </h3>
@@ -282,9 +282,10 @@ export default function CategoryList({
           </motion.div>
         </motion.div>
       )}
-
+      
       {/* نافذة تأكيد الحذف */}
-      {isDeleteModalOpen && (
+
+      {isDeleteModalOpen && currentDeleteCategory && (
         <motion.div
           className="fixed inset-0 flex justify-center items-center z-50 bg-black/30"
           initial={{ opacity: 0 }}
@@ -294,7 +295,7 @@ export default function CategoryList({
           <motion.div
             className={`${
               theme === "light" ? "bg-white" : "bg-gray-800"
-            } p-6 rounded-lg shadow-lg w-96`}
+            } p-4 rounded-lg shadow-lg w-full max-w-[320px] mx-4 max-h-[90vh] overflow-y-auto`}
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.3 }}
@@ -302,27 +303,26 @@ export default function CategoryList({
             <h3
               className={`${
                 theme === "light" ? "text-gray-800" : "text-white"
-              } text-xl font-semibold mb-2`}
+              } text-lg font-semibold mb-2 capitalize border-b pb-1`}
             >
               Confirm Deletion
             </h3>
             <p
               className={`${
                 theme === "light" ? "text-gray-600" : "text-gray-400"
-              } mb-4`}
+              } text-sm mb-3`}
             >
               Are you sure you want to delete the category "
-              {currentDeleteCategory?.categoryName}"? This action cannot be
-              undone.
+              {currentDeleteCategory?.categoryName}"? This action cannot be undone.
             </p>
             <div className="flex justify-end space-x-2">
               <button
                 onClick={handleCloseDeleteModal}
                 className={`${
                   theme === "light"
-                    ? "bg-gray-300 text-gray-800"
-                    : "bg-gray-700 text-gray-200"
-                } px-4 py-2 cursor-pointer rounded-md`}
+                    ? "bg-gray-300 hover:bg-gray-400 text-gray-700"
+                    : "bg-gray-700 hover:bg-gray-600 text-gray-300"
+                } px-3 py-1 cursor-pointer rounded-md transition-colors text-sm`}
               >
                 Cancel
               </button>
@@ -330,9 +330,9 @@ export default function CategoryList({
                 onClick={handleConfirmDelete}
                 className={`${
                   theme === "light"
-                    ? "bg-red-600 text-white"
-                    : "bg-red-600 text-white"
-                } px-4 py-2 cursor-pointer rounded-md`}
+                    ? "bg-red-600 hover:bg-red-700 text-white"
+                    : "bg-red-600 hover:bg-red-700 text-white"
+                } px-3 py-1 cursor-pointer rounded-md transition-colors text-sm`}
               >
                 Delete
               </button>
@@ -340,6 +340,7 @@ export default function CategoryList({
           </motion.div>
         </motion.div>
       )}
+    
     </>
   );
 }

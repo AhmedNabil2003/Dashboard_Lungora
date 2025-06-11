@@ -186,20 +186,20 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
   };
 
   return (
-    <div className="fixed inset-0 flex justify-center items-center z-50 ">
+    <div className="fixed inset-0 flex justify-center items-center z-50 bg-black/30">
       <div
-        className={`p-3 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto ${
+        className={`p-2.5 rounded-lg shadow-xl w-full max-w-[320px] max-h-[90vh] overflow-y-auto ${
           theme === "light" ? "bg-white" : "bg-gray-800"
         }`}
       >
-        <div className="flex justify-between items-center mb-2.5">
+        <div className="flex justify-between items-center mb-2">
           <h2
-            className={`text-base font-bold flex items-center ${
+            className={`text-sm font-bold flex items-center ${
               theme === "light" ? "text-sky-600" : "text-sky-300"
             }`}
           >
             <Clock
-              className={`mr-1.5 h-4 w-4 ${
+              className={`mr-1 h-3.5 w-3.5 ${
                 theme === "light" ? "text-sky-500" : "text-sky-300"
               }`}
             />
@@ -211,16 +211,16 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
               theme === "light"
                 ? "text-gray-400 hover:text-gray-600"
                 : "text-gray-500 hover:text-gray-300"
-            }`}
+            } cursor-pointer`}
           >
-            <X size={16} />
+            <X size={14} />
           </button>
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-6">
+          <div className="flex justify-center py-4">
             <div
-              className={`animate-spin rounded-full h-6 w-6 border-b-2 ${
+              className={`animate-spin rounded-full h-5 w-5 border-b-2 ${
                 theme === "light" ? "border-sky-600" : "border-sky-300"
               }`}
             ></div>
@@ -228,17 +228,17 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
         ) : (
           <>
             {/* Current Working Hours */}
-            <div className="mb-3">
+            <div className="mb-2">
               <h3
-                className={`text-[10px] font-medium ${
+                className={`text-[9px] font-medium ${
                   theme === "light" ? "text-gray-700" : "text-gray-300"
-                } mb-1.5`}
+                } mb-1`}
               >
                 Current Schedule
               </h3>
               {workingHours.length === 0 ? (
                 <p
-                  className={`text-[9px] italic ${
+                  className={`text-[8px] italic ${
                     theme === "light" ? "text-gray-500" : "text-gray-400"
                   }`}
                 >
@@ -254,18 +254,16 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                 >
                   {workingHours
                     .sort((a, b) => {
-                      // Sort by day of week first
                       const dayOrder =
                         daysOfWeek.indexOf(a.dayOfWeek) -
                         daysOfWeek.indexOf(b.dayOfWeek);
                       if (dayOrder !== 0) return dayOrder;
-                      // Then by start time
                       return a.startTime.localeCompare(b.startTime);
                     })
                     .map((hour) => (
                       <div
                         key={hour.id}
-                        className={`grid grid-cols-[1fr,auto] items-center p-1.5 ${
+                        className={`grid grid-cols-[1fr,auto] items-center p-1 ${
                           theme === "light"
                             ? "hover:bg-gray-100"
                             : "hover:bg-gray-600"
@@ -273,7 +271,7 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                       >
                         <div>
                           <span
-                            className={`font-medium text-[10px] ${
+                            className={`font-medium text-[9px] ${
                               theme === "light"
                                 ? "text-sky-700"
                                 : "text-sky-200"
@@ -282,7 +280,7 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                             {hour.dayOfWeek}
                           </span>
                           <div
-                            className={`text-[9px] ${
+                            className={`text-[8px] ${
                               theme === "light"
                                 ? "text-gray-600"
                                 : "text-gray-400"
@@ -299,9 +297,9 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                               theme === "light"
                                 ? "text-sky-500 hover:text-sky-700"
                                 : "text-sky-300 hover:text-sky-400"
-                            } p-0.5`}
+                            } p-0.25 cursor-pointer`}
                           >
-                            <Edit size={14} />
+                            <Edit size={12} />
                           </button>
                           <button
                             onClick={() => handleDeleteWorkingHour(hour.id)}
@@ -309,9 +307,9 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                               theme === "light"
                                 ? "text-red-500 hover:text-red-700"
                                 : "text-red-300 hover:text-red-400"
-                            } p-0.5`}
+                            } p-0.25 cursor-pointer`}
                           >
-                            <Trash size={14} />
+                            <Trash size={12} />
                           </button>
                         </div>
                       </div>
@@ -322,22 +320,22 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
 
             {/* Add/Edit Working Hour Form */}
             <div
-              className={`border-t pt-3 ${
+              className={`border-t pt-2 ${
                 theme === "light" ? "border-gray-200" : "border-gray-600"
               }`}
             >
               <h3
-                className={`text-[10px] font-medium ${
+                className={`text-[9px] font-medium ${
                   theme === "light" ? "text-gray-700" : "text-gray-300"
-                } mb-1.5`}
+                } mb-1`}
               >
                 {isEditing ? "Edit Schedule" : "Add New Schedule"}
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <div>
                   <label
                     htmlFor="dayOfWeek"
-                    className={`block text-[10px] font-medium ${
+                    className={`block text-[9px] font-medium ${
                       theme === "light" ? "text-gray-700" : "text-gray-300"
                     }`}
                   >
@@ -348,7 +346,7 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                     name="dayOfWeek"
                     value={newWorkingHour.dayOfWeek}
                     onChange={handleChange}
-                    className={`mt-0.5 block w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                    className={`mt-0.5 block w-full px-1 py-0.5 text-[9px] border rounded-md cursor-pointer focus:outline-none focus:ring-1 focus:ring-sky-500 ${
                       theme === "light"
                         ? "bg-white border-gray-300"
                         : "bg-gray-800 border-gray-600 text-gray-200"
@@ -362,11 +360,11 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                   </select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-1.5">
+                <div className="grid grid-cols-2 gap-1">
                   <div>
                     <label
                       htmlFor="startTime"
-                      className={`block text-[10px] font-medium ${
+                      className={`block text-[9px] font-medium ${
                         theme === "light" ? "text-gray-700" : "text-gray-300"
                       }`}
                     >
@@ -378,7 +376,7 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                       name="startTime"
                       value={newWorkingHour.startTime}
                       onChange={handleChange}
-                      className={`mt-0.5 block w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                      className={`mt-0.5 block w-full px-1 py-0.5 text-[9px] border rounded-md cursor-pointer focus:outline-none focus:ring-1 focus:ring-sky-500 ${
                         theme === "light"
                           ? "bg-white border-gray-300"
                           : "bg-gray-800 border-gray-600 text-gray-200"
@@ -388,7 +386,7 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                   <div>
                     <label
                       htmlFor="endTime"
-                      className={`block text-[10px] font-medium ${
+                      className={`block text-[9px] font-medium ${
                         theme === "light" ? "text-gray-700" : "text-gray-300"
                       }`}
                     >
@@ -400,7 +398,7 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                       name="endTime"
                       value={newWorkingHour.endTime}
                       onChange={handleChange}
-                      className={`mt-0.5 block w-full px-1.5 py-0.5 text-[10px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                      className={`mt-0.5 block w-full px-1 py-0.5 text-[9px] border rounded-md cursor-pointer focus:outline-none focus:ring-1 focus:ring-sky-500 ${
                         theme === "light"
                           ? "bg-white border-gray-300"
                           : "bg-gray-800 border-gray-600 text-gray-200"
@@ -410,16 +408,16 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                 </div>
 
                 {isEditing ? (
-                  <div className="flex space-x-1.5">
+                  <div className="flex space-x-1">
                     <button
                       onClick={handleEditWorkingHour}
                       className={`flex-1 flex items-center justify-center ${
                         theme === "light"
                           ? "bg-sky-600 hover:bg-sky-700"
                           : "bg-sky-700 hover:bg-sky-800"
-                      } text-white py-1.5 px-2 rounded-md transition duration-200 text-[10px]`}
+                      } text-white py-1 px-1.5 rounded-md transition-colors cursor-pointer text-[9px]`}
                     >
-                      <Save size={12} className="mr-1" /> Update
+                      <Save size={10} className="mr-0.5" /> Update
                     </button>
                     <button
                       onClick={handleCancelEdit}
@@ -427,9 +425,9 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                         theme === "light"
                           ? "bg-gray-400 hover:bg-gray-500"
                           : "bg-gray-600 hover:bg-gray-700"
-                      } text-white py-1.5 px-2 rounded-md transition duration-200 text-[10px]`}
+                      } text-white py-1 px-1.5 rounded-md transition-colors cursor-pointer text-[9px]`}
                     >
-                      <X size={12} className="mr-1" /> Cancel
+                      <X size={10} className="mr-0.5" /> Cancel
                     </button>
                   </div>
                 ) : (
@@ -439,9 +437,9 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                       theme === "light"
                         ? "bg-sky-600 hover:bg-sky-700"
                         : "bg-sky-700 hover:bg-sky-800"
-                    } text-white py-1.5 px-2 rounded-md transition duration-200 text-[10px]`}
+                      } text-white py-1 px-1.5 rounded-md transition-colors cursor-pointer text-[9px]`}
                   >
-                    <Plus size={12} className="mr-1" /> Add Working Hour
+                    <Plus size={10} className="mr-0.5" /> Add Working Hour
                   </button>
                 )}
               </div>
@@ -449,7 +447,7 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
 
             {/* Actions */}
             <div
-              className={`flex justify-end mt-3 pt-2 border-t ${
+              className={`flex justify-end mt-2 pt-1.5 border-t ${
                 theme === "light" ? "border-gray-200" : "border-gray-600"
               }`}
             >
@@ -459,9 +457,9 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                   theme === "light"
                     ? "bg-gray-400 hover:bg-gray-500"
                     : "bg-gray-600 hover:bg-gray-700"
-                } text-white px-2.5 py-1 rounded-md transition duration-200 flex items-center text-[10px]`}
+                } text-white px-2 py-0.5 rounded-md transition-colors flex items-center cursor-pointer text-[9px]`}
               >
-                <Save size={12} className="mr-1" /> Done
+                <Save size={10} className="mr-0.5" /> Done
               </button>
             </div>
           </>
@@ -472,3 +470,6 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
 };
 
 export default WorkingHoursEditor;
+
+
+

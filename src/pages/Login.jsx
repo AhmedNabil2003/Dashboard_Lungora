@@ -28,14 +28,6 @@ const Login = () => {
         {/* Login Form */}
         <div className="flex flex-col items-center justify-center p-6 pt-0 md:pt-6">
           <LoginForm />
-          <div className="md:hidden w-full mt-6">
-            <p className="text-center text-gray-600 text-sm">
-              Don't have an account?{" "}
-              <span className="text-sky-600 font-medium cursor-pointer hover:underline">
-                Sign Up
-              </span>
-            </p>
-          </div>
         </div>
 
         {/* Welcome section - desktop only */}
