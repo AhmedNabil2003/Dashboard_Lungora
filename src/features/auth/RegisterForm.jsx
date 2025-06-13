@@ -3,27 +3,29 @@ import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "../../services/apiAuth";  // استيراد registerUser من apiAuth
 import Input from "../../components/ui/Input";
-import Button from "../../components/ui/Button";
-import { Card, CardContent } from "../../components/ui/Card";
 import toast from "react-hot-toast";
-import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { useContext, useState } from "react";
+import { ThemeContext } from "../../context/ThemeContext";
 
 const PasswordInput = ({ name, placeholder, formik }) => {
   const [showPassword, setShowPassword] = useState(false);
+const { theme } = useContext(ThemeContext);
 
-  return (
-    <div className="relative flex items-center">
+return (
+  <div className="relative flex items-center">
       <Input
         type={showPassword ? "text" : "password"}
         name={name}
         placeholder={placeholder}
         {...formik.getFieldProps(name)}
-        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
+        className={`w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500 ${
+          theme === "dark" ? "bg-gray-700 text-white" : ""
+        }`}
       />
       <button
         type="button"
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600"
+        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 cursor-pointer"
         onClick={() => setShowPassword(!showPassword)}
       >
         {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -34,7 +36,8 @@ const PasswordInput = ({ name, placeholder, formik }) => {
 
 const RegisterForm = () => {
   const navigate = useNavigate();
-
+  const { theme } = useContext(ThemeContext);
+  
   const validationSchema = Yup.object({
     name: Yup.string()
       .min(3, "*Name must be at least 3 characters")
@@ -73,9 +76,23 @@ const RegisterForm = () => {
   });
 
   return (
-    <Card className="max-w-sm mx-auto p-6 shadow-lg rounded-lg">
-      <CardContent>
-        <h2 className="text-2xl font-bold text-gray-800 text-center">Sign Up</h2>
+     <div className={`max-w-sm mx-auto p-6 shadow-lg rounded-lg ${
+       theme === "dark" ? "bg-gray-800" : "bg-white"
+    }`}>
+      <div className="mb-6 text-center">
+        <div className="flex items-center mb-4 gap-2">
+             <button
+              onClick={() => navigate(-1)}
+              className={`p-1.5 rounded-full mr-3 ${
+                theme === "dark" ? "bg-sky-800 hover:bg-sky-700" : "bg-sky-100 hover:bg-sky-200"
+              } cursor-pointer transition-colors duration-200`}
+            >
+              <ArrowLeft className={theme === "dark" ? "text-gray-300 " : "text-sky-600" } size={20} />
+            </button>
+            <h1 className={`text-xl font-bold ${theme === "dark" ? "text-white" : "text-gray-800"}`}>
+              Add New User
+            </h1>
+          </div>
         <form onSubmit={formik.handleSubmit} className="space-y-4">
           <Input
             type="text"
@@ -115,23 +132,24 @@ const RegisterForm = () => {
             <p className="text-red-500 text-sm">{formik.errors.confirmPassword}</p>
           )}
 
-          <button
-            type="submit"
-            className="w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:from-blue-600 hover:to-indigo-700 transition duration-300"
-          >
-            Sign Up
-          </button>
-
-          <a
-            href="/"
-            className="block text-center mt-4 text-sm text-gray-500 transition duration-300"
-          >
-            <span>Already have an account? </span>
-            <span className="text-blue-500 hover:underline">Log in</span>
-          </a>
+<button
+  type="submit"
+  disabled={formik.isSubmitting}
+  className={`
+    w-full py-3 px-6 text-lg font-semibold rounded-lg shadow-md 
+    transition duration-300 disabled:opacity-70 cursor-pointer
+    ${
+      theme === "dark" 
+        ? "bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white"
+        : "bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-indigo-600 text-white"
+    }
+  `}
+>
+  {formik.isSubmitting ? "Creating..." : "Create User"}
+</button>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

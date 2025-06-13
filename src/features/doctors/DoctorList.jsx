@@ -30,6 +30,7 @@ const DoctorList = ({
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [doctorWorkingHours, setDoctorWorkingHours] = useState([]);
   const [loadingHours, setLoadingHours] = useState(false);
+  const [visibleDoctors, setVisibleDoctors] = useState(6);
 
   // Apply filters
   useEffect(() => {
@@ -98,21 +99,17 @@ const DoctorList = ({
 
   return (
     <div className="mr-4">
-      <h1
-        className={`text-3xl font-bold mb-8 text-center ${
-          theme === "light" ? "text-sky-600" : "text-sky-300"
-        }`}
-      >
+      <h1 className={`text-3xl font-bold mb-8 text-center ${
+        theme === "light" ? "text-sky-600" : "text-sky-300"
+      }`}>
         Manage Doctors
       </h1>
 
       {/* Search and Filters */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-        <div
-          className={`flex items-center ${
-            theme === "light" ? "bg-white" : "bg-gray-800"
-          } p-2 rounded-lg shadow-md w-full md:w-1/3`}
-        >
+        <div className={`flex items-center ${
+          theme === "light" ? "bg-white" : "bg-gray-800"
+        } p-2 rounded-lg shadow-md w-full md:w-1/3`}>
           <Search
             size={16}
             className={`${
@@ -123,18 +120,16 @@ const DoctorList = ({
             type="text"
             placeholder="Search by name, email, or phone"
             value={searchText}
-            onChange={(e) => setSearchText(e.target.value)} // Fixed typo and syntax
+            onChange={(e) => setSearchText(e.target.value)}
             className={`w-full p-1 focus:outline-none ${
-              theme === "light" ? "text-gray-800" : "text-gray-100"
+              theme === "light" ? "text-gray-800 bg-transparent" : "text-gray-100 bg-transparent"
             } text-sm`}
           />
         </div>
 
-        <div
-          className={`flex items-center ${
-            theme === "light" ? "bg-white" : "bg-gray-800"
-          } p-2 rounded-lg shadow-md w-full md:w-1/4`}
-        >
+        <div className={`flex items-center ${
+          theme === "light" ? "bg-white" : "bg-gray-800"
+        } p-2 rounded-lg shadow-md w-full md:w-1/4`}>
           <MapPin
             size={16}
             className={`${
@@ -147,16 +142,14 @@ const DoctorList = ({
             value={filters.location}
             onChange={(e) => setFilters({ ...filters, location: e.target.value })}
             className={`w-full p-1 focus:outline-none ${
-              theme === "light" ? "text-gray-800" : "text-gray-100"
+              theme === "light" ? "text-gray-800 bg-transparent" : "text-gray-100 bg-transparent"
             } text-sm`}
           />
         </div>
 
-        <div
-          className={`flex items-center ${
-            theme === "light" ? "bg-white" : "bg-gray-800"
-          } p-2 rounded-lg shadow-md w-full md:w-1/4`}
-        >
+        <div className={`flex items-center ${
+          theme === "light" ? "bg-white" : "bg-gray-800"
+        } p-2 rounded-lg shadow-md w-full md:w-1/4`}>
           <Stethoscope
             size={16}
             className={`${
@@ -169,7 +162,7 @@ const DoctorList = ({
             value={filters.specialization}
             onChange={(e) => setFilters({ ...filters, specialization: e.target.value })}
             className={`w-full p-1 focus:outline-none ${
-              theme === "light" ? "text-gray-800" : "text-gray-100"
+              theme === "light" ? "text-gray-800 bg-transparent" : "text-gray-100 bg-transparent"
             } text-sm`}
           />
         </div>
@@ -189,7 +182,7 @@ const DoctorList = ({
       {/* Doctor Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredData.length > 0 ? (
-          filteredData.map((doctor) => (
+          filteredData.slice(0, visibleDoctors).map((doctor) => (
             <div
               key={doctor.id}
               className={`${
@@ -212,7 +205,7 @@ const DoctorList = ({
                     Dr. {doctor.name}
                   </h2>
                   <p
-                    className={`text-[10px] ${
+                    className={`text-sm ${
                       theme === "light" ? "text-gray-500" : "text-gray-400"
                     }`}
                   >
@@ -223,7 +216,7 @@ const DoctorList = ({
 
               {/* Brief Doctor Info */}
               <div
-                className={`text-[10px] ${
+                className={`text-sm ${
                   theme === "light" ? "text-gray-700" : "text-gray-300"
                 } space-y-1.5`}
               >
@@ -269,7 +262,7 @@ const DoctorList = ({
                     theme === "light"
                       ? "bg-sky-600 hover:bg-sky-700"
                       : "bg-sky-700 hover:bg-sky-800"
-                  } text-white py-1 px-3 rounded-lg text-[10px] transition duration-200 cursor-pointer`}
+                  } text-white py-1 px-3 rounded-lg text-sm transition duration-200 cursor-pointer`}
                 >
                   View Details
                 </button>
@@ -280,7 +273,7 @@ const DoctorList = ({
                     theme === "light"
                       ? "bg-sky-600 hover:bg-sky-700"
                       : "bg-sky-700 hover:bg-sky-800"
-                  } text-white py-1 px-2 rounded-lg text-[10px] transition duration-200 flex items-center cursor-pointer`}
+                  } text-white py-1 px-2 rounded-lg text-sm transition duration-200 flex items-center cursor-pointer`}
                 >
                   <Clock size={12} className="mr-1" /> Working Hours
                 </button>
@@ -312,23 +305,38 @@ const DoctorList = ({
             </div>
           ))
         ) : (
-          <p
-            className={`text-center ${
-              theme === "light" ? "text-red-500" : "text-red-300"
-            } col-span-full py-8 text-sm`}
-          >
+          <p className={`text-center ${
+            theme === "light" ? "text-red-500" : "text-red-300"
+          } col-span-full py-8 text-sm`}>
             No doctors found
           </p>
         )}
       </div>
 
+      {/* Load More Button */}
+      {filteredData.length > visibleDoctors && (
+        <div className="flex justify-center mt-8">
+          <button
+            onClick={() => setVisibleDoctors(prev => prev + 6)}
+            className={`${
+              theme === "light"
+                ? "bg-sky-600 hover:bg-sky-700"
+                : "bg-sky-700 hover:bg-sky-800"
+            } text-white px-6 py-2 rounded-lg transition duration-200 shadow-md text-sm cursor-pointer flex items-center gap-2`}
+          >
+            <span>Load More Doctors</span>
+            <span className="text-xs opacity-80">({filteredData.length - visibleDoctors} remaining)</span>
+          </button>
+        </div>
+      )}
+
       {/* Doctor Details Modal */}
       {detailsModalOpen && selectedDoctor && (
-        <div className="fixed inset-0 flex justify-center items-center z-50">
+        <div className="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-50">
           <div
             className={`${
               theme === "light" ? "bg-white" : "bg-gray-800"
-            } rounded-lg shadow-xl w-full max-w-md p-5 m-4`}
+            } rounded-lg shadow-xl w-full max-w-md p-5 m-4 max-h-[90vh] overflow-y-auto`}
           >
             <div className="flex justify-between items-start mb-3">
               <h2
@@ -336,13 +344,13 @@ const DoctorList = ({
                   theme === "light" ? "text-sky-600" : "text-sky-300"
                 }`}
               >
-               Dr. {selectedDoctor.name}
+                Dr. {selectedDoctor.name}
               </h2>
               <button
                 onClick={closeDetailsModal}
                 className={`${
                   theme === "light" ? "text-gray-400 hover:text-gray-600" : "text-gray-500 hover:text-gray-300"
-                } cursor-pointer`}
+                } cursor-pointer text-xl`}
               >
                 ✕
               </button>
@@ -357,14 +365,14 @@ const DoctorList = ({
               />
               <div>
                 <p
-                  className={`text-[10px] ${
+                  className={`text-sm ${
                     theme === "light" ? "text-gray-500" : "text-gray-400"
                   }`}
                 >
                   {selectedDoctor.category?.categoryName || "Not specified"}
                 </p>
                 <p
-                  className={`text-[10px] ${
+                  className={`text-sm ${
                     theme === "light" ? "text-gray-500" : "text-gray-400"
                   }`}
                 >
@@ -382,7 +390,7 @@ const DoctorList = ({
 
             {/* Doctor Info in Compact Grid */}
             <div
-              className={`grid grid-cols-2 gap-2 mb-3 text-[10px] ${
+              className={`grid grid-cols-2 gap-2 mb-3 text-sm ${
                 theme === "light" ? "text-gray-700" : "text-gray-300"
               }`}
             >
@@ -483,7 +491,7 @@ const DoctorList = ({
             <div className="mb-3">
               <div className="flex justify-between items-center mb-1.5">
                 <h3
-                  className={`font-medium text-[10px] ${
+                  className={`font-medium text-sm ${
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
@@ -496,7 +504,7 @@ const DoctorList = ({
                   }}
                   className={`${
                     theme === "light" ? "text-sky-600" : "text-sky-300"
-                  } text-[9px] underline flex items-center cursor-pointer`}
+                  } text-xs underline flex items-center cursor-pointer`}
                 >
                   <Edit size={10} className="mr-1" /> Edit
                 </button>
@@ -524,14 +532,14 @@ const DoctorList = ({
                       } last:border-0`}
                     >
                       <span
-                        className={`font-medium text-[9px] ${
+                        className={`font-medium text-xs ${
                           theme === "light" ? "text-gray-700" : "text-gray-300"
                         }`}
                       >
                         {workingHour.dayOfWeek}
                       </span>
                       <span
-                        className={`text-[9px] ${
+                        className={`text-xs ${
                           theme === "light" ? "text-gray-600" : "text-gray-400"
                         }`}
                       >
@@ -543,7 +551,7 @@ const DoctorList = ({
                 </div>
               ) : (
                 <p
-                  className={`text-[9px] italic ${
+                  className={`text-xs italic ${
                     theme === "light" ? "text-gray-500" : "text-gray-400"
                   }`}
                 >
@@ -555,14 +563,14 @@ const DoctorList = ({
             {/* About Doctor - Compact */}
             <div className="mb-3">
               <h3
-                className={`font-medium text-[10px] ${
+                className={`font-medium text-sm ${
                   theme === "light" ? "text-gray-700" : "text-gray-300"
                 } mb-0.5`}
               >
                 About Doctor
               </h3>
               <p
-                className={`text-[10px] ${
+                className={`text-sm ${
                   theme === "light" ? "text-gray-600" : "text-gray-400"
                 } max-h-20 overflow-y-auto`}
               >
@@ -581,7 +589,7 @@ const DoctorList = ({
                     theme === "light"
                       ? "bg-blue-100 text-blue-600 hover:bg-blue-200"
                       : "bg-blue-900 text-blue-300 hover:bg-blue-800"
-                  } py-0.5 px-1.5 rounded-full text-[9px] flex items-center transition duration-200`}
+                  } py-0.5 px-1.5 rounded-full text-xs flex items-center transition duration-200`}
                 >
                   <MapPin size={10} className="mr-1" /> Map
                 </a>
@@ -596,7 +604,7 @@ const DoctorList = ({
                     theme === "light"
                       ? "bg-green-100 text-green-600 hover:bg-green-200"
                       : "bg-green-900 text-green-300 hover:bg-green-800"
-                  } py-0.5 px-1.5 rounded-full text-[9px] flex items-center transition duration-200`}
+                  } py-0.5 px-1.5 rounded-full text-xs flex items-center transition duration-200`}
                 >
                   <ExternalLink size={10} className="mr-1" /> WhatsApp
                 </a>
@@ -618,7 +626,7 @@ const DoctorList = ({
                   theme === "light"
                     ? "bg-sky-500 hover:bg-sky-600"
                     : "bg-sky-600 hover:bg-sky-700"
-                  } text-white px-2.5 py-1 rounded-lg mr-1.5 transition duration-200 text-[10px] cursor-pointer`}
+                } text-white px-2.5 py-1 rounded-lg mr-1.5 transition duration-200 text-sm cursor-pointer`}
               >
                 Edit Doctor
               </button>
@@ -631,8 +639,8 @@ const DoctorList = ({
                 className={`${
                   theme === "light"
                     ? "bg-sky-500 hover:bg-sky-600"
-                    : "bg-sky-600 hover:bg-sky-800"
-                  } text-white px-2.5 py-1 rounded-lg transition duration-200 text-[10px] flex items-center cursor-pointer`}
+                    : "bg-sky-600 hover:bg-sky-700"
+                } text-white px-2.5 py-1 rounded-lg transition duration-200 text-sm flex items-center cursor-pointer`}
               >
                 <Clock size={12} className="mr-1" /> Edit Hours
               </button>

@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, Edit2, Save, X, User } from "lucide-react";
+import { Camera, Edit2, Save, X, User, ArrowLeft } from "lucide-react";
 import { getUserData, editUserInfo } from "../services/apiAuth";
 import { ThemeContext } from "../context/ThemeContext";
+import { useNavigate } from "react-router-dom"; // استيراد useNavigate
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -19,7 +20,10 @@ const Profile = () => {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [fileError, setFileError] = useState(""); // رسالة خطأ لتحميل الملف
   const { theme } = useContext(ThemeContext);
+  const navigate = useNavigate(); // تعريف navigate
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -32,7 +36,7 @@ const Profile = () => {
           email: userData.email || "",
         });
       } catch (err) {
-        setError("Failed to load user data");
+        setError(err.message || "Failed to load user data");
         console.error(err);
       } finally {
         setIsLoading(false);
@@ -52,7 +56,20 @@ const Profile = () => {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
+    setFileError(""); // إعادة تعيين رسالة الخطأ
+
     if (file) {
+      // التحقق من نوع الملف
+      if (!file.type.startsWith("image/")) {
+        setFileError("Please upload a valid image file (e.g., JPG, PNG).");
+        return;
+      }
+      // التحقق من حجم الملف (حد أقصى 5 ميجابايت)
+      if (file.size > 5 * 1024 * 1024) {
+        setFileError("Image size must be less than 5MB.");
+        return;
+      }
+
       setAvatarFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -65,10 +82,12 @@ const Profile = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError("");
+    setFileError("");
 
     const updatedData = {
       ...formData,
-      avatar: avatarFile,
+      avatar: avatarFile || formData.avatar, // استخدام الصورة القديمة إذا لم يتم تحميل صورة جديدة
     };
 
     try {
@@ -78,8 +97,15 @@ const Profile = () => {
         setShowSuccess(false);
         setEditMode(false);
       }, 2000);
+      // تحديث حالة user بعد النجاح
+      setUser({
+        ...user,
+        fullName: updatedData.name,
+        imageUser: updatedData.avatar,
+        email: updatedData.email,
+      });
     } catch (err) {
-      setError("Failed to update user data");
+      setError(err.message || "Failed to update user data");
       console.error(err);
     } finally {
       setIsSubmitting(false);
@@ -90,33 +116,27 @@ const Profile = () => {
     setFormData({
       name: user?.fullName || "",
       avatar: user?.imageUser || "",
-      email:user?.email||"",
+      email: user?.email || "",
     });
     setAvatarPreview(null);
     setAvatarFile(null);
+    setFileError("");
     setEditMode(false);
   };
 
-  const fileInputRef = React.createRef();
-
-  if (isLoading)
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <motion.div
-          animate={{
-            rotate: 360,
-          }}
-          transition={{
-            duration: 1,
-            repeat: Infinity,
-            ease: "linear",
-          }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
           className="w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full"
         />
       </div>
     );
+  }
 
-  if (error)
+  if (error) {
     return (
       <motion.div
         initial={{ opacity: 0 }}
@@ -124,8 +144,15 @@ const Profile = () => {
         className="p-4 bg-red-100 text-red-700 rounded-lg max-w-md mx-auto mt-10 text-center"
       >
         {error}
+        <button
+          onClick={() => window.location.reload()}
+          className="ml-2 text-sky-600 hover:underline"
+        >
+          Try Again
+        </button>
       </motion.div>
     );
+  }
 
   return (
     <motion.div
@@ -136,9 +163,6 @@ const Profile = () => {
         theme === "light" ? "bg-white" : "bg-gray-800"
       }`}
     >
-      {/* Background Design Element */}
-      <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-sky-400 to-sky-600 -z-10 rounded-t-2xl" />
-
       {/* Success Message */}
       <AnimatePresence>
         {showSuccess && (
@@ -157,13 +181,36 @@ const Profile = () => {
         )}
       </AnimatePresence>
 
-      <h1
-        className={`text-2xl lg:text-3xl font-bold mb-6 text-center ${
-          theme === "light" ? "text-sky-700" : "text-white"
-        }`}
-      >
-        User Profile
-      </h1>
+      <div className="relative flex justify-center items-center mb-4">
+        <button
+          onClick={() => navigate(-1)}
+          className={`absolute left-0 p-1.5 rounded-full ${
+            theme === "dark"
+              ? "bg-sky-800 hover:bg-sky-700"
+              : "bg-sky-100 hover:bg-sky-200"
+          } cursor-pointer transition-colors duration-200 ${
+            isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+          disabled={isSubmitting}
+          aria-label="Go back"
+        >
+          <ArrowLeft
+            className={theme === "dark" ? "text-gray-300" : "text-sky-600"}
+            size={20}
+          />
+        </button>
+        <h1
+          className={`flex items-center gap-2 text-2xl lg:text-3xl font-bold ${
+            theme === "light" ? "text-sky-700" : "text-white"
+          }`}
+        >
+          <User
+            className={theme === "light" ? "text-sky-600" : "text-gray-300"}
+            size={24}
+          />
+          User Profile
+        </h1>
+      </div>
 
       <div className="flex flex-col md:flex-row items-center justify-center md:items-start gap-8 mt-8">
         {/* Avatar Section */}
@@ -172,13 +219,11 @@ const Profile = () => {
           whileHover={{ scale: editMode ? 1.05 : 1 }}
         >
           <div
-            className={`w-36 h-36 md:w-48 md:h-48 rounded-full relative overflow-hidden 
-        ${
-          theme === "light"
-            ? "bg-sky-100 border-sky-200"
-            : "bg-gray-700 border-gray-600"
-        } 
-        border-4 shadow-md`}
+            className={`w-36 h-36 md:w-48 md:h-48 rounded-full relative overflow-hidden ${
+              theme === "light"
+                ? "bg-sky-100 border-sky-200"
+                : "bg-gray-700 border-gray-600"
+            } border-4 shadow-md`}
           >
             {avatarPreview || formData.avatar ? (
               <img
@@ -188,8 +233,9 @@ const Profile = () => {
               />
             ) : (
               <div
-                className={`w-full h-full flex items-center justify-center 
-          ${theme === "light" ? "bg-sky-50" : "bg-gray-800"}`}
+                className={`w-full h-full flex items-center justify-center ${
+                  theme === "light" ? "bg-sky-50" : "bg-gray-800"
+                }`}
               >
                 <User
                   size={64}
@@ -206,8 +252,10 @@ const Profile = () => {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => fileInputRef.current.click()}
-              className={`absolute bottom-2 right-2 p-3 cursor-pointer rounded-full text-white shadow-lg 
-          ${theme === "light" ? "bg-sky-500" : "bg-gray-600"}`}
+              className={`absolute bottom-2 right-2 p-3 cursor-pointer rounded-full text-white shadow-lg ${
+                theme === "light" ? "bg-sky-500" : "bg-gray-600"
+              } ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+              disabled={isSubmitting}
             >
               <Camera size={20} />
               <input
@@ -218,8 +266,12 @@ const Profile = () => {
                 onChange={handleFileChange}
                 className="hidden"
                 accept="image/*"
+                disabled={isSubmitting}
               />
             </motion.button>
+          )}
+          {fileError && (
+            <p className="text-red-500 text-xs mt-2 text-center">{fileError}</p>
           )}
         </motion.div>
 
@@ -259,8 +311,41 @@ const Profile = () => {
                     }`}
                     placeholder="Enter your full name"
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
+
+                <div>
+                  <label
+                    className={`block text-sm font-medium ${
+                      theme === "light" ? "text-gray-700" : "text-gray-300"
+                    } mb-1`}
+                    htmlFor="email"
+                  >
+                    Email:
+                  </label>
+                  <motion.input
+                    whileFocus={{ scale: 1.01 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border ${
+                      theme === "light" ? "border-sky-200" : "border-gray-600"
+                    } rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all ${
+                      theme === "light" ? "bg-white" : "bg-gray-800 text-white"
+                    }`}
+                    placeholder="Enter your email"
+                    required
+                    disabled={true}
+                  />
+                </div>
+
+                {error && (
+                  <p className="text-red-500 text-sm text-center">{error}</p>
+                )}
 
                 <div className="flex flex-wrap gap-3 justify-end mt-6">
                   <motion.button
@@ -272,7 +357,9 @@ const Profile = () => {
                       theme === "light"
                         ? "bg-gray-100 hover:bg-gray-200 text-gray-700"
                         : "bg-gray-700 hover:bg-gray-600 text-gray-300"
-                    } px-5 py-2.5 rounded-lg transition-colors`}
+                    } px-5 py-2.5 rounded-lg transition-colors ${
+                      isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
                     disabled={isSubmitting}
                   >
                     <X size={18} />
@@ -294,15 +381,26 @@ const Profile = () => {
                   >
                     {isSubmitting ? (
                       <>
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{
-                            duration: 1,
-                            repeat: Infinity,
-                            ease: "linear",
-                          }}
-                          className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
-                        />
+                        <svg
+                          className="animate-spin h-4 w-4 mr-2 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
                         <span>Saving...</span>
                       </>
                     ) : (

@@ -3,7 +3,6 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
 import Input from "../../components/ui/Input";
-import { Card, CardContent } from "../../components/ui/Card";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import AuthContext from "../../context/AuthContext";
@@ -91,8 +90,7 @@ const LoginForm = () => {
   });
 
   return (
-    <Card className="shadow-xl rounded-lg p-8 max-w-md mx-auto bg-white">
-    <CardContent>
+    <div className="shadow-xl rounded-lg p-8 max-w-md mx-auto bg-white">
       <div className="text-center mb-6 mt-4">
         <h1 className="text-3xl font-semibold text-gray-800">LOGIN</h1>
         <p className="text-sm text-gray-500 mt-2">Please sign in to continue.</p>
@@ -144,11 +142,7 @@ const LoginForm = () => {
           />
           <label htmlFor="rememberMe" className="text-sm text-gray-700">Remember Me</label>
         </div>
-  
-        <p className="text-right text-sm text-sky-500 mt-2 cursor-pointer hover:underline">
-          Forgot your password?
-        </p>
-  
+
         <button
           type="submit"
           className="w-full py-3 px-4 bg-gradient-to-r from-sky-500 to-indigo-600 text-white font-semibold cursor-pointer rounded-lg shadow-md hover:from-sky-600 hover:to-indigo-700 transition duration-300 ease-in-out"
@@ -157,8 +151,7 @@ const LoginForm = () => {
           {loading ? "Logging in..." : "LOGIN"}
         </button>
       </form>
-    </CardContent>
-  </Card>
+    </div>
   
 
   );

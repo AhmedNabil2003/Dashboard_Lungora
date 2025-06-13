@@ -4,6 +4,7 @@ import { ThemeContext } from "../../context/ThemeContext";
 import WorkingHoursEditor from "./WorkingHoursEditor";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 // Custom marker icon setup
 const createCustomIcon = () => {
@@ -27,6 +28,7 @@ const LocationPicker = ({ onLocationSelect, initialPosition }) => {
     click: (e) => {
       const { lat, lng } = e.latlng;
       onLocationSelect(lat, lng);
+      map.flyTo([lat, lng], map.getZoom());
     },
   });
 
@@ -57,12 +59,12 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
     longitude: 31.2357,
     categoryId: "",
   });
-
   const [activeTab, setActiveTab] = useState("basic");
   const [errors, setErrors] = useState({});
   const [imagePreview, setImagePreview] = useState(null);
   const [showWorkingHours, setShowWorkingHours] = useState(false);
-  const [mapKey, setMapKey] = useState(Date.now()); // Used to force remount the map
+  const [isLoading, setIsLoading] = useState(false); // حالة التحميل
+  const [errorMessage, setErrorMessage] = useState(null); // رسالة الخطأ
 
   // Map of governorate coordinates to names (for Egypt)
   const egyptGovernorates = [
@@ -95,7 +97,6 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
     let minDistance = Number.MAX_VALUE;
 
     egyptGovernorates.forEach((gov) => {
-      // Simple Euclidean distance - sufficient for demo purposes
       const distance = Math.sqrt(
         Math.pow(gov.lat - lat, 2) + Math.pow(gov.lng - lng, 2)
       );
@@ -117,7 +118,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
         emailDoctor: doctor.emailDoctor || "",
         phone: doctor.phone || "",
         teliphone: doctor.teliphone || "",
-        experienceYears: doctor.experianceYears || 0,
+        experianceYears: doctor.experianceYears || 0,
         numOfPatients: doctor.numOfPatients || 0,
         location: doctor.location || "",
         about: doctor.about || "",
@@ -132,9 +133,24 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
       if (doctor.imageDoctor) {
         setImagePreview(doctor.imageDoctor);
       }
-
-      // Force map to rerender with new location
-      setMapKey(Date.now());
+    } else {
+      setFormData({
+        name: "",
+        emailDoctor: "",
+        phone: "",
+        teliphone: "",
+        experianceYears: 0,
+        numOfPatients: 0,
+        location: "",
+        about: "",
+        whatsAppLink: "",
+        locationLink: "",
+        imageDoctor: "",
+        latitude: 30.0444,
+        longitude: 31.2357,
+        categoryId: "",
+      });
+      setImagePreview(null);
     }
   }, [doctor]);
 
@@ -145,13 +161,18 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
 
     if (type === "file") {
       const file = e.target.files[0];
-      if (file) {
+      if (file && file.type.startsWith("image/")) {
         setFormData({ ...formData, [name]: file });
         const reader = new FileReader();
         reader.onloadend = () => {
           setImagePreview(reader.result);
         };
         reader.readAsDataURL(file);
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          imageDoctor: "Please upload a valid image file",
+        }));
       }
     } else if (type === "number") {
       setFormData({ ...formData, [name]: Number.parseFloat(value) || 0 });
@@ -159,7 +180,6 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
       setFormData({ ...formData, [name]: value });
     }
 
-    // Clear error when field is edited
     if (errors[name]) {
       const newErrors = { ...errors };
       delete newErrors[name];
@@ -168,18 +188,15 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
   };
 
   const handleLocationSelect = (lat, lng) => {
-    // Update coordinates
     const updatedFormData = {
       ...formData,
       latitude: lat,
       longitude: lng,
     };
 
-    // Create Google Maps link
     const googleMapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
     updatedFormData.locationLink = googleMapsLink;
 
-    // Find nearest governorate/province
     const nearestGov = findNearestGovernorate(lat, lng);
     if (nearestGov) {
       updatedFormData.location = nearestGov.name;
@@ -209,8 +226,8 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
       newErrors.teliphone = "Mobile is required";
     }
 
-    if (!formData.experienceYears) {
-      newErrors.experienceYears = "Experience years is required";
+    if (formData.experianceYears === undefined || formData.experianceYears < 0) {
+      newErrors.experianceYears = "experiance years is required and must be non-negative";
     }
 
     if (!formData.location?.trim()) {
@@ -229,46 +246,55 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (validateForm()) {
-      onSave(formData);
-    } else {
-      // Switch to the tab with errors
-      if (
-        Object.keys(errors).some((key) =>
-          [
-            "name",
-            "emailDoctor",
-            "phone",
-            "teliphone",
-            "experienceYears",
-            "categoryId",
-          ].includes(key)
-        )
-      ) {
-        setActiveTab("basic");
-      } else if (
-        Object.keys(errors).some((key) =>
-          ["location", "locationLink", "latitude", "longitude"].includes(key)
-        )
-      ) {
-        setActiveTab("location");
-      } else if (
-        Object.keys(errors).some((key) =>
-          ["about", "whatsAppLink", "imageDoctor"].includes(key)
-        )
-      ) {
-        setActiveTab("additional");
+    try {
+      if (validateForm()) {
+        setIsLoading(true);
+        setErrorMessage(null);
+        console.log("Submitting form data:", formData);
+        await onSave(formData);
+        setIsLoading(false);
+        onClose();
+      } else {
+        console.log("Form validation errors:", errors);
+        if (
+          Object.keys(errors).some((key) =>
+            [
+              "name",
+              "emailDoctor",
+              "phone",
+              "teliphone",
+              "experianceYears",
+              "categoryId",
+            ].includes(key)
+          )
+        ) {
+          setActiveTab("basic");
+        } else if (
+          Object.keys(errors).some((key) =>
+            ["location", "locationLink", "latitude", "longitude"].includes(key)
+          )
+        ) {
+          setActiveTab("location");
+        } else if (
+          Object.keys(errors).some((key) =>
+            ["about", "whatsAppLink", "imageDoctor"].includes(key)
+          )
+        ) {
+          setActiveTab("additional");
+        }
       }
+    } catch (error) {
+      console.error("Error during form submission:", error);
+      setIsLoading(false);
+      setErrorMessage("Failed to save doctor. Please try again.");
     }
-    console.log("Form data being sent:", formData);
   };
 
-  // Real Map Selector component using react-leaflet
   const RealMapSelector = ({ initialLat, initialLng, onLocationSelect }) => {
-    const position = [initialLat, initialLng];
+    const position = [initialLat || 30.0444, initialLng || 31.2357];
     const customIcon = createCustomIcon();
 
     return (
@@ -277,10 +303,9 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
           center={position}
           zoom={13}
           style={{ height: "100%", minHeight: "150px", width: "100%" }}
-          key={mapKey}
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <Marker position={position} icon={customIcon} />
@@ -290,10 +315,8 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
           />
         </MapContainer>
         <div
-          className={`absolute bottom-1 left-1/2 transform -translate-x-1/2 px-1 py-0.5 rounded text-[10px] shadow ${
-            theme === "light"
-              ? "bg-white text-gray-700"
-              : "bg-gray-800 text-gray-300"
+          className={`absolute bottom-1 left-1/2 transform -translate-x-1/2 px-1 py-0.5 rounded text-sm shadow ${
+            theme === "light" ? "bg-white text-gray-700" : "bg-gray-800 text-gray-300"
           }`}
         >
           Click anywhere on map to set location
@@ -302,20 +325,18 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
     );
   };
 
-  // Open working hours editor
   const handleOpenWorkingHours = () => {
     setShowWorkingHours(true);
   };
 
-  // Close working hours editor
   const handleCloseWorkingHours = () => {
     setShowWorkingHours(false);
   };
 
   return (
-   <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30">
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30">
       <div
-        className={`p-3 rounded-lg shadow-xl w-full max-w-[320px] max-h-[90vh] overflow-y-auto ${
+        className={`p-3 rounded-lg shadow-xl w-full max-w-[320px] md:max-w-[500px] lg:max-w-[800px] max-h-[90vh] overflow-y-auto ${
           theme === "light" ? "bg-white" : "bg-gray-800"
         }`}
       >
@@ -334,13 +355,13 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                 ? "text-gray-400 hover:text-gray-600"
                 : "text-gray-500 hover:text-gray-300"
             } cursor-pointer text-sm`}
+            disabled={isLoading}
           >
             ✕
           </button>
         </div>
 
         <form onSubmit={handleSubmit}>
-          {/* Tabs - Compact */}
           <div
             className={`flex border-b mb-2 overflow-x-auto ${
               theme === "light" ? "border-gray-200" : "border-gray-600"
@@ -348,73 +369,76 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
           >
             <button
               type="button"
-              className={`px-2 py-0.5 text-[9px] ${
+              className={`px-2 py-0.5 text-sm ${
                 activeTab === "basic"
                   ? theme === "light"
                     ? "border-b-2 border-sky-500 text-sky-600"
                     : "border-b-2 border-sky-300 text-sky-300"
                   : theme === "light"
-                    ? "text-gray-500"
-                    : "text-gray-400"
+                  ? "text-gray-500"
+                  : "text-gray-400"
               } cursor-pointer`}
               onClick={() => setActiveTab("basic")}
+              disabled={isLoading}
             >
               Basic
             </button>
             <button
               type="button"
-              className={`px-2 py-0.5 text-[9px] ${
+              className={`px-2 py-0.5 text-sm ${
                 activeTab === "location"
                   ? theme === "light"
                     ? "border-b-2 border-sky-500 text-sky-600"
                     : "border-b-2 border-sky-300 text-sky-300"
                   : theme === "light"
-                    ? "text-gray-500"
-                    : "text-gray-400"
+                  ? "text-gray-500"
+                  : "text-gray-400"
               } cursor-pointer`}
               onClick={() => setActiveTab("location")}
+              disabled={isLoading}
             >
               Location
             </button>
             <button
               type="button"
-              className={`px-2 py-0.5 text-[9px] ${
+              className={`px-2 py-0.5 text-sm ${
                 activeTab === "additional"
                   ? theme === "light"
                     ? "border-b-2 border-sky-500 text-sky-600"
                     : "border-b-2 border-sky-300 text-sky-300"
                   : theme === "light"
-                    ? "text-gray-500"
-                    : "text-gray-400"
+                  ? "text-gray-500"
+                  : "text-gray-400"
               } cursor-pointer`}
               onClick={() => setActiveTab("additional")}
+              disabled={isLoading}
             >
               Additional
             </button>
             <button
               type="button"
-              className={`px-2 py-0.5 text-[9px] ${
+              className={`px-2 py-0.5 text-sm ${
                 activeTab === "workinghours"
                   ? theme === "light"
                     ? "border-b-2 border-sky-500 text-sky-600"
                     : "border-b-2 border-sky-300 text-sky-300"
                   : theme === "light"
-                    ? "text-gray-500"
-                    : "text-gray-400"
+                  ? "text-gray-500"
+                  : "text-gray-400"
               } cursor-pointer`}
               onClick={() => setActiveTab("workinghours")}
+              disabled={isLoading}
             >
               Working Hours
             </button>
           </div>
 
-          {/* Basic Tab Content - Compact */}
           {activeTab === "basic" && (
-            <div className="grid grid-cols-2 gap-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
               <div className="space-y-0.5">
                 <label
                   htmlFor="name"
-                  className={`block text-[9px] font-medium ${
+                  className={`block text-sm font-medium ${
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
@@ -426,13 +450,14 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   type="text"
                   value={formData.name}
                   onChange={handleChange}
-                  className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                  className={`w-full px-1 py-0.5 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
                     errors.name
                       ? "border-red-500"
                       : theme === "light"
                       ? "border-gray-300"
                       : "border-gray-600"
                   } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
+                  disabled={isLoading}
                 />
                 {errors.name && (
                   <p className="text-red-500 text-[8px]">{errors.name}</p>
@@ -442,7 +467,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
               <div className="space-y-0.5">
                 <label
                   htmlFor="categoryId"
-                  className={`block text-[9px] font-medium ${
+                  className={`block text-sm font-medium ${
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
@@ -453,13 +478,14 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   name="categoryId"
                   value={formData.categoryId}
                   onChange={handleChange}
-                  className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer transition-colors appearance-none ${
+                  className={`w-full px-1 py-0.5 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer transition-colors appearance-none ${
                     errors.categoryId
                       ? "border-red-500"
                       : theme === "light"
                       ? "border-gray-300 bg-white"
                       : "border-gray-600 bg-gray-800 text-gray-200"
                   }`}
+                  disabled={isLoading}
                 >
                   <option value="" disabled className="cursor-pointer">
                     Select Category
@@ -487,7 +513,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
               <div className="space-y-0.5">
                 <label
                   htmlFor="emailDoctor"
-                  className={`block text-[9px] font-medium ${
+                  className={`block text-sm font-medium ${
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
@@ -499,13 +525,14 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   type="email"
                   value={formData.emailDoctor}
                   onChange={handleChange}
-                  className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                  className={`w-full px-1 py-0.5 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
                     errors.emailDoctor
                       ? "border-red-500"
                       : theme === "light"
                       ? "border-gray-300"
                       : "border-gray-600"
                   } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
+                  disabled={isLoading}
                 />
                 {errors.emailDoctor && (
                   <p className="text-red-500 text-[8px]">{errors.emailDoctor}</p>
@@ -515,7 +542,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
               <div className="space-y-0.5">
                 <label
                   htmlFor="phone"
-                  className={`block text-[9px] font-medium ${
+                  className={`block text-sm font-medium ${
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
@@ -527,13 +554,14 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   type="text"
                   value={formData.phone}
                   onChange={handleChange}
-                  className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                  className={`w-full px-1 py-0.5 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
                     errors.phone
                       ? "border-red-500"
                       : theme === "light"
                       ? "border-gray-300"
                       : "border-gray-600"
                   } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
+                  disabled={isLoading}
                 />
                 {errors.phone && (
                   <p className="text-red-500 text-[8px]">{errors.phone}</p>
@@ -543,7 +571,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
               <div className="space-y-0.5">
                 <label
                   htmlFor="teliphone"
-                  className={`block text-[9px] font-medium ${
+                  className={`block text-sm font-medium ${
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
@@ -555,13 +583,14 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   type="text"
                   value={formData.teliphone}
                   onChange={handleChange}
-                  className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                  className={`w-full px-1 py-0.5 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
                     errors.teliphone
                       ? "border-red-500"
                       : theme === "light"
                       ? "border-gray-300"
                       : "border-gray-600"
                   } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
+                  disabled={isLoading}
                 />
                 {errors.teliphone && (
                   <p className="text-red-500 text-[8px]">{errors.teliphone}</p>
@@ -570,30 +599,31 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
 
               <div className="space-y-0.5">
                 <label
-                  htmlFor="experienceYears"
-                  className={`block text-[9px] font-medium ${
+                  htmlFor="experianceYears"
+                  className={`block text-sm font-medium ${
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
-                  Experience (years)
+                  experience (years)
                 </label>
                 <input
-                  id="experienceYears"
-                  name="experienceYears"
+                  id="experianceYears"
+                  name="experianceYears"
                   type="number"
-                  value={formData.experienceYears}
+                  value={formData.experianceYears}
                   onChange={handleChange}
-                  className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
-                    errors.experienceYears
+                  className={`w-full px-1 py-0.5 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                    errors.experianceYears
                       ? "border-red-500"
                       : theme === "light"
                       ? "border-gray-300"
                       : "border-gray-600"
                   } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
+                  disabled={isLoading}
                 />
-                {errors.experienceYears && (
+                {errors.experianceYears && (
                   <p className="text-red-500 text-[8px]">
-                    {errors.experienceYears}
+                    {errors.experianceYears}
                   </p>
                 )}
               </div>
@@ -601,7 +631,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
               <div className="space-y-0.5">
                 <label
                   htmlFor="numOfPatients"
-                  className={`block text-[9px] font-medium ${
+                  className={`block text-sm font-medium ${
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
@@ -613,22 +643,22 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   type="number"
                   value={formData.numOfPatients}
                   onChange={handleChange}
-                  className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                  className={`w-full px-1 py-0.5 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
                     theme === "light" ? "border-gray-300" : "border-gray-600"
                   } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
+                  disabled={isLoading}
                 />
               </div>
             </div>
           )}
 
-          {/* Location Tab Content - With Real Map */}
           {activeTab === "location" && (
             <div className="space-y-1.5">
               <div className="grid grid-cols-2 gap-1">
                 <div className="space-y-0.5">
                   <label
                     htmlFor="location"
-                    className={`block text-[9px] font-medium ${
+                    className={`block text-sm font-medium ${
                       theme === "light" ? "text-gray-700" : "text-gray-300"
                     }`}
                   >
@@ -640,13 +670,14 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                     type="text"
                     value={formData.location}
                     onChange={handleChange}
-                    className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                    className={`w-full px-1 py-0.5 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
                       errors.location
                         ? "border-red-500"
                         : theme === "light"
                         ? "border-gray-300"
                         : "border-gray-600"
                     } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
+                    disabled={isLoading}
                   />
                   {errors.location && (
                     <p className="text-red-500 text-[8px]">{errors.location}</p>
@@ -656,7 +687,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                 <div className="space-y-0.5">
                   <label
                     htmlFor="locationLink"
-                    className={`block text-[9px] font-medium ${
+                    className={`block text-sm font-medium ${
                       theme === "light" ? "text-gray-700" : "text-gray-300"
                     }`}
                   >
@@ -668,16 +699,17 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                     type="text"
                     value={formData.locationLink}
                     onChange={handleChange}
-                    className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                    className={`w-full px-1 py-0.5 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
                       theme === "light" ? "border-gray-300" : "border-gray-600"
                     } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
+                    disabled={isLoading}
                   />
                 </div>
               </div>
 
               <div className="space-y-0.5">
                 <label
-                  className={`flex items-center text-[9px] font-medium ${
+                  className={`flex items-center text-sm font-medium ${
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
@@ -689,7 +721,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   Select Location on Map
                 </label>
                 <div
-                  className={`h-[120px] w-full relative rounded-md border overflow-hidden ${
+                  className={`h-[120px] md:h-[200px] lg:h-[300px] w-full relative rounded-md border overflow-hidden ${
                     theme === "light" ? "border-gray-300" : "border-gray-600"
                   }`}
                 >
@@ -700,7 +732,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   />
                 </div>
                 <div
-                  className={`flex gap-1 text-[9px] ${
+                  className={`flex gap-1 text-sm ${
                     theme === "light" ? "text-gray-500" : "text-gray-400"
                   }`}
                 >
@@ -711,13 +743,12 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
             </div>
           )}
 
-          {/* Additional Tab Content - Compact */}
           {activeTab === "additional" && (
             <div className="space-y-1.5">
               <div className="space-y-0.5">
                 <label
                   htmlFor="about"
-                  className={`block text-[9px] font-medium ${
+                  className={`block text-sm font-medium ${
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
@@ -728,13 +759,14 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   name="about"
                   value={formData.about}
                   onChange={handleChange}
-                  className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 min-h-[40px] max-h-[60px] ${
+                  className={`w-full px-1 py-0.5 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 min-h-[40px] max-h-[60px] ${
                     errors.about
                       ? "border-red-500"
                       : theme === "light"
                       ? "border-gray-300"
                       : "border-gray-600"
                   } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
+                  disabled={isLoading}
                 />
                 {errors.about && (
                   <p className="text-red-500 text-[8px]">{errors.about}</p>
@@ -745,7 +777,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                 <div className="space-y-0.5">
                   <label
                     htmlFor="whatsAppLink"
-                    className={`block text-[9px] font-medium ${
+                    className={`block text-sm font-medium ${
                       theme === "light" ? "text-gray-700" : "text-gray-300"
                     }`}
                   >
@@ -757,16 +789,17 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                     type="text"
                     value={formData.whatsAppLink}
                     onChange={handleChange}
-                    className={`w-full px-1 py-0.5 text-[9px] border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                    className={`w-full px-1 py-0.5 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
                       theme === "light" ? "border-gray-300" : "border-gray-600"
                     } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
+                    disabled={isLoading}
                   />
                 </div>
 
                 <div className="space-y-0.5">
                   <label
                     htmlFor="imageDoctor"
-                    className={`block text-[9px] font-medium ${
+                    className={`block text-sm font-medium ${
                       theme === "light" ? "text-gray-700" : "text-gray-300"
                     }`}
                   >
@@ -789,24 +822,29 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                       accept="image/*"
                       onChange={handleChange}
                       className="hidden"
+                      disabled={isLoading}
                     />
                     <label
                       htmlFor="imageDoctor"
-                      className={`inline-block px-2 py-1 text-[9px] font-medium rounded-md cursor-pointer transition-colors ${
+                      className={`inline-block px-2 py-1 text-sm font-medium rounded-md cursor-pointer transition-colors ${
                         theme === "light"
                           ? "bg-sky-100 text-sky-700 hover:bg-sky-200 border border-gray-300"
                           : "bg-sky-900 text-sky-300 hover:bg-sky-800 border border-gray-600"
-                      }`}
+                      } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
                       {imagePreview ? "Edit Image" : "Upload Image"}
                     </label>
                   </div>
+                  {errors.imageDoctor && (
+                    <p className="text-red-500 text-[8px]">
+                      {errors.imageDoctor}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
           )}
 
-          {/* Working Hours Tab Content */}
           {activeTab === "workinghours" && (
             <div className="space-y-1.5">
               <div
@@ -823,7 +861,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                     } mr-1`}
                   />
                   <h3
-                    className={`text-[9px] font-medium ${
+                    className={`text-sm font-medium ${
                       theme === "light" ? "text-sky-700" : "text-sky-200"
                     }`}
                   >
@@ -839,7 +877,6 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   when you're available.
                 </p>
 
-                {/* Note about saving first */}
                 {!doctor?.id ? (
                   <div
                     className={`p-1 rounded border text-[8px] ${
@@ -856,9 +893,9 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                 <button
                   type="button"
                   onClick={handleOpenWorkingHours}
-                  disabled={!doctor?.id}
-                  className={`w-full flex items-center justify-center py-1 px-2 rounded-md text-[9px] font-medium ${
-                    doctor?.id
+                  disabled={!doctor?.id || isLoading}
+                  className={`w-full flex items-center justify-center py-1 px-2 rounded-md text-sm font-medium ${
+                    doctor?.id && !isLoading
                       ? theme === "light"
                         ? "bg-sky-600 text-white hover:bg-sky-700"
                         : "bg-sky-700 text-white hover:bg-sky-800"
@@ -869,7 +906,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                 >
                   <Clock
                     className={`h-2.5 w-2.5 mr-1 ${
-                      doctor?.id
+                      doctor?.id && !isLoading
                         ? "text-white"
                         : theme === "light"
                         ? "text-gray-500"
@@ -882,7 +919,18 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
             </div>
           )}
 
-          {/* Action Buttons - Compact */}
+          {errorMessage && (
+            <div
+              className={`p-2 rounded border text-[8px] mb-2 ${
+                theme === "light"
+                  ? "bg-red-50 border-red-200 text-red-800"
+                  : "bg-red-900 border-red-800 text-red-200"
+              }`}
+            >
+              {errorMessage}
+            </div>
+          )}
+
           <div
             className={`flex justify-end mt-2 pt-1 border-t ${
               theme === "light" ? "border-gray-200" : "border-gray-600"
@@ -895,7 +943,10 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                 theme === "light"
                   ? "bg-gray-400 hover:bg-gray-500"
                   : "bg-gray-600 hover:bg-gray-700"
-              } text-white px-2 py-0.5 rounded-md mr-1 transition-colors text-[9px] cursor-pointer`}
+              } text-white px-2 py-0.5 rounded-md mr-1 transition-colors text-sm cursor-pointer ${
+                isLoading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              disabled={isLoading}
             >
               Cancel
             </button>
@@ -905,15 +956,43 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                 theme === "light"
                   ? "bg-sky-600 hover:bg-sky-700"
                   : "bg-sky-700 hover:bg-sky-800"
-              } text-white px-2 py-0.5 rounded-md transition-colors text-[9px] cursor-pointer`}
+              } text-white px-2 py-0.5 rounded-md transition-colors text-sm cursor-pointer flex items-center justify-center relative ${
+                isLoading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              disabled={isLoading}
             >
-              Save
+              {isLoading ? (
+                <span className="flex items-center">
+                  <svg
+                    className="animate-spin h-4 w-4 mr-2 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Saving...
+                </span>
+              ) : (
+                "Save"
+              )}
             </button>
           </div>
         </form>
       </div>
 
-      {/* Working Hours Modal */}
       {showWorkingHours && doctor?.id && (
         <WorkingHoursEditor
           isOpen={showWorkingHours}
@@ -927,5 +1006,3 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
 };
 
 export default DoctorForm;
-
-

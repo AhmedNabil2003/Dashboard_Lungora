@@ -35,25 +35,6 @@ const Settingss = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Reset form to initial state
-  const resetForm = () => {
-    setFormData({
-      language: 'en',
-      theme: 'light',
-      notifications: {
-        email: true,
-        push: true,
-        marketing: false
-      },
-      privacy: {
-        profileVisibility: 'public',
-        activityStatus: true,
-        dataSharing: false
-      },
-      twoFactorAuth: false
-    });
-  };
-
   // Handle form data changes
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -102,9 +83,7 @@ const Settingss = () => {
       transition={{ duration: 0.5 }}
       className="p-6 lg:p-8 bg-white shadow-lg rounded-2xl max-w-4xl mx-auto my-8 relative overflow-hidden"
     >
-      {/* Background Design Element */}
-      <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-sky-400 to-sky-600 -z-10 rounded-t-2xl" />
-      
+
       {/* Success Message */}
       <AnimatePresence>
         {showSuccess && (

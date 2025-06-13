@@ -250,15 +250,32 @@ const ProfileSection = ({ isSidebarOpen, theme }) => (
       animate={{ opacity: 1 }}
       transition={{ delay: 0.2 }}
     >
-      <div className="relative">
+      <div className="relative group">
+        {/* تأثير الضوء الساحر حول الصورة */}
+        <div
+          className="
+    absolute inset-0 rounded-full
+    border-2 border-transparent
+    group-hover:border-blue-300
+    transition-all duration-500
+    shadow-[0_0_10px_2px_rgba(96,165,250,0.7)]
+    hover:shadow-[0_0_15px_5px_rgba(96,165,250,0.9)]
+  "
+        ></div>
+
         <img
           src={LungoraImage}
           alt="Lungora"
-          className={`${
-            isSidebarOpen ? "w-12 h-12" : "w-10 h-10"
-          } rounded-full border-2 border-white object-cover shadow-md hover:scale-105 transition-transform duration-300`}
+          className={`
+      ${isSidebarOpen ? "w-12 h-12" : "w-10 h-10"}
+      relative z-10
+      rounded-full border-2 border-white
+      object-cover shadow-md
+      hover:scale-105
+      transition-all duration-300
+      group-hover:brightness-110
+    `}
         />
-        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
       </div>
 
       {isSidebarOpen && (
