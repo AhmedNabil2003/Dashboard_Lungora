@@ -1,41 +1,33 @@
-import { useState, useEffect } from "react";
-import {
-  getAllDoctors,
-  getDoctorById,
-  createDoctor,
-  updateDoctor,
-  deleteDoctor,
-} from "../../services/apiDoctors";
+import { useState, useEffect } from "react"
+import { getDashboardData } from "../../services/apiDashboardData"
 
-export const useDoctors = () => {
-  const [doctors, setDoctors] = useState([]);
-  const [loading, setLoading] = useState(false);
+export const useDashboard = () => {
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  const fetchDoctors = async () => {
-    setLoading(true);
-    const data = await getAllDoctors();
-    setDoctors(data);
-    setLoading(false);
-  };
-
-  const addDoctor = async (doctor) => {
-    await createDoctor(doctor);
-    fetchDoctors();
-  };
-
-  const editDoctor = async (id, doctor) => {
-    await updateDoctor(id, doctor);
-    fetchDoctors();
-  };
-
-  const removeDoctor = async (id) => {
-    await deleteDoctor(id);
-    fetchDoctors();
-  };
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const dashboardData = await getDashboardData()
+      setData(dashboardData)
+    } catch (err) {
+      setError(err.message)
+      console.error("Dashboard data fetch error:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    fetchDoctors();
-  }, []);
+    fetchDashboardData()
+  }, [])
 
-  return { doctors, loading, fetchDoctors, addDoctor, editDoctor, removeDoctor };
-};
+  return {
+    data,
+    loading,
+    error,
+    refetch: fetchDashboardData,
+  }
+}

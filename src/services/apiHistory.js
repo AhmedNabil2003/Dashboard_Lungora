@@ -1,18 +1,32 @@
-import axios from "axios";
+import axiosInstance from "./axiosInstance"; 
 
-const API_URL = "http/history";
-
-export const getUserHistory = async (userId) => {
-  const res = await axios.get(`${API_URL}/user/${userId}`);
-  return res.data;
-};
 
 export const getAllHistory = async () => {
-  const res = await axios.get(API_URL);
-  return res.data;
+  try {
+    const res = await axiosInstance.get("ModelAI/GetAllHistories");
+    return res.data;
+  } catch (error) {
+    console.error("Error fetching all histories:", error);
+    throw error;
+  }
+};
+
+export const getHistoryById = async (id) => {
+  try {
+    const res = await axiosInstance.get(`ModelAI/GetHistoryById/${id}`);
+    return res.data;
+  } catch (error) {
+    console.error(`Error fetching history with ID ${id}:`, error);
+    throw error;
+  }
 };
 
 export const deleteHistory = async (id) => {
-  const res = await axios.delete(`${API_URL}/${id}`);
-  return res.data;
+  try {
+    const res = await axiosInstance.delete(`ModelAI/RemoveHistory/${id}`);
+    return res.data;
+  } catch (error) {
+    console.error(`Error deleting history with ID ${id}:`, error);
+    throw error;
+  }
 };

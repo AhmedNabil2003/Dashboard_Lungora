@@ -8,8 +8,9 @@ import toast from "react-hot-toast";
 import AuthContext from "../../context/AuthContext";
 import { loginUser } from "../../services/apiAuth";
 import { storeToken } from "../../hooks/useLocalStorage";
+import { ThemeContext } from "../../context/ThemeContext";
 
-const PasswordInput = ({ name, placeholder, value, onChange, onBlur, error, ref }) => {
+const PasswordInput = ({ name, placeholder, value, onChange, onBlur, error, ref, theme }) => {
   const [showPassword, setShowPassword] = useState(false);
   return (
     <div className="relative flex items-center">
@@ -20,15 +21,29 @@ const PasswordInput = ({ name, placeholder, value, onChange, onBlur, error, ref 
         value={value}
         onChange={onChange}
         onBlur={onBlur}
-        className={`w-full border ${error ? 'border-red-500' : 'border-gray-300'} rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all duration-300 ease-in-out`}
+        className={`w-full border ${
+          error 
+            ? 'border-red-500' 
+            : theme === 'dark' 
+              ? 'border-gray-600' 
+              : 'border-gray-300'
+        } rounded-lg px-4 py-3 focus:outline-none focus:ring-2 ${
+          theme === 'dark' 
+            ? 'bg-gray-800 text-white focus:ring-sky-500' 
+            : 'bg-white text-gray-800 focus:ring-sky-400'
+        } transition-all duration-300 ease-in-out`}
         ref={ref}
       />
       <button
         type="button"
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600"
+        className="absolute right-4 top-1/2 transform -translate-y-1/2"
         onClick={() => setShowPassword(!showPassword)}
       >
-        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+        {showPassword ? (
+          <EyeOff size={20} className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} />
+        ) : (
+          <Eye size={20} className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} />
+        )}
       </button>
     </div>
   );
@@ -36,6 +51,7 @@ const PasswordInput = ({ name, placeholder, value, onChange, onBlur, error, ref 
 
 const LoginForm = () => {
   const { setToken } = useContext(AuthContext);
+  const { theme } = useContext(ThemeContext);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -90,15 +106,23 @@ const LoginForm = () => {
   });
 
   return (
-    <div className="shadow-xl rounded-lg p-8 max-w-md mx-auto bg-white">
-      <div className="text-center mb-6 mt-4">
-        <h1 className="text-3xl font-semibold text-gray-800">LOGIN</h1>
-        <p className="text-sm text-gray-500 mt-2">Please sign in to continue.</p>
+    <div className={`shadow-xl rounded-xl p-8 max-w-md mx-auto ${
+      theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+    }`}>
+      <div className="text-center mb-8">
+        <h1 className={`text-3xl font-semibold ${
+          theme === 'dark' ? 'text-white' : 'text-gray-800'
+        }`}>LOGIN</h1>
+        <p className={`text-sm mt-2 ${
+          theme === 'dark' ? 'text-gray-300' : 'text-gray-500'
+        }`}>Please sign in to continue.</p>
       </div>
   
       <form onSubmit={formik.handleSubmit} className="space-y-6" noValidate>
         <div>
-          <label htmlFor="email" className="block text-sm text-gray-700 mb-1">Email</label>
+          <label htmlFor="email" className={`block text-sm mb-1 ${
+            theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+          }`}>Email</label>
           <Input
             id="email"
             type="email"
@@ -107,7 +131,17 @@ const LoginForm = () => {
             {...formik.getFieldProps("email")}
             onBlur={formik.handleBlur}
             ref={emailRef}
-            className={`w-full border-transparent ${formik.touched.email && formik.errors.email ? 'border-red-500' : 'border-gray-300'} rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all duration-300 ease-in-out shadow-sm`}
+            className={`w-full ${
+              formik.touched.email && formik.errors.email 
+                ? 'border-red-500' 
+                : theme === 'dark' 
+                  ? 'border-gray-600' 
+                  : 'border-gray-300'
+            } rounded-lg px-4 py-3 focus:outline-none focus:ring-2 ${
+              theme === 'dark' 
+                ? 'bg-gray-800 text-white focus:ring-sky-500' 
+                : 'bg-white text-gray-800 focus:ring-sky-400'
+            } transition-all duration-300 ease-in-out shadow-sm`}
           />
           {formik.touched.email && formik.errors.email && (
             <p className="text-red-500 text-sm mt-1">{formik.errors.email}</p>
@@ -115,7 +149,9 @@ const LoginForm = () => {
         </div>
   
         <div>
-          <label htmlFor="password" className="block text-sm text-gray-700 mb-1">Password</label>
+          <label htmlFor="password" className={`block text-sm mb-1 ${
+            theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+          }`}>Password</label>
           <PasswordInput
             id="password"
             name="password"
@@ -125,6 +161,7 @@ const LoginForm = () => {
             onBlur={formik.handleBlur}
             error={formik.touched.password && formik.errors.password}
             ref={passwordRef}
+            theme={theme}
           />
           {formik.touched.password && formik.errors.password && (
             <p className="text-red-500 text-sm mt-1">{formik.errors.password}</p>
@@ -138,22 +175,28 @@ const LoginForm = () => {
             name="rememberMe"
             checked={formik.values.rememberMe}
             onChange={formik.handleChange}
-            className="mr-2 rounded-sm cursor-pointer"
+            className={`mr-2 rounded-sm cursor-pointer ${
+              theme === 'dark' ? 'accent-sky-500' : 'accent-sky-600'
+            }`}
           />
-          <label htmlFor="rememberMe" className="text-sm text-gray-700">Remember Me</label>
+          <label htmlFor="rememberMe" className={`text-sm ${
+            theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+          }`}>Remember Me</label>
         </div>
 
         <button
           type="submit"
-          className="w-full py-3 px-4 bg-gradient-to-r from-sky-500 to-indigo-600 text-white font-semibold cursor-pointer rounded-lg shadow-md hover:from-sky-600 hover:to-indigo-700 transition duration-300 ease-in-out"
+          className={`w-full py-3 px-4 text-white font-semibold cursor-pointer rounded-lg shadow-md transition duration-300 ease-in-out ${
+            theme === 'dark'
+              ? 'bg-gradient-to-r from-sky-700 to-sky-800 hover:from-sky-700 hover:to-sky-900'
+              : 'bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-600 hover:to-sky-800'
+          }`}
           disabled={loading}
         >
           {loading ? "Logging in..." : "LOGIN"}
         </button>
       </form>
     </div>
-  
-
   );
 };
 

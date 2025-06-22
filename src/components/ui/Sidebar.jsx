@@ -148,7 +148,7 @@ const Sidebar = () => {
         {isMobile && showMobileSidebar && (
           <motion.button
             onClick={toggleMobileSidebar}
-            className="absolute -right-0 top-1 pb-0 pt-0 bg-red-500 cursor-pointer hover:bg-red-600 text-white p-1.5 rounded-full shadow-lg border-2 border-white"
+            className="absolute -right-0 top-1 pb-0 pt-0  cursor-pointer hover:bg-sky-800 text-white p-1.5 rounded-full shadow-lg border-2 border-white"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
@@ -182,17 +182,15 @@ const Sidebar = () => {
         </div>
 
         {/* Navigation Menu */}
-        <div className="flex-grow px-3 py-3 overflow-y-auto">
+        <div className="flex-grow px-3 py-2">
           <div
-            className={`rounded-xl shadow-inner p-2.5 flex flex-col h-full ${
-              theme === "light"
-                ? "bg-white text-gray-800"
-                : "bg-gray-800 text-gray-200"
+            className={`rounded-xl shadow-inner p-2 flex flex-col h-full ${
+              theme === "light" ? "bg-white text-gray-800" : "bg-gray-800 text-gray-200"
             }`}
           >
-            <div className="pt-3 space-y-5 flex-grow">
-              {menuItems.map((item) => (
-                <div key={item.to}>
+            <div className="flex flex-col h-full justify-between">
+              {menuItems.map((item, index) => (
+                <div key={item.to} className="flex flex-col">
                   <MenuItem
                     item={item}
                     isActive={location.pathname === item.to}
@@ -209,13 +207,15 @@ const Sidebar = () => {
                         : undefined
                     }
                   />
-                  <div
-                    className={`w-full my-2 px-3 ${
-                      theme === "light"
-                        ? "border-t border-slate-300"
-                        : "border-t border-gray-600"
-                    }`}
-                  />
+                  {index < menuItems.length - 1 && (
+                    <div
+                      className={`w-full my-2 px-0 ${
+                        theme === "light"
+                          ? "border-t border-slate-300"
+                          : "border-t border-gray-600"
+                      }`}
+                    />
+                  )}
                 </div>
               ))}
             </div>
@@ -308,7 +308,7 @@ const MenuItem = ({ item, isActive, isSidebarOpen, theme, onClick }) => {
         onClick={onClick}
         className={`flex ${
           !isSidebarOpen ? "justify-center" : "justify-start"
-        } items-center py-4 px-3 w-full rounded-lg transition-all duration-300 ${
+        } items-center py-3 px-3 w-full rounded-lg transition-all duration-300 ${
           isActive
             ? theme === "light"
               ? "bg-gradient-to-r from-sky-500 to-sky-700 shadow-lg text-white"

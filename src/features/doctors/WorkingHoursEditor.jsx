@@ -1,16 +1,10 @@
 import { useState, useEffect } from "react";
 import { Clock, Plus, Trash, Save, X, Edit } from "lucide-react";
-import {
-  getDoctorWorkingHours,
-  createDoctorWorkingHours,
-  removeDoctorWorkingHours,
-  editDoctorWorkingHours,
-  getWorkingHourById,
-} from "../../services/apiDoctors";
+import { getDoctorWorkingHours, removeDoctorWorkingHours, editDoctorWorkingHours } from "../../services/apiDoctors";
 import { toast } from "react-hot-toast";
 
-const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
-  const [workingHours, setWorkingHours] = useState([]);
+const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme, initialWorkingHours }) => {
+  const [workingHours, setWorkingHours] = useState(initialWorkingHours || []);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -31,10 +25,13 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
     "Sunday",
   ];
 
-  // Fetch working hours
+  // Fetch working hours only if doctor exists
   useEffect(() => {
     const fetchWorkingHours = async () => {
-      if (!doctor?.id) return;
+      if (!doctor?.id) {
+        setLoading(false);
+        return;
+      }
 
       try {
         setLoading(true);
@@ -48,8 +45,10 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
       }
     };
 
-    if (isOpen) {
+    if (isOpen && doctor?.id) {
       fetchWorkingHours();
+    } else {
+      setLoading(false);
     }
   }, [doctor?.id, isOpen]);
 
@@ -67,13 +66,11 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
   };
 
   const validateWorkingHour = (workingHour, existingHours) => {
-    // Validate the working hour
     if (workingHour.startTime >= workingHour.endTime) {
       toast.error("End time must be after start time");
       return false;
     }
 
-    // Check for overlap with existing hours for the same day, excluding the current one being edited
     const sameDay = existingHours.filter(
       (hour) =>
         hour.dayOfWeek === workingHour.dayOfWeek &&
@@ -100,79 +97,75 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
   };
 
   const handleAddWorkingHour = async () => {
-    try {
-      if (!validateWorkingHour(newWorkingHour, workingHours)) {
-        return;
-      }
-
-      const response = await createDoctorWorkingHours(newWorkingHour);
-      setWorkingHours([...workingHours, response]);
-      toast.success("Working hour added successfully");
-
-      // Reset form
-      resetForm();
-    } catch (error) {
-      console.error("Error adding working hour:", error);
-      toast.error("Failed to add working hour");
+    if (!validateWorkingHour(newWorkingHour, workingHours)) {
+      return;
     }
+
+    const newHour = { ...newWorkingHour, id: Date.now().toString() };
+    setWorkingHours([...workingHours, newHour]);
+    toast.success("Working hour added to form");
+    resetForm();
   };
 
   const handleEditWorkingHour = async () => {
-    try {
-      if (!validateWorkingHour(newWorkingHour, workingHours)) {
-        return;
-      }
-
-      const response = await editDoctorWorkingHours(editingId, newWorkingHour);
-
-      // Update the working hours list
-      setWorkingHours(
-        workingHours.map((hour) => (hour.id === editingId ? response : hour))
-      );
-
-      toast.success("Working hour updated successfully");
-
-      // Reset form
-      resetForm();
-    } catch (error) {
-      console.error("Error updating working hour:", error);
-      toast.error("Failed to update working hour");
+    if (!validateWorkingHour(newWorkingHour, workingHours)) {
+      return;
     }
+
+    if (doctor?.id) {
+      try {
+        const response = await editDoctorWorkingHours(editingId, newWorkingHour);
+        setWorkingHours(
+          workingHours.map((hour) => (hour.id === editingId ? response : hour))
+        );
+        toast.success("Working hour updated successfully");
+      } catch (error) {
+        console.error("Error updating working hour:", error);
+        toast.error("Failed to update working hour");
+      }
+    } else {
+      setWorkingHours(
+        workingHours.map((hour) =>
+          hour.id === editingId ? { ...newWorkingHour, id: editingId } : hour
+        )
+      );
+      toast.success("Working hour updated in form");
+    }
+
+    resetForm();
   };
 
   const handleDeleteWorkingHour = async (id) => {
-    try {
-      await removeDoctorWorkingHours(id);
-      setWorkingHours(workingHours.filter((hour) => hour.id !== id));
-
-      // If deleting the one being edited, reset the form
-      if (editingId === id) {
-        resetForm();
+    if (doctor?.id) {
+      try {
+        await removeDoctorWorkingHours(id);
+        setWorkingHours(workingHours.filter((hour) => hour.id !== id));
+        toast.success("Working hour removed successfully");
+      } catch (error) {
+        console.error("Error deleting working hour:", error);
+        toast.error("Failed to delete working hour");
       }
+    } else {
+      setWorkingHours(workingHours.filter((hour) => hour.id !== id));
+      toast.success("Working hour removed from form");
+    }
 
-      toast.success("Working hour removed successfully");
-    } catch (error) {
-      console.error("Error deleting working hour:", error);
-      toast.error("Failed to delete working hour");
+    if (editingId === id) {
+      resetForm();
     }
   };
 
-  const handleStartEdit = async (id) => {
-    try {
-      const workingHour = await getWorkingHourById(id);
-      if (workingHour) {
-        setNewWorkingHour({
-          doctorId: doctor?.id,
-          dayOfWeek: workingHour.dayOfWeek,
-          startTime: workingHour.startTime.substring(0, 5),
-          endTime: workingHour.endTime.substring(0, 5),
-        });
-        setIsEditing(true);
-        setEditingId(id);
-      }
-    } catch (error) {
-      console.error("Error fetching working hour details:", error);
-      toast.error("Failed to load working hour details");
+  const handleStartEdit = (id) => {
+    const workingHour = workingHours.find((hour) => hour.id === id);
+    if (workingHour) {
+      setNewWorkingHour({
+        doctorId: doctor?.id,
+        dayOfWeek: workingHour.dayOfWeek,
+        startTime: workingHour.startTime.substring(0, 5),
+        endTime: workingHour.endTime.substring(0, 5),
+      });
+      setIsEditing(true);
+      setEditingId(id);
     }
   };
 
@@ -185,42 +178,46 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
     setNewWorkingHour({ ...newWorkingHour, [name]: value });
   };
 
+  const handleDone = () => {
+    onClose(workingHours);
+  };
+
   return (
-    <div className="fixed inset-0 flex justify-center items-center z-50 bg-black/30">
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30 p-4 sm:p-6">
       <div
-        className={`p-2.5 rounded-lg shadow-xl w-full max-w-[320px] max-h-[90vh] overflow-y-auto ${
+        className={`p-4 sm:p-6 rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto ${
           theme === "light" ? "bg-white" : "bg-gray-800"
         }`}
       >
-        <div className="flex justify-between items-center mb-2">
+        <div className="flex justify-between items-center mb-4">
           <h2
-            className={`text-sm font-bold flex items-center ${
+            className={`text-base sm:text-lg font-bold flex items-center ${
               theme === "light" ? "text-sky-600" : "text-sky-300"
             }`}
           >
             <Clock
-              className={`mr-1 h-3.5 w-3.5 ${
+              className={`mr-2 h-4 w-4 sm:h-5 sm:w-5 ${
                 theme === "light" ? "text-sky-500" : "text-sky-300"
               }`}
             />
-            Working Hours for {doctor?.name}
+            Working Hours for {doctor?.name || "New Doctor"}
           </h2>
           <button
-            onClick={onClose}
+            onClick={handleDone}
             className={`${
               theme === "light"
                 ? "text-gray-400 hover:text-gray-600"
                 : "text-gray-500 hover:text-gray-300"
-            } cursor-pointer`}
+            }`}
           >
-            <X size={14} />
+            <X size={16} className="sm:w-5 sm:h-5" />
           </button>
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-4">
+          <div className="flex justify-center py-6">
             <div
-              className={`animate-spin rounded-full h-5 w-5 border-b-2 ${
+              className={`animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 ${
                 theme === "light" ? "border-sky-600" : "border-sky-300"
               }`}
             ></div>
@@ -228,17 +225,17 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
         ) : (
           <>
             {/* Current Working Hours */}
-            <div className="mb-2">
+            <div className="mb-4">
               <h3
-                className={`text-[9px] font-medium ${
+                className={`text-sm sm:text-base font-medium ${
                   theme === "light" ? "text-gray-700" : "text-gray-300"
-                } mb-1`}
+                } mb-2`}
               >
                 Current Schedule
               </h3>
               {workingHours.length === 0 ? (
                 <p
-                  className={`text-[8px] italic ${
+                  className={`text-xs sm:text-sm italic ${
                     theme === "light" ? "text-gray-500" : "text-gray-400"
                   }`}
                 >
@@ -263,7 +260,7 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                     .map((hour) => (
                       <div
                         key={hour.id}
-                        className={`grid grid-cols-[1fr,auto] items-center p-1 ${
+                        className={`grid grid-cols-[1fr,auto] items-center p-2 sm:p-3 ${
                           theme === "light"
                             ? "hover:bg-gray-100"
                             : "hover:bg-gray-600"
@@ -271,7 +268,7 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                       >
                         <div>
                           <span
-                            className={`font-medium text-[9px] ${
+                            className={`font-medium text-sm sm:text-base ${
                               theme === "light"
                                 ? "text-sky-700"
                                 : "text-sky-200"
@@ -280,7 +277,7 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                             {hour.dayOfWeek}
                           </span>
                           <div
-                            className={`text-[8px] ${
+                            className={`text-xs sm:text-sm ${
                               theme === "light"
                                 ? "text-gray-600"
                                 : "text-gray-400"
@@ -290,16 +287,16 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                             {hour.endTime.substring(0, 5)}
                           </div>
                         </div>
-                        <div className="flex space-x-0.5">
+                        <div className="flex space-x-1 sm:space-x-2">
                           <button
                             onClick={() => handleStartEdit(hour.id)}
                             className={`${
                               theme === "light"
                                 ? "text-sky-500 hover:text-sky-700"
                                 : "text-sky-300 hover:text-sky-400"
-                            } p-0.25 cursor-pointer`}
+                            } p-1`}
                           >
-                            <Edit size={12} />
+                            <Edit size={14} className="sm:w-5 sm:h-5" />
                           </button>
                           <button
                             onClick={() => handleDeleteWorkingHour(hour.id)}
@@ -307,9 +304,9 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                               theme === "light"
                                 ? "text-red-500 hover:text-red-700"
                                 : "text-red-300 hover:text-red-400"
-                            } p-0.25 cursor-pointer`}
+                            } p-1`}
                           >
-                            <Trash size={12} />
+                            <Trash size={14} className="sm:w-5 sm:h-5" />
                           </button>
                         </div>
                       </div>
@@ -320,22 +317,22 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
 
             {/* Add/Edit Working Hour Form */}
             <div
-              className={`border-t pt-2 ${
+              className={`border-t pt-4 ${
                 theme === "light" ? "border-gray-200" : "border-gray-600"
               }`}
             >
               <h3
-                className={`text-[9px] font-medium ${
+                className={`text-sm sm:text-base font-medium ${
                   theme === "light" ? "text-gray-700" : "text-gray-300"
-                } mb-1`}
+                } mb-2`}
               >
                 {isEditing ? "Edit Schedule" : "Add New Schedule"}
               </h3>
-              <div className="space-y-1.5">
+              <div className="space-y-3">
                 <div>
                   <label
                     htmlFor="dayOfWeek"
-                    className={`block text-[9px] font-medium ${
+                    className={`block text-xs sm:text-sm font-medium ${
                       theme === "light" ? "text-gray-700" : "text-gray-300"
                     }`}
                   >
@@ -346,7 +343,7 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                     name="dayOfWeek"
                     value={newWorkingHour.dayOfWeek}
                     onChange={handleChange}
-                    className={`mt-0.5 block w-full px-1 py-0.5 text-[9px] border rounded-md cursor-pointer focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                    className={`mt-1 block w-full px-2 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 ${
                       theme === "light"
                         ? "bg-white border-gray-300"
                         : "bg-gray-800 border-gray-600 text-gray-200"
@@ -360,11 +357,11 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                   </select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label
                       htmlFor="startTime"
-                      className={`block text-[9px] font-medium ${
+                      className={`block text-xs sm:text-sm font-medium ${
                         theme === "light" ? "text-gray-700" : "text-gray-300"
                       }`}
                     >
@@ -376,7 +373,7 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                       name="startTime"
                       value={newWorkingHour.startTime}
                       onChange={handleChange}
-                      className={`mt-0.5 block w-full px-1 py-0.5 text-[9px] border rounded-md cursor-pointer focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                      className={`mt-1 block w-full px-2 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 ${
                         theme === "light"
                           ? "bg-white border-gray-300"
                           : "bg-gray-800 border-gray-600 text-gray-200"
@@ -386,7 +383,7 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                   <div>
                     <label
                       htmlFor="endTime"
-                      className={`block text-[9px] font-medium ${
+                      className={`block text-xs sm:text-sm font-medium ${
                         theme === "light" ? "text-gray-700" : "text-gray-300"
                       }`}
                     >
@@ -398,7 +395,7 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                       name="endTime"
                       value={newWorkingHour.endTime}
                       onChange={handleChange}
-                      className={`mt-0.5 block w-full px-1 py-0.5 text-[9px] border rounded-md cursor-pointer focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                      className={`mt-1 block w-full px-2 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 ${
                         theme === "light"
                           ? "bg-white border-gray-300"
                           : "bg-gray-800 border-gray-600 text-gray-200"
@@ -408,16 +405,16 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                 </div>
 
                 {isEditing ? (
-                  <div className="flex space-x-1">
+                  <div className="flex space-x-2">
                     <button
                       onClick={handleEditWorkingHour}
                       className={`flex-1 flex items-center justify-center ${
                         theme === "light"
                           ? "bg-sky-600 hover:bg-sky-700"
                           : "bg-sky-700 hover:bg-sky-800"
-                      } text-white py-1 px-1.5 rounded-md transition-colors cursor-pointer text-[9px]`}
+                      } text-white py-1.5 px-3 rounded-md transition-colors text-sm`}
                     >
-                      <Save size={10} className="mr-0.5" /> Update
+                      <Save size={14} className="mr-1 sm:w-5 sm:h-5" /> Update
                     </button>
                     <button
                       onClick={handleCancelEdit}
@@ -425,9 +422,9 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                         theme === "light"
                           ? "bg-gray-400 hover:bg-gray-500"
                           : "bg-gray-600 hover:bg-gray-700"
-                      } text-white py-1 px-1.5 rounded-md transition-colors cursor-pointer text-[9px]`}
+                      } text-white py-1.5 px-3 rounded-md transition-colors text-sm`}
                     >
-                      <X size={10} className="mr-0.5" /> Cancel
+                      <X size={14} className="mr-1 sm:w-5 sm:h-5" /> Cancel
                     </button>
                   </div>
                 ) : (
@@ -437,9 +434,9 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
                       theme === "light"
                         ? "bg-sky-600 hover:bg-sky-700"
                         : "bg-sky-700 hover:bg-sky-800"
-                      } text-white py-1 px-1.5 rounded-md transition-colors cursor-pointer text-[9px]`}
+                      } text-white py-1.5 px-3 rounded-md transition-colors text-sm`}
                   >
-                    <Plus size={10} className="mr-0.5" /> Add Working Hour
+                    <Plus size={14} className="mr-1 sm:w-5 sm:h-5" /> Add Working Hour
                   </button>
                 )}
               </div>
@@ -447,19 +444,19 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
 
             {/* Actions */}
             <div
-              className={`flex justify-end mt-2 pt-1.5 border-t ${
+              className={`flex justify-end mt-4 pt-3 border-t ${
                 theme === "light" ? "border-gray-200" : "border-gray-600"
               }`}
             >
               <button
-                onClick={onClose}
+                onClick={handleDone}
                 className={`${
                   theme === "light"
                     ? "bg-gray-400 hover:bg-gray-500"
                     : "bg-gray-600 hover:bg-gray-700"
-                } text-white px-2 py-0.5 rounded-md transition-colors flex items-center cursor-pointer text-[9px]`}
+                } text-white px-3 py-1.5 rounded-md transition-colors flex items-center text-sm`}
               >
-                <Save size={10} className="mr-0.5" /> Done
+                <Save size={14} className="mr-1 sm:w-5 sm:h-5" /> Done
               </button>
             </div>
           </>
@@ -470,6 +467,3 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme }) => {
 };
 
 export default WorkingHoursEditor;
-
-
-

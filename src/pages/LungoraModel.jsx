@@ -11,15 +11,20 @@ const LungoraModel = () => {
   const [result, setResult] = useState('');
   const [showingResult, setShowingResult] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
-const { theme } = useContext(ThemeContext);
+  const { theme } = useContext(ThemeContext);
 
   const handleFileUpload = (e) => {
     const uploadedFile = e.target.files[0];
     setFile(uploadedFile);
     if (uploadedFile) {
+      setUploading(true);
       const reader = new FileReader();
-      reader.onloadend = () => setPreview(reader.result);
+      reader.onloadend = () => {
+        setPreview(reader.result);
+        setUploading(false);
+      };
       reader.readAsDataURL(uploadedFile);
     }
   };
@@ -30,13 +35,17 @@ const { theme } = useContext(ThemeContext);
       try {
         const response = await uploadImage(file);
         if (response && response.isSuccess) {
-          setResult(response.result.predicted || response.result.message);
+          // تحويل النتيجة إلى أحرف كبيرة
+          const formattedResult = response.result.predicted 
+            ? response.result.predicted.toUpperCase() 
+            : response.result.message.toUpperCase();
+          setResult(formattedResult);
         } else {
-          setResult('Error: Unable to process the image. Please try again.');
+          setResult('ERROR: UNABLE TO PROCESS THE IMAGE. PLEASE TRY AGAIN.');
         }
         setShowingResult(true);
       } catch (error) {
-        setResult('Error: Unable to process the image. Please try again.');
+        setResult('ERROR: UNABLE TO PROCESS THE IMAGE. PLEASE TRY AGAIN.');
         console.error('Error during image processing:', error);
       } finally {
         setLoading(false);
@@ -66,7 +75,7 @@ const { theme } = useContext(ThemeContext);
     }
   };
 
- return (
+  return (
     <div className={`flex ${theme === "light" ? "bg-gray-50" : "bg-gray-900"} min-h-[90vh] w-full`}>
       <div className="w-full flex flex-col">
         <div className="flex flex-col items-center p-3 sm:p-4 min-h-[90vh]">
@@ -110,8 +119,16 @@ const { theme } = useContext(ThemeContext);
                   </div>
                 </div>
 
-                <div className={`${theme === "light" ? "bg-white" : "bg-gray-600"} p-2.5 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 mb-2 aspect-square max-w-[60%] mx-auto`}>
-                  {!preview && (
+                <div className={`${theme === "light" ? "bg-white" : "bg-gray-800"} p-2.5 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 mb-2 aspect-square max-w-[60%] mx-auto`}>
+                  {uploading ? (
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <div className="relative w-12 h-12 mb-3">
+                        <div className="absolute inset-0 rounded-full border-2 border-sky-200 border-t-sky-600 animate-spin"></div>
+                        <div className="absolute inset-1 rounded-full border-2 border-sky-100 border-t-sky-500 animate-spin animation-delay-200"></div>
+                      </div>
+                      <p className={`${theme === "light" ? "text-sky-600" : "text-sky-300"} text-sm`}>Uploading Image...</p>
+                    </div>
+                  ) : !preview ? (
                     <div
                       onClick={() => fileInputRef.current.click()}
                       className={`border-2 border-dashed ${theme === "light" ? "border-sky-300 hover:bg-sky-50" : "border-sky-500 hover:bg-gray-500"} rounded-lg p-2.5 flex flex-col items-center justify-center cursor-pointer transition-colors duration-300 h-full`}
@@ -134,9 +151,7 @@ const { theme } = useContext(ThemeContext);
                         ref={fileInputRef}
                       />
                     </div>
-                  )}
-
-                  {preview && (
+                  ) : (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -164,24 +179,34 @@ const { theme } = useContext(ThemeContext);
                         file ? 'bg-sky-600 hover:bg-sky-700' : 'bg-gray-400 cursor-not-allowed'
                       }`}
                       whileHover={file ? { scale: 1.05 } : {}}
-                      disabled={!file}
+                      disabled={!file || loading}
                       onClick={handleSubmit}
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 mr-1"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                      </svg>
-                      Submit for Analysis
+                      {loading ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1"></div>
+                          Analyzing...
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4 mr-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                          </svg>
+                          Submit for Analysis
+                        </>
+                      )}
                     </motion.button>
                     <motion.button
                       className="flex items-center justify-center px-2 py-1 rounded-lg bg-red-500 text-white font-medium text-sm hover:bg-red-600"
                       whileHover={{ scale: 1.05 }}
                       onClick={handleReset}
+                      disabled={loading}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -214,14 +239,36 @@ const { theme } = useContext(ThemeContext);
                 <div className={`${theme === "light" ? "bg-white" : "bg-gray-600"} p-2.5 rounded-lg shadow-sm aspect-square max-w-[60%] mx-auto flex flex-col justify-center`}>
                   {loading ? (
                     <div className="flex flex-col items-center justify-center h-full">
-                      <div className="w-5 h-5 border-2 border-sky-200 border-t-sky-600 rounded-full animate-spin mb-1.5"></div>
-                      <p className={`${theme === "light" ? "text-sky-600" : "text-sky-300"} text-xs`}>Processing your image...</p>
-                      <p className={`text-xs ${theme === "light" ? "text-gray-500" : "text-gray-300"} mt-0.5`}>This may take a few moments</p>
+                      <div className="relative w-16 h-16 mb-3">
+                        <div className="absolute inset-0 rounded-full border-4 border-sky-200 border-t-sky-600 animate-spin"></div>
+                        <div className="absolute inset-2 rounded-full border-4 border-sky-100 border-t-sky-500 animate-spin animation-delay-200"></div>
+                        <div className="absolute inset-4 rounded-full border-4 border-sky-50 border-t-sky-400 animate-spin animation-delay-400"></div>
+                      </div>
+                      <p className={`${theme === "light" ? "text-sky-600" : "text-sky-300"} text-sm font-medium`}>Analyzing your X-ray...</p>
+                      <p className={`text-xs ${theme === "light" ? "text-gray-500" : "text-gray-300"} mt-1`}>This may take a few moments</p>
+                      <div className="w-3/4 h-1.5 bg-gray-200 rounded-full mt-2 overflow-hidden">
+                        <motion.div
+                          className="h-full bg-sky-500 rounded-full"
+                          initial={{ width: 0 }}
+                          animate={{ width: '100%' }}
+                          transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}
+                        />
+                      </div>
                     </div>
                   ) : showingResult ? (
                     <div className="h-full flex flex-col">
                       <div className={`${theme === "light" ? "bg-gray-50 border-gray-100" : "bg-gray-700 border-gray-600"} p-1.5 rounded-lg border mb-1.5 flex-grow flex items-center justify-center overflow-auto`}>
-                        <p className={`${theme === "light" ? "text-gray-700" : "text-gray-100"} text-sm font-bold text-center`}>{result}</p>
+                        <p className={`${theme === "light" ? "text-gray-700" : "text-gray-100"} text-xl font-bold text-center`}>
+                          {result === 'NORMAL' ? (
+                            <span className="text-green-600">{result}</span>
+                          ) : result === 'PNEUMONIA' ? (
+                            <span className="text-yellow-600">{result}</span>
+                          ) : result === 'COVID' ? (
+                            <span className="text-red-600">{result}</span>
+                          ) : (
+                            result
+                          )}
+                        </p>
                       </div>
                       <motion.button
                         className="flex items-center justify-center px-2 py-1 rounded-lg bg-sky-500 text-white font-medium text-sm hover:bg-sky-600 w-full"

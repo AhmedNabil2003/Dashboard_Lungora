@@ -67,10 +67,10 @@ const Header = () => {
 
   return (
     <header
-      className={`shadow-md p-3 flex justify-between items-center border-b border-gray-300 ${
+      className={`shadow-md p-3 flex justify-between items-center ${
         theme === "light"
-          ? "bg-gradient-to-r from-sky-800 to-sky-500"
-          : "bg-gradient-to-r from-gray-800 to-gray-600"
+          ? "bg-gradient-to-r from-sky-800 to-sky-700"
+          : "bg-gradient-to-r from-gray-800"
       }`}
     >
       {/* Left: Logo and AI Model */}
@@ -109,25 +109,16 @@ const Header = () => {
 
       {/* Right: User Info & Actions - Hidden on mobile */}
       <div className="hidden md:flex items-center space-x-4">
-        {/* Add User Button */}
+        {/* Add Admin Button */}
         <Link
-          to="/dashboard/signup"
+          to="/dashboard/AddAdmin"
           className="text-white flex items-center hover:text-sky-200 transition-colors"
-          title="Add User"
+          title="Add Admin"
         >
           <i className="fa-solid fa-user-plus mr-1"></i>
-          <span>Add User</span>
+          <span>Add Admin</span>
         </Link>
 
-        {/* Settings Button */}
-        <Link
-          to="/dashboard/settings"
-          className="text-white flex items-center hover:text-sky-200 transition-colors"
-          title="Settings"
-        >
-          <i className="fa-solid fa-cog mr-1"></i>
-          <span>Settings</span>
-        </Link>
 
         {/* Notifications Button with Counter */}
         <button
@@ -164,13 +155,17 @@ const Header = () => {
               <img
                 src={user.avatar || "/images/default-avatar.png"}
                 alt="User Avatar"
-                className="w-8 h-8 rounded-full border-2 border-white object-cover"
+                className={`w-8 h-8 rounded-full border-2 ${
+    theme === "light" ? "border-white" : "border-gray-800"
+  } object-cover`}
               />
               {/* Online/Offline Indicator */}
               <div
                 className={`absolute bottom-0 right-0 w-2 h-2 rounded-full ${
                   user.online ? "bg-green-400" : "bg-red-400"
-                } border-2 border-white`}
+                } border-2 ${
+            theme === "light" ? "border-white" : "border-gray-800"
+          }`}
               ></div>
             </div>
           </div>
@@ -278,14 +273,14 @@ const Header = () => {
               {/* Mobile Menu Items */}
               <div className="p-2">
                 <Link
-                  to="/dashboard/signup"
+                  to="/dashboard/AddAdmin"
                   className={`flex items-center p-3 rounded-md ${
                     theme === "light" ? "hover:bg-gray-100" : "hover:bg-gray-700"
                   } transition-colors`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <i className="fa-solid fa-user-plus w-6 text-center"></i>
-                  <span>Add User</span>
+                  <span>Add Admin</span>
                 </Link>
                 
                 <Link
@@ -302,7 +297,7 @@ const Header = () => {
                 <button
                   className={`w-full flex items-center p-3 rounded-md text-left ${
                     theme === "light" ? "hover:bg-gray-100" : "hover:bg-gray-700"
-                  } transition-colors`}
+                  } transition-colors cursor-pointer`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <div className="w-6 text-center relative">
@@ -321,7 +316,7 @@ const Header = () => {
                   }}
                   className={`w-full flex items-center p-3 rounded-md text-left ${
                     theme === "light" ? "hover:bg-gray-100" : "hover:bg-gray-700"
-                  } transition-colors`}
+                  } transition-colors cursor-pointer`}
                 >
                   <i className={`fa-solid ${theme === "light" ? "fa-moon" : "fa-sun"} w-6 text-center`}></i>
                   <span>{theme === "light" ? "Dark Mode" : "Light Mode"}</span>
@@ -349,7 +344,7 @@ const Header = () => {
                   }}
                   className={`w-full flex items-center p-3 rounded-md text-left text-red-500 ${
                     theme === "light" ? "hover:bg-gray-100" : "hover:bg-gray-700"
-                  } transition-colors`}
+                  } transition-colors cursor-pointer`}
                 >
                   <i className="fa-solid fa-sign-out-alt w-6 text-center"></i>
                   <span>Logout</span>

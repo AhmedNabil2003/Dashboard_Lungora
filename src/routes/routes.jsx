@@ -4,7 +4,7 @@ import DashboardLayout from "../features/dashboard/DashboardLayout";
 
 // استيراد الصفحات
 import Login from "../pages/Login";
-import Register from "../pages/Register";
+import AddAdmin from "../pages/AddAdmin";
 import ForgetPassword from "../pages/ForgetPassword";
 import ResetPassword from "../pages/ResetPassword";
 import Dashboard from "../pages/Dashboard";
@@ -47,8 +47,8 @@ const AppRoute = () => (
       }
     >
       <Route index element={<Dashboard />} />
-      <Route path="profile" element={<Profile />} />
-      <Route path="signup" element={<Register />} />
+      <Route path="profile" element={<Profile/>} />
+      <Route path="addadmin" element={<AddAdmin/>} />
       <Route path="users" element={<ManageUsers />} />
       <Route path="doctors" element={<ManageDoctors />} />
       <Route path="categories" element={<ManageCategories />} />

@@ -223,11 +223,15 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
     }
 
     if (!formData.teliphone?.trim()) {
-      newErrors.teliphone = "Mobile is required";
+      newErrors.teliphone = "Teliphone is required";
     }
 
-    if (formData.experianceYears === undefined || formData.experianceYears < 0) {
-      newErrors.experianceYears = "experiance years is required and must be non-negative";
+    if (
+      formData.experianceYears === undefined ||
+      formData.experianceYears < 0
+    ) {
+      newErrors.experianceYears =
+        "experiance years is required and must be non-negative";
     }
 
     if (!formData.location?.trim()) {
@@ -237,7 +241,9 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
     if (!formData.about?.trim()) {
       newErrors.about = "About is required";
     }
-
+    if (!formData.whatsAppLink?.trim()) {
+      newErrors.whatsAppLink = "WhatsApp Link is required";
+    }
     if (!formData.categoryId || formData.categoryId === "") {
       newErrors.categoryId = "Category is required";
     }
@@ -316,7 +322,9 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
         </MapContainer>
         <div
           className={`absolute bottom-1 left-1/2 transform -translate-x-1/2 px-1 py-0.5 rounded text-sm shadow ${
-            theme === "light" ? "bg-white text-gray-700" : "bg-gray-800 text-gray-300"
+            theme === "light"
+              ? "bg-white text-gray-700"
+              : "bg-gray-800 text-gray-300"
           }`}
         >
           Click anywhere on map to set location
@@ -460,7 +468,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   disabled={isLoading}
                 />
                 {errors.name && (
-                  <p className="text-red-500 text-[8px]">{errors.name}</p>
+                  <p className="text-red-500 test-xs">{errors.name}</p>
                 )}
               </div>
 
@@ -506,7 +514,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                     ))}
                 </select>
                 {errors.categoryId && (
-                  <p className="text-red-500 text-[8px]">{errors.categoryId}</p>
+                  <p className="text-red-500 test-xs">{errors.categoryId}</p>
                 )}
               </div>
 
@@ -535,7 +543,9 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   disabled={isLoading}
                 />
                 {errors.emailDoctor && (
-                  <p className="text-red-500 text-[8px]">{errors.emailDoctor}</p>
+                  <p className="text-red-500 test-xs">
+                    {errors.emailDoctor}
+                  </p>
                 )}
               </div>
 
@@ -564,7 +574,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   disabled={isLoading}
                 />
                 {errors.phone && (
-                  <p className="text-red-500 text-[8px]">{errors.phone}</p>
+                  <p className="text-red-500 test-xs">{errors.phone}</p>
                 )}
               </div>
 
@@ -575,7 +585,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
-                  Mobile
+                  Teliphon
                 </label>
                 <input
                   id="teliphone"
@@ -593,7 +603,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   disabled={isLoading}
                 />
                 {errors.teliphone && (
-                  <p className="text-red-500 text-[8px]">{errors.teliphone}</p>
+                  <p className="text-red-500 test-xs">{errors.teliphone}</p>
                 )}
               </div>
 
@@ -622,7 +632,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   disabled={isLoading}
                 />
                 {errors.experianceYears && (
-                  <p className="text-red-500 text-[8px]">
+                  <p className="text-red-500 test-xs">
                     {errors.experianceYears}
                   </p>
                 )}
@@ -680,7 +690,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                     disabled={isLoading}
                   />
                   {errors.location && (
-                    <p className="text-red-500 text-[8px]">{errors.location}</p>
+                    <p className="text-red-500 test-xs">{errors.location}</p>
                   )}
                 </div>
 
@@ -769,7 +779,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   disabled={isLoading}
                 />
                 {errors.about && (
-                  <p className="text-red-500 text-[8px]">{errors.about}</p>
+                  <p className="text-red-500 text-sm">{errors.about}</p>
                 )}
               </div>
 
@@ -794,6 +804,11 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                     } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
                     disabled={isLoading}
                   />
+                  {errors.whatsAppLink && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.whatsAppLink}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-0.5">
@@ -836,7 +851,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                     </label>
                   </div>
                   {errors.imageDoctor && (
-                    <p className="text-red-500 text-[8px]">
+                    <p className="text-red-500 test-xs">
                       {errors.imageDoctor}
                     </p>
                   )}
@@ -869,7 +884,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
                   </h3>
                 </div>
                 <p
-                  className={`text-[8px] ${
+                  className={`test-xs ${
                     theme === "light" ? "text-gray-600" : "text-gray-400"
                   } mb-1.5`}
                 >
@@ -879,7 +894,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
 
                 {!doctor?.id ? (
                   <div
-                    className={`p-1 rounded border text-[8px] ${
+                    className={`p-1 rounded border test-xs ${
                       theme === "light"
                         ? "bg-amber-50 border-amber-200 text-amber-800"
                         : "bg-amber-900 border-amber-800 text-amber-200"
@@ -921,7 +936,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories }) => {
 
           {errorMessage && (
             <div
-              className={`p-2 rounded border text-[8px] mb-2 ${
+              className={`p-2 rounded border test-xs mb-2 ${
                 theme === "light"
                   ? "bg-red-50 border-red-200 text-red-800"
                   : "bg-red-900 border-red-800 text-red-200"

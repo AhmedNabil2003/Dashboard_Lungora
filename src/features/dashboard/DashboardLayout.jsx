@@ -4,6 +4,8 @@ import Header from "../../components/ui/Header";
 import { SidebarProvider } from "../../context/SidebarContext";
 import { useContext } from "react";
 import { ThemeContext } from "../../context/ThemeContext";
+import ScrollButton from "../../components/ui/ScrollButton";
+import Footer from "../../components/ui/Footer";
 
 const DashboardLayout = () => {
   const { theme } = useContext(ThemeContext);
@@ -36,8 +38,10 @@ const DashboardLayout = () => {
               {/* Outlet for child routes */}
               <Outlet />
             </div>
+            <Footer/>
           </main>
         </div>
+          <ScrollButton />
       </div>
     </SidebarProvider>
   );

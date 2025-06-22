@@ -1,144 +1,328 @@
-import React, { useState } from 'react';
-// eslint-disable-next-line no-unused-vars
-import { motion } from 'framer-motion';
+/* eslint-disable no-unused-vars */
+import React, { useState, useContext } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
+import { AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import UserForm from '../features/users/UserForm';
 import UserList from '../features/users/UserList';
+import { useUsers } from '../features/users/useUsers';
+import { ThemeContext } from '../context/ThemeContext';
 
 const ManageUsers = () => {
-  const [users, setUsers] = useState([
-    { id: 1, name: 'Ahmed Mostafa', email: 'Ahmed Mostafa@gmail.com', status: 'Active', date: '2023-08-01' },
-    { id: 2, name: 'Ahmed_Nabil', email: 'a7med@gmail.com', status: 'Not Connected', date: '2023-07-15' },
-    { id: 4, name: 'Ahmed_N', email: 'ahmedNn@gmail.com', status: 'Active', date: '2023-08-10' },
-    { id: 5, name: 'Adel', email: 'adelmm@gmail.com', status: 'Not Connected', date: '2023-08-10' },
-    { id: 6, name: 'Ahmed hamdy', email: 'ahmedhamdy@gmail.com', status: 'Not Active', date: '2023-08-10' },
-    { id: 7, name: 'omar', email: 'omar7@gmail.com', status: 'Not Active', date: '2023-08-10' },
-  ]);
-
+  const { theme } = useContext(ThemeContext);
+  const { users, isLoading, error, editUser, removeUser, fetchUsers, searchUsers } = useUsers();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [editUser, setEditUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newUser, setNewUser] = useState({ name: '', email: '', status: 'Active' });
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteUserId, setDeleteUserId] = useState(null);
+  const [deleteUserName, setDeleteUserName] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  // دالة تغيير الفلتر
   const handleFilterChange = (e) => {
     setStatusFilter(e.target.value);
   };
 
-  // تطبيق الفلترة بشكل ديناميكي
-  const filteredUsers = users.filter((user) => {
-    const searchMatch =
-      user.name.toLowerCase().includes(search.toLowerCase()) ||
-      user.email.toLowerCase().includes(search.toLowerCase()) ||
-      user.id.toString().includes(search);
+  const filteredUsers = searchUsers(search, statusFilter);
 
-    const statusMatch = statusFilter ? user.status === statusFilter : true;
+  const handleSaveEdit = async (formData) => {
+    if (!currentUser?.id) {
+      toast.error('No user selected for editing');
+      return;
+    }
 
-    return searchMatch && statusMatch;
-  });
-
-  // إضافة مستخدم جديد
-  const handleAddUser = (newUser) => {
-    const newId = users.length + 1;
-    setUsers([...users, { id: newId, ...newUser, date: new Date().toISOString().split('T')[0] }]);
-    setIsAddModalOpen(false);
-    setNewUser({ name: '', email: '', status: 'Active' });
-    toast.success('User added successfully!');
+    setIsUpdating(true);
+    try {
+      const result = await editUser(currentUser.id, formData);
+      setIsEditModalOpen(false);
+      setCurrentUser(null);
+      toast.success(
+        <div className="flex items-center space-x-2">
+          <CheckCircle className="h-5 w-5 text-green-500" />
+          <span>{result.message || 'User updated successfully!'}</span>
+        </div>,
+        {
+          duration: 4000,
+          style: {
+            background: theme === "light" ? '#f0fdf4' : '#1a4731',
+            border: theme === "light" ? '1px solid #bbf7d0' : '1px solid #4d7c0f',
+            color: theme === "light" ? '#166534' : '#86efac'
+          }
+        }
+      );
+    } catch (error) {
+      toast.error(
+        <div className="flex items-center space-x-2">
+          <XCircle className="h-5 w-5 text-red-500" />
+          <span>{error.message || 'Failed to update user'}</span>
+        </div>,
+        {
+          duration: 4000,
+          style: {
+            background: theme === "light" ? '#fef2f2' : '#450a0a',
+            border: theme === "light" ? '1px solid #fecaca' : '1px solid #dc2626',
+            color: theme === "light" ? '#dc2626' : '#f87171'
+          }
+        }
+      );
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
-  // حفظ التعديلات
-  const handleSaveEdit = () => {
-    setUsers(users.map((user) => (user.id === editUser.id ? editUser : user)));
-    setIsEditModalOpen(false);
-    toast.success('User updated successfully!');
-  };
-
-  // بدء عملية الحذف
   const handleDelete = (id) => {
+    const user = users.find(u => u.id === id);
     setDeleteUserId(id);
+    setDeleteUserName(user?.name || 'Unknown User');
     setIsDeleteModalOpen(true);
   };
 
-  // تأكيد الحذف
-  const confirmDelete = () => {
-    setUsers(users.filter((user) => user.id !== deleteUserId));
-    setIsDeleteModalOpen(false);
-    setDeleteUserId(null);
-    toast.success('User deleted successfully!');
+  const confirmDelete = async () => {
+    try {
+      setIsUpdating(true);
+      const result = await removeUser(deleteUserId);
+      setIsDeleteModalOpen(false);
+      setDeleteUserId(null);
+      setDeleteUserName('');
+      toast.success(
+        <div className="flex items-center space-x-2">
+          <CheckCircle className="h-5 w-5 text-green-500" />
+          <span>{result.message || 'User deleted successfully!'}</span>
+        </div>,
+        {
+          duration: 4000,
+          style: {
+            background: theme === "light" ? '#f0fdf4' : '#1a4731',
+            border: theme === "light" ? '1px solid #bbf7d0' : '1px solid #4d7c0f',
+            color: theme === "light" ? '#166534' : '#86efac'
+          }
+        }
+      );
+    } catch (error) {
+      toast.error(
+        <div className="flex items-center space-x-2">
+          <XCircle className="h-5 w-5 text-red-500" />
+          <span>{error.message || 'Failed to delete user'}</span>
+        </div>,
+        {
+          duration: 4000,
+          style: {
+            background: theme === "light" ? '#fef2f2' : '#450a0a',
+            border: theme === "light" ? '1px solid #fecaca' : '1px solid #dc2626',
+            color: theme === "light" ? '#dc2626' : '#f87171'
+          }
+        }
+      );
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
-  // إلغاء الحذف
   const cancelDelete = () => {
     setIsDeleteModalOpen(false);
     setDeleteUserId(null);
+    setDeleteUserName('');
   };
 
+  const handleRefresh = async () => {
+    try {
+      await fetchUsers();
+      setSearch('');
+      setStatusFilter('');
+      toast.success('Users refreshed successfully!');
+    } catch (error) {
+      toast.error('Failed to refresh users');
+    }
+  };
+
+  if (error) {
+    return (
+      <div className={`flex items-center justify-center min-h-screen ${
+        theme === "light" ? "bg-gray-50" : "bg-gray-900"
+      }`}>
+        <motion.div 
+          className={`text-center p-8 rounded-2xl shadow-lg max-w-md w-full mx-4 ${
+            theme === "light" ? "bg-white" : "bg-gray-800"
+          }`}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+        >
+          <XCircle className={`h-16 w-16 mx-auto mb-4 ${
+            theme === "light" ? "text-red-500" : "text-red-400"
+          }`} />
+          <h2 className={`text-2xl font-bold mb-2 ${
+            theme === "light" ? "text-gray-900" : "text-gray-200"
+          }`}>Error</h2>
+          <p className={`mb-6 ${
+            theme === "light" ? "text-gray-600" : "text-gray-400"
+          }`}>{error}</p>
+          <button
+            onClick={handleRefresh}
+            className={`px-6 py-3 text-white rounded-lg font-medium ${
+              theme === "light"
+                ? "bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700"
+                : "bg-gradient-to-r from-sky-700 to-blue-800 hover:from-sky-800 hover:to-blue-900"
+            } transition-all duration-200`}
+          >
+            Try Again
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
-    <motion.div className="flex justify-center items-start min-h-screen bg-gradient-to-br from-white-300 to-white-200 p-4">
+    <motion.div 
+      className={`min-h-screen p-4 ${
+        theme === "light" ? "bg-gradient-to-br from-gray-50 to-gray-100" : "bg-gradient-to-br from-gray-900 to-gray-800"
+      }`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <motion.div
-        className="w-full max-w-7xl bg-white p-6 sm:p-4 rounded-2xl shadow-2xl flex flex-col space-y-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
+        className="w-full max-w-7xl mx-auto"
+        initial={{ y: -20 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.4 }}
       >
-        {/* وضع الجدول في الأعلى */}
-        <div className="overflow-x-auto">
+        {isLoading ? (
+          <div className="flex justify-center items-center min-h-[70vh]">
+            <div
+              className={`animate-spin rounded-full h-12 w-12 border-b-2 ${
+                theme === "light" ? "border-sky-600" : "border-sky-300"
+              }`}
+            ></div>
+          </div>
+        ) : (
           <UserList
-            filteredUsers={filteredUsers}  // تم استخدام الفلترة هنا
+            filteredUsers={filteredUsers}
             onEdit={(user) => {
-              setEditUser(user);
+              setCurrentUser(user);
               setIsEditModalOpen(true);
             }}
             onDelete={handleDelete}
-            onSearch={(value) => setSearch(value)}  // تمرير قيمة البحث
-            onFilter={handleFilterChange}  // تمرير فلتر الحالة
-            onAddUser={() => setIsAddModalOpen(true)}
+            onSearch={(value) => setSearch(value)}
+            onFilter={handleFilterChange}
+            onRefresh={handleRefresh}
+            isLoading={isLoading}
           />
-        </div>
+        )}
       </motion.div>
 
-      {/* Add/Edit User Modal */}
-      <UserForm
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onSave={handleAddUser}
-        title="Add User"
-        user={newUser}
-      />
-      <UserForm
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        onSave={handleSaveEdit}
-        title="Edit User"
-        user={editUser}
-      />
+      {/* Edit User Modal */}
+      <AnimatePresence>
+        {isEditModalOpen && (
+          <UserForm
+            isOpen={isEditModalOpen}
+            onClose={() => {
+              setIsEditModalOpen(false);
+              setCurrentUser(null);
+            }}
+            onSave={handleSaveEdit}
+            title="Edit User"
+            user={currentUser}
+            isSubmitting={isUpdating}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Delete Confirmation Modal */}
-      {isDeleteModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="bg-white p-6 sm:p-4 rounded-lg shadow-lg w-full max-w-md sm:max-w-lg">
-            <h2 className="text-xl sm:text-2xl mb-4 text-center">Are you sure you want to delete this user?</h2>
-            <div className="flex justify-between">
-              <button
-                onClick={confirmDelete}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
-              >
-                Delete
-              </button>
-              <button
-                onClick={cancelDelete}
-                className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {isDeleteModalOpen && (
+          <motion.div 
+            className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div 
+              className={`rounded-2xl shadow-2xl w-full max-w-md overflow-hidden ${
+                theme === "light" ? "bg-white" : "bg-gray-800"
+              }`}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className={`p-6 text-white ${
+                theme === "light" ? "bg-gradient-to-r from-red-500 to-red-600" : "bg-gradient-to-r from-red-600 to-red-700"
+              }`}>
+                <div className="flex items-center space-x-3">
+                  <div className={`p-2 rounded-lg ${
+                    theme === "light" ? "bg-white/20" : "bg-white/10"
+                  }`}>
+                    <AlertTriangle className="h-6 w-6" />
+                  </div>
+                  <h2 className="text-xl font-bold">Confirm Deletion</h2>
+                </div>
+              </div>
+              <div className="p-6">
+                <div className="text-center mb-6">
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
+                    theme === "light" ? "bg-red-100" : "bg-red-900"
+                  }`}>
+                    <AlertTriangle className={`h-8 w-8 ${
+                      theme === "light" ? "text-red-500" : "text-red-300"
+                    }`} />
+                  </div>
+                  <h3 className={`text-lg font-semibold mb-2 ${
+                    theme === "light" ? "text-gray-900" : "text-gray-200"
+                  }`}>
+                    Delete User Account
+                  </h3>
+                  <p className={`${
+                    theme === "light" ? "text-gray-600" : "text-gray-400"
+                  }`}>
+                    Are you sure you want to delete <span className={`font-semibold ${
+                      theme === "light" ? "text-gray-900" : "text-gray-200"
+                    }`}>"{deleteUserName}"</span>?
+                  </p>
+                  <p className={`text-sm mt-2 p-3 rounded-lg ${
+                    theme === "light" ? "text-red-600 bg-red-50" : "text-red-300 bg-red-900"
+                  }`}>
+                    ⚠️ This action cannot be undone. All user data will be permanently removed.
+                  </p>
+                </div>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={cancelDelete}
+                    disabled={isUpdating}
+                    className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
+                      theme === "light"
+                        ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        : "bg-gray-700 text-gray-200 hover:bg-gray-600"
+                    } disabled:opacity-50`}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDelete}
+                    disabled={isUpdating}
+                    className={`flex-1 px-4 py-3 text-white rounded-lg font-medium transition-all duration-200 ${
+                      theme === "light"
+                        ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
+                        : "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
+                    } disabled:opacity-50 disabled:cursor-not-allowed ${
+                      isUpdating ? 'animate-pulse' : ''
+                    }`}
+                  >
+                    {isUpdating ? (
+                      <div className="flex items-center justify-center space-x-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                        <span>Deleting...</span>
+                      </div>
+                    ) : (
+                      'Delete User'
+                    )}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
