@@ -244,27 +244,6 @@ export default function CategoryList({
             </div>
           </div>
           <div className="flex items-center space-x-3 w-full lg:w-auto">
-            <button
-              onClick={() => handleOpenModal("add")}
-              className={`px-4 py-2 rounded-md text-sm font-medium flex items-center space-x-2 ${
-                theme === "light"
-                  ? "bg-sky-600 text-white hover:bg-sky-700"
-                  : "bg-sky-700 text-white hover:bg-sky-800"
-              }`}
-            >
-              <PlusCircle size={16} />
-              <span>Add Category</span>
-            </button>
-          </div>
-          <div
-            className={`text-sm ${
-              theme === "light" ? "text-gray-500" : "text-gray-400"
-            } whitespace-nowrap`}
-          >
-            {filteredCategories.length} categor
-            {filteredCategories.length !== 1 ? "ies" : "y"} found
-          </div>
-        </div>
         <div
           className={`flex items-center border rounded-md px-4 py-3 w-full lg:w-1/2 ${
             theme === "light"
@@ -290,9 +269,29 @@ export default function CategoryList({
             }`}
           />
         </div>
+            <button
+              onClick={() => handleOpenModal("add")}
+              className={`px-4 py-2 rounded-md text-sm font-medium flex items-center space-x-2 ${
+                theme === "light"
+                  ? "bg-sky-600 text-white hover:bg-sky-700"
+                  : "bg-sky-700 text-white hover:bg-sky-800"
+              }`}
+            >
+              <PlusCircle size={16} />
+              <span>Add Category</span>
+            </button>
+          </div>
+          <div
+            className={`text-sm ${
+              theme === "light" ? "text-gray-500" : "text-gray-400"
+            } whitespace-nowrap`}
+          >
+            {filteredCategories.length} categor
+            {filteredCategories.length !== 1 ? "ies" : "y"} found
+          </div>
+        </div>
       </div>
 
-      {/* Categories Grid - تعديل Grid للعرض في صفوف أكثر */}
       <div
         className={`rounded-lg shadow-sm border overflow-hidden ${
           theme === "light"

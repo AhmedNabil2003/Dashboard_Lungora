@@ -44,9 +44,11 @@ const ModelHistoryList = ({
     const statusStr = String(status).toLowerCase().trim();
     switch (statusStr) {
       case "high":
-        return "bg-red-100 text-red-700 border border-red-200";
-      default:
         return "bg-green-100 text-green-700 border border-green-200";
+        case "medium":
+          return "bg-blue-100 text-blue-700 border border-blue-200";
+        default:
+          return "bg-red-100 text-red-700 border border-red-200";
     }
   };
 
@@ -314,9 +316,9 @@ const ModelHistoryList = ({
                         )}`}
                       >
                         {item.status === "High" ? (
-                          <XCircle className="w-4 h-4 mr-1" />
-                        ) : (
                           <CheckCircle2 className="w-4 h-4 mr-1" />
+                        ) : (
+                          <XCircle className="w-4 h-4 mr-1" />
                         )}
                         <span>{item.status}</span>
                       </span>

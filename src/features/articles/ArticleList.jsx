@@ -175,29 +175,45 @@ export default function ArticleList({
               </p>
             </div>
           </div>
-          <div
-            className={`flex items-center border rounded-md px-4 py-3 w-full lg:w-1/2 ${
-              theme === "light" ? "bg-gray-50 border-gray-200" : "bg-gray-700 border-gray-600"
-            }`}
-          >
-            <Search
-              size={20}
-              className={`mr-3 ${theme === "light" ? "text-gray-400" : "text-gray-500"}`}
-            />
-            <input
-              type="text"
-              placeholder="Search articles..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full bg-transparent border-none outline-none ${
-                theme === "light" ? "text-gray-700 placeholder-gray-400" : "text-gray-200 placeholder-gray-500"
+          
+          <div className="flex items-center space-x-4">
+            <div
+              className={`flex items-center border rounded-md px-4 py-3 w-full lg:w-64 ${
+                theme === "light" ? "bg-gray-50 border-gray-200" : "bg-gray-700 border-gray-600"
               }`}
-            />
-          </div>
-          <div
-            className={`text-sm ${theme === "light" ? "text-gray-500" : "text-gray-400"} whitespace-nowrap`}
-          >
-            {filteredArticles.length} article{filteredArticles.length !== 1 ? "s" : ""} found
+            >
+              <Search
+                size={20}
+                className={`mr-3 ${theme === "light" ? "text-gray-400" : "text-gray-500"}`}
+              />
+              <input
+                type="text"
+                placeholder="Search articles..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={`w-full bg-transparent border-none outline-none ${
+                  theme === "light" ? "text-gray-700 placeholder-gray-400" : "text-gray-200 placeholder-gray-500"
+                }`}
+              />
+            </div>
+
+            <div
+              className={`text-sm ${theme === "light" ? "text-gray-500" : "text-gray-400"} whitespace-nowrap`}
+            >
+              {filteredArticles.length} article{filteredArticles.length !== 1 ? "s" : ""} found
+            </div>
+
+            <button
+              onClick={() => handleOpenModal("addArticle")}
+              className={`px-4 py-2 rounded-md text-sm font-medium flex items-center space-x-2 ${
+                theme === "light"
+                  ? "bg-sky-600 text-white hover:bg-sky-700"
+                  : "bg-sky-700 text-white hover:bg-sky-800"
+              }`}
+            >
+              <PlusCircle size={16} />
+              <span>Add Article</span>
+            </button>
           </div>
         </div>
       </div>
@@ -230,6 +246,17 @@ export default function ArticleList({
               >
                 {searchQuery ? "Try adjusting your search criteria" : "Get started by adding your first article"}
               </p>
+              <button
+                onClick={() => handleOpenModal("addArticle")}
+                className={`mt-4 px-4 py-2 rounded-md text-sm font-medium ${
+                  theme === "light"
+                    ? "bg-sky-600 text-white hover:bg-sky-700"
+                    : "bg-sky-700 text-white hover:bg-sky-800"
+                }`}
+              >
+                <PlusCircle size={16} className="inline mr-2" />
+                Add Article
+              </button>
             </div>
           ) : (
             currentArticles.map((article) => (
@@ -397,9 +424,7 @@ export default function ArticleList({
 
       {/* Add/Edit Article Modal */}
       {isModalOpen && (
-        <div
-          className="fixed inset-0 flex justify-center items-center z-50 bg-black/30"
-        >
+        <div className="fixed inset-0 flex justify-center items-center z-50 bg-black/30">
           <div
             className={`${
               theme === "light" ? "bg-white" : "bg-gray-800"
@@ -424,9 +449,7 @@ export default function ArticleList({
 
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && currentDeleteItem && (
-        <div
-          className="fixed inset-0 flex justify-center items-center z-50 bg-black/30"
-        >
+        <div className="fixed inset-0 flex justify-center items-center z-50 bg-black/30">
           <div
             className={`${
               theme === "light" ? "bg-white" : "bg-gray-800"
@@ -475,9 +498,7 @@ export default function ArticleList({
 
       {/* View Article Modal */}
       {isViewModalOpen && currentViewItem && (
-        <div
-          className="fixed inset-0 flex justify-center items-center z-50 bg-black/30"
-        >
+        <div className="fixed inset-0 flex justify-center items-center z-50 bg-black/30">
           <div
             className={`${
               theme === "light" ? "bg-white" : "bg-gray-800"

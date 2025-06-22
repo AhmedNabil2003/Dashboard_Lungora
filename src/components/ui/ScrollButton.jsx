@@ -50,7 +50,7 @@ const ScrollButton = () => {
       onClick={scrollTo}
       className={`fixed right-6 bottom-6 z-[1000] w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all duration-400 ${
         visible ? 'opacity-100' : 'opacity-0'
-      } bg-blue-500 text-white hover:bg-blue-600`}
+      } bg-sky-700 text-white hover:bg-sky-800`}
       aria-label={atBottom ? 'Scroll to top' : 'Scroll to bottom'}
     >
       {atBottom ? <ArrowUp size={20} /> : <ArrowDown size={20} />}
