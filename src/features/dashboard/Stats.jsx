@@ -13,7 +13,7 @@ const Stats = ({ data, theme }) => {
         label: "Patient Analysis",
         data: [
           data.userStats?.activeCount || 0,
-          data.allDoctors?.length || 0,
+          data.userStats?.doctorCount || 0,
           data.predictionStats?.find((stat) => stat.result === "Covid")?.count || 0,
           data.predictionStats?.find((stat) => stat.result === "Pneumonia")?.count || 0,
           data.predictionStats?.find((stat) => stat.result === "Normal")?.count || 0,
@@ -34,7 +34,7 @@ const Stats = ({ data, theme }) => {
       transition={{ delay: 0.2 }}
     >
       <h3 className={`${theme === "light" ? "text-gray-800" : "text-gray-100"} text-sm font-semibold mb-2`}>
-        Analysis
+       Patient Analysis
       </h3>
       <div className="relative w-full h-56">
         <Doughnut

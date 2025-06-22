@@ -129,9 +129,9 @@ export default function ManageCategories() {
             ></div>
           </div>
         ) : (
-          <div className="flex flex-col lg:flex-row lg:space-x-6">
-            {/* Categories Section */}
-            <div className="w-full lg:w-1/2">
+          <div className="space-y-8">
+            {/* Categories Section - في الأعلى */}
+            <div className="w-full">
               <CategoryList
                 categories={categories}
                 onView={handleViewArticles}
@@ -141,29 +141,59 @@ export default function ManageCategories() {
               />
             </div>
 
-            {/* Articles Section */}
+            {/* Articles Section - في الأسفل */}
             {selectedCategoryId && (
-              <div className="w-full lg:w-1/2 mt-6 lg:mt-0">
-                <div className="flex items-center justify-between mb-4">
-                  <h3
-                    className={`text-xl font-semibold ${
-                      theme === "light" ? "text-gray-900" : "text-gray-200"
-                    }`}
-                  >
-                    Articles in {selectedCategoryName}
-                  </h3>
-                  <button
-                    onClick={handleOpenArticleModal}
-                    className={`px-4 py-2 rounded-md text-sm font-medium flex items-center space-x-2 ${
-                      theme === "light"
-                        ? "bg-sky-600 text-white hover:bg-sky-700"
-                        : "bg-sky-700 text-white hover:bg-sky-800"
-                    }`}
-                  >
-                    <PlusCircle size={16} />
-                    <span>Add Article</span>
-                  </button>
+              <div className="w-full">
+                <div
+                  className={`p-6 rounded-lg shadow-sm border mb-6 ${
+                    theme === "light"
+                      ? "bg-white border-sky-100"
+                      : "bg-gray-800 border-sky-600"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div
+                        className={`p-3 rounded-lg ${
+                          theme === "light"
+                            ? "bg-gradient-to-r from-sky-700 to-sky-600"
+                            : "bg-gradient-to-r from-sky-800 to-sky-700"
+                        }`}
+                      >
+                        <PlusCircle className="h-5 w-8 text-white" />
+                      </div>
+                      <div>
+                        <h3
+                          className={`text-xl font-bold ${
+                            theme === "light" ? "text-gray-900" : "text-gray-200"
+                          }`}
+                        >
+                          Articles in {selectedCategoryName}
+                        </h3>
+                        <p
+                          className={`text-sm ${
+                            theme === "light" ? "text-gray-600" : "text-gray-400"
+                          }`}
+                        >
+                          Manage articles for this category
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleOpenArticleModal}
+                      className={`px-4 py-2 rounded-md text-sm font-medium flex items-center space-x-2 ${
+                        theme === "light"
+                          ? "bg-sky-600 text-white hover:bg-sky-700"
+                          : "bg-sky-700 text-white hover:bg-sky-800"
+                      }`}
+                    >
+                      <PlusCircle size={16} />
+                      <span>Add Article</span>
+                    </button>
+                  </div>
                 </div>
+
+                {/* Articles Error */}
                 {articlesError && (
                   <div
                     className={`p-4 rounded-lg mb-6 ${
@@ -175,6 +205,8 @@ export default function ManageCategories() {
                     Error loading articles: {articlesError}
                   </div>
                 )}
+
+                {/* Articles Loading or Content */}
                 {articlesLoading ? (
                   <div className="flex justify-center items-center min-h-[200px]">
                     <div
@@ -184,14 +216,22 @@ export default function ManageCategories() {
                     ></div>
                   </div>
                 ) : (
-                  <ArticleList
-                    articles={articles}
-                    categoryId={selectedCategoryId}
-                    categoryName={selectedCategoryName}
-                    onEdit={editArticle}
-                    onDelete={removeArticle}
-                    onAdd={handleAddArticle}
-                  />
+                  <div
+                    className={`rounded-lg shadow-sm border ${
+                      theme === "light"
+                        ? "bg-white border-sky-100"
+                        : "bg-sky-800 border-sky-600"
+                    }`}
+                  >
+                    <ArticleList
+                      articles={articles}
+                      categoryId={selectedCategoryId}
+                      categoryName={selectedCategoryName}
+                      onEdit={editArticle}
+                      onDelete={removeArticle}
+                      onAdd={handleAddArticle}
+                    />
+                  </div>
                 )}
               </div>
             )}

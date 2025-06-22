@@ -13,6 +13,7 @@ export default function AddArticleForm({
 }) {
   const [coverImage, setCoverImage] = useState(null);
   const [coverImagePreview, setCoverImagePreview] = useState(initialData?.coverImage || null);
+  const [imageError, setImageError] = useState("");
   const fileInputRef = useRef(null);
   const { theme } = useContext(ThemeContext);
   const isEditMode = Boolean(initialData?.id);
@@ -22,6 +23,7 @@ export default function AddArticleForm({
     description: initialData?.description || "",
     content: initialData?.content || "",
     categoryId: initialData?.categoryId || categoryIdFromProps || 0,
+    coverImage: null, 
   };
 
   const validationSchema = Yup.object({
@@ -32,8 +34,7 @@ export default function AddArticleForm({
       .required("Description is required")
       .min(10, "Description must be at least 10 characters"),
     content: Yup.string()
-      .required("Content is required")
-      .min(20, "Content must be at least 20 characters"),
+      .required("Content is required"),
     categoryId: Yup.number()
       .min(1, "Please select a category")
       .required("Category is required"),
@@ -43,6 +44,7 @@ export default function AddArticleForm({
     const file = e.target.files[0];
     if (!file) return;
     
+    setImageError(""); // Clear any previous error
     setCoverImage(file);
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -53,6 +55,13 @@ export default function AddArticleForm({
 
   const handleFormSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
+      // Check if image is required for new articles
+      if (!isEditMode && !coverImage) {
+        setImageError("Cover image is required");
+        setSubmitting(false);
+        return;
+      }
+
       const formData = new FormData();
       formData.append("title", values.title);
       formData.append("description", values.description);
@@ -69,6 +78,7 @@ export default function AddArticleForm({
         resetForm();
         setCoverImage(null);
         setCoverImagePreview(null);
+        setImageError("");
       }
     } catch (error) {
       console.error(`Error ${isEditMode ? 'updating' : 'creating'} article:`, error);
@@ -92,7 +102,7 @@ export default function AddArticleForm({
                 theme === "light" ? "text-gray-800" : "text-white"
               }`}
             >
-              Cover Image
+              Cover Image {!isEditMode && <span className="text-red-500">*</span>}
             </label>
             
             <input
@@ -150,7 +160,7 @@ export default function AddArticleForm({
                   theme === "light"
                     ? "border-2 border-dashed border-gray-300"
                     : "border-2 border-dashed border-gray-600"
-                } rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 transition-colors`}
+                } ${imageError ? "border-red-500" : ""} rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 transition-colors`}
               >
                 <div className="flex flex-col items-center justify-center gap-1">
                   <svg
@@ -174,7 +184,7 @@ export default function AddArticleForm({
                       theme === "light" ? "text-gray-700" : "text-white"
                     } text-xs font-medium`}
                   >
-                    Upload cover image
+                    Upload cover image {!isEditMode && <span className="text-red-500">*</span>}
                   </span>
                   <span
                     className={`${
@@ -184,6 +194,12 @@ export default function AddArticleForm({
                     PNG, JPG, GIF up to 10MB
                   </span>
                 </div>
+              </div>
+            )}
+            
+            {imageError && (
+              <div className="mt-1 text-red-500 text-xs">
+                {imageError}
               </div>
             )}
           </div>

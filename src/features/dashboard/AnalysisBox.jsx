@@ -15,11 +15,11 @@ const AnalysisBox = ({ data, theme }) => {
     },
     {
       label: "Doctors",
-      value: data.allDoctors?.length?.toString() || "0",
+      value: data.userStats?.doctorCount?.toString() || "0",
       icon: "fa-user-doctor",
       color: "from-green-500 to-green-400",
       trend: "up",
-      change: "5%",
+      change:  `${data.userStats?.doctorPercentage?.toFixed(1) || 0}%`,
     },
     {
       label: "COVID Cases",
@@ -47,7 +47,7 @@ const AnalysisBox = ({ data, theme }) => {
     },
     {
       label: "AI Accuracy",
-      value: "96.7%",
+      value: "97.0%",
       icon: "fa-microchip-ai",
       color: "from-purple-500 to-fuchsia-500",
       trend: "up",

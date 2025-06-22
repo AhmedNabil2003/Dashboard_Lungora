@@ -35,7 +35,6 @@ const LungoraModel = () => {
       try {
         const response = await uploadImage(file);
         if (response && response.isSuccess) {
-          // تحويل النتيجة إلى أحرف كبيرة
           const formattedResult = response.result.predicted 
             ? response.result.predicted.toUpperCase() 
             : response.result.message.toUpperCase();

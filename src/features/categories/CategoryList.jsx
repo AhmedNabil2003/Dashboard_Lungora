@@ -31,7 +31,7 @@ export default function CategoryList({
   const [currentPage, setCurrentPage] = useState(1);
   const [menuOpen, setMenuOpen] = useState(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
-  const categoriesPerPage = 6;
+  const categoriesPerPage = 12; // زيادة العدد من 6 إلى 12
 
   // Filter categories based on search term
   const filteredCategories = categories.filter((category) =>
@@ -292,7 +292,7 @@ export default function CategoryList({
         </div>
       </div>
 
-      {/* Categories Grid */}
+      {/* Categories Grid - تعديل Grid للعرض في صفوف أكثر */}
       <div
         className={`rounded-lg shadow-sm border overflow-hidden ${
           theme === "light"
@@ -300,7 +300,7 @@ export default function CategoryList({
             : "bg-gray-800 border-sky-600"
         }`}
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 p-6">
           {currentCategories.length > 0 ? (
             currentCategories.map((category) => (
               <div
@@ -317,109 +317,122 @@ export default function CategoryList({
                     : ""
                 }`}
               >
-                <div className=" r-flex items-center justify-between relative">
-                  <div>
-                    <h4
-                      className={`text-base font-semibold ${
-                        theme === "light" ? "text-gray-900" : "text-gray-200"
-                      }`}
-                    >
-                      {category.categoryName}
-                    </h4>
-                    <p
-                      className={`text-sm ${
-                        theme === "light" ? "text-gray-500" : "text-gray-400"
-                      }`}
-                    >
-                      {articlesCount[category.id] || 0} articles
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-2 relative">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleViewArticles(category.id);
-                      }}
-                      className={`p-2 rounded-full ${
-                        theme === "light"
-                          ? "text-gray-600 hover:bg-gray-200"
-                          : "text-gray-300 hover:bg-gray-600"
-                      }`}
-                    >
-                      {selectedCategoryId === category.id ? (
-                        <ChevronUp size={20} />
-                      ) : (
-                        <ChevronDown size={20} />
-                      )}
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleMenu(category.id);
-                      }}
-                      className={`p-2 rounded-full ${
-                        theme === "light"
-                          ? "text-gray-600 hover:bg-gray-200"
-                          : "text-gray-300 hover:bg-gray-600"
-                      }`}
-                    >
-                      <i className="fa-solid fa-ellipsis-vertical"></i>
-                    </button>
-                    {menuOpen === category.id && (
-                      <div
-                        className={`absolute right-4 top-12 w-48 border rounded-lg shadow-lg z-50 py-2 ${
-                          theme === "light"
-                            ? "bg-white border-gray-200"
-                            : "bg-gray-800 border-gray-600"
+                <div className="flex flex-col space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <h4
+                        className={`text-sm font-semibold truncate ${
+                          theme === "light" ? "text-gray-900" : "text-gray-200"
+                        }`}
+                        title={category.categoryName}
+                      >
+                        {category.categoryName}
+                      </h4>
+                      <p
+                        className={`text-xs ${
+                          theme === "light" ? "text-gray-500" : "text-gray-400"
                         }`}
                       >
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewArticles(category.id);
-                          }}
-                          className={`w-full px-4 py-2 text-left flex items-center space-x-3 text-sm ${
+                        {articlesCount[category.id] || 0} articles
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-1 relative">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleMenu(category.id);
+                        }}
+                        className={`p-1 rounded-full ${
+                          theme === "light"
+                            ? "text-gray-600 hover:bg-gray-200"
+                            : "text-gray-300 hover:bg-gray-600"
+                        }`}
+                      >
+                        <i className="fa-solid fa-ellipsis-vertical text-sm"></i>
+                      </button>
+                      {menuOpen === category.id && (
+                        <div
+                          className={`absolute right-0 top-8 w-36 border rounded-lg shadow-lg z-50 py-1 ${
                             theme === "light"
-                              ? "text-gray-700 hover:bg-gray-50"
-                              : "text-gray-200 hover:bg-gray-700"
+                              ? "bg-white border-gray-200"
+                              : "bg-gray-800 border-gray-600"
                           }`}
                         >
-                          <Eye size={16} />
-                          <span>View Articles</span>
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenModal("edit", category);
-                            setMenuOpen(null);
-                          }}
-                          className={`w-full px-4 py-2 text-left flex items-center space-x-3 text-sm ${
-                            theme === "light"
-                              ? "text-gray-700 hover:bg-gray-50"
-                              : "text-gray-200 hover:bg-gray-700"
-                          }`}
-                        >
-                          <Edit size={16} />
-                          <span>Edit Category</span>
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenDeleteModal(category);
-                            setMenuOpen(null);
-                          }}
-                          className={`w-full px-4 py-2 text-left flex items-center space-x-3 text-sm ${
-                            theme === "light"
-                              ? "text-red-600 hover:bg-gray-50"
-                              : "text-red-300 hover:bg-gray-700"
-                          }`}
-                        >
-                          <Trash size={16} />
-                          <span>Delete Category</span>
-                        </button>
-                      </div>
-                    )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewArticles(category.id);
+                            }}
+                            className={`w-full px-3 py-1.5 text-left flex items-center space-x-2 text-xs ${
+                              theme === "light"
+                                ? "text-gray-700 hover:bg-gray-50"
+                                : "text-gray-200 hover:bg-gray-700"
+                            }`}
+                          >
+                            <Eye size={14} />
+                            <span>View Articles</span>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenModal("edit", category);
+                              setMenuOpen(null);
+                            }}
+                            className={`w-full px-3 py-1.5 text-left flex items-center space-x-2 text-xs ${
+                              theme === "light"
+                                ? "text-gray-700 hover:bg-gray-50"
+                                : "text-gray-200 hover:bg-gray-700"
+                            }`}
+                          >
+                            <Edit size={14} />
+                            <span>Edit Category</span>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenDeleteModal(category);
+                              setMenuOpen(null);
+                            }}
+                            className={`w-full px-3 py-1.5 text-left flex items-center space-x-2 text-xs ${
+                              theme === "light"
+                                ? "text-red-600 hover:bg-gray-50"
+                                : "text-red-300 hover:bg-gray-700"
+                            }`}
+                          >
+                            <Trash size={14} />
+                            <span>Delete Category</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewArticles(category.id);
+                    }}
+                    className={`w-full p-2 rounded-md text-xs font-medium flex items-center justify-center space-x-1 ${
+                      selectedCategoryId === category.id
+                        ? theme === "light"
+                          ? "bg-sky-100 text-sky-700 border border-sky-300"
+                          : "bg-sky-900 text-sky-300 border border-sky-700"
+                        : theme === "light"
+                        ? "bg-sky-50 text-sky-600 hover:bg-sky-100 border border-sky-200"
+                        : "bg-sky-900/50 text-sky-400 hover:bg-sky-900 border border-sky-800"
+                    }`}
+                  >
+                    {selectedCategoryId === category.id ? (
+                      <>
+                        <ChevronUp size={14} />
+                        <span>Hide Articles</span>
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown size={14} />
+                        <span>View Articles</span>
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             ))
