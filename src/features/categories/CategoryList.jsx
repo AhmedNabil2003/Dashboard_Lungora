@@ -31,8 +31,7 @@ export default function CategoryList({
   const [currentPage, setCurrentPage] = useState(1);
   const [menuOpen, setMenuOpen] = useState(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
-  const categoriesPerPage = 12; // زيادة العدد من 6 إلى 12
-
+  const categoriesPerPage = 12; 
   // Filter categories based on search term
   const filteredCategories = categories.filter((category) =>
     category.categoryName.toLowerCase().includes(searchTerm.toLowerCase())

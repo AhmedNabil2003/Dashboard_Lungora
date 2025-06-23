@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { MapPin, Clock } from "lucide-react"
 import WorkingHoursEditor from "./WorkingHoursEditor"

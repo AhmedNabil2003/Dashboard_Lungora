@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react"
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion"
@@ -36,6 +37,64 @@ const DoctorsMap = ({ theme }) => {
   const [doctorCoordinates, setDoctorCoordinates] = useState({})
   const [geocodingProgress, setGeocodingProgress] = useState(0)
 
+  useEffect(() => {
+    const mapStyles = `
+      .leaflet-container {
+        z-index: 1 !important;
+      }
+      
+      .leaflet-control-container {
+        z-index: 2 !important;
+      }
+      
+      .leaflet-popup {
+        z-index: 3 !important;
+      }
+      
+      .leaflet-popup-pane {
+        z-index: 3 !important;
+      }
+      
+      .leaflet-marker-pane {
+        z-index: 2 !important;
+      }
+      
+      .leaflet-tile-pane {
+        z-index: 1 !important;
+      }
+      
+      .custom-doctor-marker {
+        z-index: 2 !important;
+      }
+      
+      aside {
+        z-index: 50 !important;
+      }
+      
+      .fixed {
+        z-index: 60 !important;
+      }
+    `
+
+    const styleElement = document.createElement("style")
+    styleElement.id = "doctors-map-styles"
+    styleElement.textContent = mapStyles
+
+    const existingStyle = document.getElementById("doctors-map-styles")
+    if (existingStyle) {
+      existingStyle.remove()
+    }
+
+    document.head.appendChild(styleElement)
+
+    return () => {
+      const styleToRemove = document.getElementById("doctors-map-styles")
+      if (styleToRemove) {
+        styleToRemove.remove()
+      }
+    }
+  }, [])
+
   // Create simple doctor marker icon
   const createDoctorIcon = (doctor) => {
     const iconHtml = `
@@ -49,6 +108,8 @@ const DoctorsMap = ({ theme }) => {
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         cursor: pointer;
         transition: transform 0.2s ease;
+        z-index: 1;
+        position: relative;
       " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
         <img 
           src="${doctor.imageDoctor || "/placeholder.svg?height=50&width=50"}" 
@@ -118,14 +179,17 @@ const DoctorsMap = ({ theme }) => {
 
   return (
     <motion.div
-      className={`rounded-lg shadow-lg overflow-hidden lg:col-span-2 ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
+      className={`rounded-lg shadow-lg overflow-hidden lg:col-span-2 relative ${
+        theme === "light" ? "bg-white" : "bg-gray-800"
+      }`}
+      style={{ zIndex: 1 }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.5 }}
     >
       {/* Simple Header */}
-      <div className={`p-4 border-b ${theme === "light" ? "border-gray-200" : "border-gray-600"}`}>
-        <h3 className={`text-lg font-semibold ${theme === "light" ? "text-gray-800" : "text-gray-100"}`}>
+      <div className={`p-2 border-b ${theme === "light" ? "border-gray-200" : "border-gray-600"}`}>
+        <h3 className={`text-sm font-semibold ${theme === "light" ? "text-gray-800" : "text-gray-100"}`}>
           <i className="fas fa-map-marked-alt mr-2 text-blue-500"></i>
           Doctors Locations Map
         </h3>
@@ -152,30 +216,42 @@ const DoctorsMap = ({ theme }) => {
 
       {/* Map Container */}
       {loading ? (
-        <div className="flex items-center justify-center h-96">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className={`text-sm ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>Loading doctors map...</p>
+        <div className="flex items-center justify-center py-12">
+          <div className={`flex items-center space-x-3 ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}>
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+            <span className="text-lg">Loading doctors...</span>
           </div>
         </div>
       ) : error ? (
-        <div className="flex items-center justify-center h-96">
+        <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <i className="fas fa-exclamation-triangle text-red-500 text-4xl mb-4"></i>
             <p className="text-red-500 text-sm">Error loading doctors: {error}</p>
           </div>
         </div>
       ) : (
-        <div className="h-96 relative">
+        <div className="h-96 relative" style={{ zIndex: 1 }}>
           <MapContainer
             center={[26.8206, 30.8025]} // مركز مصر
             zoom={6}
-            style={{ height: "100%", width: "100%" }}
+            style={{
+              height: "100%",
+              width: "100%",
+              zIndex: 1,
+            }}
             className="rounded-b-lg"
+            zoomControl={true}
+            scrollWheelZoom={true}
+            doubleClickZoom={true}
+            touchZoom={true}
+            boxZoom={true}
+            keyboard={true}
+            dragging={true}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              zIndex={1}
             />
 
             <MapController doctors={doctors} doctorCoordinates={doctorCoordinates} />
@@ -185,8 +261,14 @@ const DoctorsMap = ({ theme }) => {
               if (!coordinates) return null
 
               return (
-                <Marker key={doctor.id} position={coordinates} icon={createDoctorIcon(doctor)}>
-                  <Popup maxWidth={280}>
+                <Marker key={doctor.id} position={coordinates} icon={createDoctorIcon(doctor)} zIndexOffset={100}>
+                  <Popup
+                    maxWidth={280}
+                    closeButton={true}
+                    autoClose={false}
+                    closeOnEscapeKey={true}
+                    className="custom-popup"
+                  >
                     <div className="p-2">
                       {/* Doctor Header */}
                       <div className="flex items-center space-x-2 mb-2">
@@ -265,7 +347,7 @@ const DoctorsMap = ({ theme }) => {
 
       {/* Simple Footer */}
       {doctors && Object.keys(doctorCoordinates).length > 0 && (
-        <div className={`p-4 text-center border-t ${theme === "light" ? "border-gray-200" : "border-gray-600"}`}>
+        <div className={`p-2 text-center border-t ${theme === "light" ? "border-gray-200" : "border-gray-600"}`}>
           <p className={`text-sm ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
             Showing {Object.keys(doctorCoordinates).length} of {doctors.length} doctors on the map
           </p>

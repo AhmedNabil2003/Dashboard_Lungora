@@ -263,7 +263,6 @@ const UserList = ({
                   theme === "light" ? "divide-sky-200" : "divide-sky-500"
                 }`}
               >
-                {" "}
                 <thead
                   className={`${
                     theme === "light"

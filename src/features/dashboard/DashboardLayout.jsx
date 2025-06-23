@@ -38,10 +38,10 @@ const DashboardLayout = () => {
               {/* Outlet for child routes */}
               <Outlet />
             </div>
-            <Footer/>
+            <Footer />
           </main>
         </div>
-          <ScrollButton />
+        <ScrollButton />
       </div>
     </SidebarProvider>
   );

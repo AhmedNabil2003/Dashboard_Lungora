@@ -1,17 +1,17 @@
-import { Link, useLocation } from "react-router-dom";
-import { useContext, useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom"
+import { useContext, useState, useEffect } from "react"
 // eslint-disable-next-line no-unused-vars
-import { motion, AnimatePresence } from "framer-motion";
-import LungoraImage from "../../assets/images.jpg";
-import AuthContext from "../../context/AuthContext";
-import { useSidebarContext } from "../../context/SidebarContext";
-import { ThemeContext } from "../../context/ThemeContext";
+import { motion, AnimatePresence } from "framer-motion"
+import LungoraImage from "../../assets/images.jpg"
+import AuthContext from "../../context/AuthContext"
+import { useSidebarContext } from "../../context/SidebarContext"
+import { ThemeContext } from "../../context/ThemeContext"
 
 const Sidebar = () => {
-  const [showModal, setShowModal] = useState(false);
-  const location = useLocation();
-  const { logout } = useContext(AuthContext);
-  const { theme } = useContext(ThemeContext);
+  const [showModal, setShowModal] = useState(false)
+  const location = useLocation()
+  const { logout } = useContext(AuthContext)
+  const { theme } = useContext(ThemeContext)
   const {
     isSidebarOpen,
     showMobileSidebar,
@@ -20,8 +20,8 @@ const Sidebar = () => {
     setIsMobile,
     setSidebarOpen,
     setShowMobileSidebar,
-  } = useSidebarContext();
-  const [isTablet, setIsTablet] = useState(false);
+  } = useSidebarContext()
+  const [isTablet, setIsTablet] = useState(false)
 
   const menuItems = [
     { to: "/dashboard", label: "Dashboard", icon: "fa-solid fa-house" },
@@ -32,37 +32,38 @@ const Sidebar = () => {
     { to: "/dashboard/history", label: "History", icon: "fa-solid fa-clock-rotate-left" },
     { to: "/dashboard/settings", label: "Settings", icon: "fa-solid fa-cog" },
     { to: "#", label: "Logout", icon: "fa-solid fa-sign-out-alt", isLogout: true },
-  ];
+  ]
 
   useEffect(() => {
     const handleResize = () => {
-      const width = window.innerWidth;
-      setIsMobile(width < 768);
-      setIsTablet(width >= 768 && width < 1024);
-      if (width < 768) {
-        setSidebarOpen(false);
-        setShowMobileSidebar(false);
-      } else if (width < 1024) {
-        setSidebarOpen(false);
-      } else {
-        setSidebarOpen(true);
-      }
-    };
+      const width = window.innerWidth
+      setIsMobile(width < 768)
+      setIsTablet(width >= 768 && width < 1024)
 
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [setSidebarOpen, setShowMobileSidebar, setIsMobile]);
+      if (width < 768) {
+        setSidebarOpen(false)
+        setShowMobileSidebar(false)
+      } else if (width < 1024) {
+        setSidebarOpen(false)
+      } else {
+        setSidebarOpen(true)
+      }
+    }
+
+    handleResize()
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [setSidebarOpen, setShowMobileSidebar, setIsMobile])
 
   const handleLogout = () => {
-    setShowModal(false);
-    logout();
-  };
+    setShowModal(false)
+    logout()
+  }
 
   const sidebarVariants = {
     open: { x: 0, transition: { type: "spring", stiffness: 250, damping: 25 } },
     closed: { x: "-100%", transition: { type: "spring", stiffness: 300, damping: 35 } },
-  };
+  }
 
   return (
     <>
@@ -78,6 +79,10 @@ const Sidebar = () => {
           whileTap={{ scale: 0.95 }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
+          style={{
+            transform: "translateY(-50%) scale(1)",
+            transformOrigin: "center",
+          }}
         >
           <i className="fa-solid fa-circle-chevron-right text-lg"></i>
         </motion.button>
@@ -97,15 +102,18 @@ const Sidebar = () => {
 
       <motion.aside
         className={`h-screen ${
-          theme === "light"
-            ? "bg-gradient-to-r from-sky-700 to-sky-800"
-            : "bg-gradient-to-r from-gray-800 to-gray-900"
+          theme === "light" ? "bg-gradient-to-r from-sky-700 to-sky-800" : "bg-gradient-to-r from-gray-800 to-gray-900"
         } shadow-lg ${isSidebarOpen ? "w-45" : "w-20"} ${
           isMobile ? "fixed top-0 left-0 z-50" : "relative"
         } flex flex-col shadow-2xl transition-all overflow-hidden`}
         variants={sidebarVariants}
         initial="closed"
         animate={isMobile && !showMobileSidebar ? "closed" : "open"}
+        style={{
+          minWidth: isSidebarOpen ? "180px" : "80px",
+          maxWidth: isSidebarOpen ? "280px" : "80px",
+          width: isSidebarOpen ? "clamp(180px, 15vw, 280px)" : "80px",
+        }}
       >
         {isMobile && showMobileSidebar && (
           <motion.button
@@ -113,6 +121,10 @@ const Sidebar = () => {
             className="absolute -right-0 top-1 pb-0 pt-0 cursor-pointer hover:bg-sky-800 text-white p-1.5 rounded-full shadow-lg border-2 border-white"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
+            style={{
+              transform: "scale(1)",
+              transformOrigin: "center",
+            }}
           >
             <i className="fa-solid fa-xmark text-base"></i>
           </motion.button>
@@ -128,6 +140,10 @@ const Sidebar = () => {
             }`}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
+            style={{
+              transform: "scale(1)",
+              transformOrigin: "center",
+            }}
           >
             <i
               className={`fa-solid ${
@@ -157,20 +173,18 @@ const Sidebar = () => {
                   onClick={
                     item.isLogout
                       ? () => {
-                          if (isMobile) toggleMobileSidebar();
-                          setShowModal(true);
+                          if (isMobile) toggleMobileSidebar()
+                          setShowModal(true)
                         }
                       : isMobile
-                      ? toggleMobileSidebar
-                      : undefined
+                        ? toggleMobileSidebar
+                        : undefined
                   }
                 />
                 {index < menuItems.length - 1 && (
                   <div
                     className={`w-full my-1 ${
-                      theme === "light"
-                        ? "border-t-2 border-slate-300"
-                        : "border-t-2 border-gray-600"
+                      theme === "light" ? "border-t-2 border-slate-300" : "border-t-2 border-gray-600"
                     }`}
                   />
                 )}
@@ -181,17 +195,11 @@ const Sidebar = () => {
       </motion.aside>
 
       <AnimatePresence>
-        {showModal && (
-          <LogoutModal
-            onConfirm={handleLogout}
-            onCancel={() => setShowModal(false)}
-            theme={theme}
-          />
-        )}
+        {showModal && <LogoutModal onConfirm={handleLogout} onCancel={() => setShowModal(false)} theme={theme} />}
       </AnimatePresence>
     </>
-  );
-};
+  )
+}
 
 const ProfileSection = ({ isSidebarOpen, theme }) => (
   <Link to="/dashboard">
@@ -202,6 +210,10 @@ const ProfileSection = ({ isSidebarOpen, theme }) => (
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.2 }}
+      style={{
+        transform: "scale(1)",
+        transformOrigin: "center",
+      }}
     >
       <div className="relative group">
         <div
@@ -215,7 +227,7 @@ const ProfileSection = ({ isSidebarOpen, theme }) => (
           "
         ></div>
         <img
-          src={LungoraImage}
+          src={LungoraImage || "/placeholder.svg"}
           alt="Lungora"
           className={`
             ${isSidebarOpen ? "w-12 h-12" : "w-10 h-10"}
@@ -226,6 +238,10 @@ const ProfileSection = ({ isSidebarOpen, theme }) => (
             transition-all duration-300
             group-hover:brightness-110
           `}
+          style={{
+            transform: "scale(1)",
+            transformOrigin: "center",
+          }}
         />
       </div>
       {isSidebarOpen && (
@@ -236,10 +252,10 @@ const ProfileSection = ({ isSidebarOpen, theme }) => (
       )}
     </motion.div>
   </Link>
-);
+)
 
 const MenuItem = ({ item, isActive, isSidebarOpen, theme, onClick }) => {
-  const { to, label, icon } = item;
+  const { to, label, icon } = item
 
   return (
     <motion.div
@@ -249,6 +265,10 @@ const MenuItem = ({ item, isActive, isSidebarOpen, theme, onClick }) => {
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3 }}
+      style={{
+        transform: "scale(1) translateX(0)",
+        transformOrigin: "left center",
+      }}
     >
       <Link
         to={to}
@@ -261,67 +281,72 @@ const MenuItem = ({ item, isActive, isSidebarOpen, theme, onClick }) => {
               ? "bg-gradient-to-r from-sky-500 to-sky-700 shadow-lg text-white"
               : "bg-gradient-to-r from-gray-700 to-gray-800 shadow-lg text-white"
             : theme === "light"
-            ? "bg-white text-slate-700 shadow-md hover:bg-sky-200"
-            : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-white text-slate-700 shadow-md hover:bg-sky-200"
+              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
         }`}
+        style={{
+          transform: "scale(1)",
+          transformOrigin: "center",
+        }}
       >
         <i
           className={`${icon} ${
-            isSidebarOpen
-              ? "text-cyan-800 text-xl mr-3"
-              : theme === "light"
-              ? "text-sky-700"
-              : "text-gray-300"
+            isSidebarOpen ? "text-cyan-800 text-xl mr-3" : theme === "light" ? "text-sky-700" : "text-gray-300"
           }`}
+          style={{
+            fontSize: isSidebarOpen ? "clamp(16px, 1.25rem, 20px)" : "clamp(14px, 1rem, 18px)",
+          }}
         ></i>
         {isSidebarOpen && (
           <span
-            className={`text-base font-medium truncate ${
-              theme === "light" ? "text-gray-800" : "text-gray-200"
-            }`}
+            className={`text-base font-medium truncate ${theme === "light" ? "text-gray-800" : "text-gray-200"}`}
+            style={{
+              fontSize: "clamp(14px, 1rem, 16px)",
+            }}
           >
             {label}
           </span>
         )}
       </Link>
     </motion.div>
-  );
-};
+  )
+}
 
 const LogoutModal = ({ onConfirm, onCancel, theme }) => (
   <motion.div
-    className="fixed inset-0 flex items-center justify-center z-50"
+    className="fixed inset-0 flex items-center justify-center z-50 p-4"
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     exit={{ opacity: 0 }}
   >
     <motion.div
-      className={`w-80 overflow-hidden rounded-xl shadow-2xl ${
-        theme === "light"
-          ? "bg-white text-gray-800"
-          : "bg-gray-800 text-gray-200"
+      className="absolute inset-0 bg-black bg-opacity-50"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onCancel}
+    />
+    <motion.div
+      className={`relative w-full max-w-sm overflow-hidden rounded-xl shadow-2xl ${
+        theme === "light" ? "bg-white text-gray-800" : "bg-gray-800 text-gray-200"
       }`}
       initial={{ scale: 0.8, y: 30, opacity: 0 }}
       animate={{ scale: 1, y: 0, opacity: 1 }}
       exit={{ scale: 0.8, y: 30, opacity: 0 }}
       transition={{ type: "spring", stiffness: 350 }}
+      style={{
+        transform: "scale(1) translateY(0)",
+        transformOrigin: "center",
+      }}
     >
-      <div
-        className={`p-4 ${
-          theme === "light" ? "bg-sky-600 text-white" : "bg-gray-700 text-white"
-        }`}
-      >
+      <div className={`p-4 ${theme === "light" ? "bg-sky-600 text-white" : "bg-gray-700 text-white"}`}>
         <h2 className="text-lg font-semibold flex items-center">
           <i className="fa-solid fa-sign-out-alt mr-2"></i>
           Confirm Logout
         </h2>
       </div>
       <div className="p-5">
-        <p
-          className={`text-gray-600 ${
-            theme === "dark" ? "text-gray-300" : "text-gray-600"
-          }`}
-        >
+        <p className={`text-gray-600 ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
           Are you sure you want to logout from your account?
         </p>
         <div className="mt-6 flex justify-end space-x-3">
@@ -330,18 +355,24 @@ const LogoutModal = ({ onConfirm, onCancel, theme }) => (
             className="px-3 py-1.5 bg-gray-200 text-gray-800 rounded-lg cursor-pointer hover:bg-gray-300 transition-colors"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            style={{
+              transform: "scale(1)",
+              transformOrigin: "center",
+            }}
           >
             Cancel
           </motion.button>
           <motion.button
             onClick={onConfirm}
             className={`px-3 py-1.5 rounded-lg cursor-pointer hover:bg-red-700 transition-colors ${
-              theme === "light"
-                ? "bg-red-500 text-white"
-                : "bg-red-700 text-gray-100"
+              theme === "light" ? "bg-red-500 text-white" : "bg-red-700 text-gray-100"
             }`}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            style={{
+              transform: "scale(1)",
+              transformOrigin: "center",
+            }}
           >
             Logout
           </motion.button>
@@ -349,6 +380,6 @@ const LogoutModal = ({ onConfirm, onCancel, theme }) => (
       </div>
     </motion.div>
   </motion.div>
-);
+)
 
-export default Sidebar;
+export default Sidebar

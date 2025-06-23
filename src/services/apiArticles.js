@@ -31,12 +31,12 @@ export const getArticleById = async (id) => {
 };
 
 
-// ✅ ✅ ✅ Get articles by category ID (من Article Controller ✅)
+//  Get articles by category ID (من Article Controller )
 export const getArticlesByCategoryId = async (categoryId) => {
   try {
     const res = await axiosInstance.get(`/Article/GetArticlesByCategoryId/${categoryId}`);
-    if (res.data?.isSuccess && res.data.result&& Array.isArray(res.data.result)) {
-      return res.data.result ;
+    if (res.data?.isSuccess && res.data.result&& Array.isArray(res.data.result.articles)) {
+      return res.data.result.articles;
     }
     console.error(`No articles found for category ID: ${categoryId}`);
     return [];
