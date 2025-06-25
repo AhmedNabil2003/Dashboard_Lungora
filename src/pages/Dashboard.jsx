@@ -1,12 +1,12 @@
 import { useContext, useEffect } from "react";
 import { ThemeContext } from "../context/ThemeProviderContext";
 import { useDashboard } from "../features/dashboard/useDashboard";
-import AnalysisBox from "../features/dashboard/analysisBox";
+import AnalysisBox from "../features/dashboard/AnalysisBox";
 import Stats from "../features/dashboard/Stats";
-import DoctorsList from "../features/dashboard/lastDoctorsList";
-import ArticlesList from "../features/dashboard/lastArticlesList";
-import DoctorsMap from "../features/dashboard/doctorsMap";
-import MedicalHistory from "../features/dashboard/lastMedicalHistory";
+import DoctorsList from "../features/dashboard/LastDoctorsList";
+import ArticlesList from "../features/dashboard/LastArticlesList";
+import DoctorsMap from "../features/dashboard/DoctorsMap";
+import MedicalHistory from "../features/dashboard/MedicalHistory";
 const Dashboard = () => {
   const { theme } = useContext(ThemeContext);
   const { data, loading, error, refetch } = useDashboard();
