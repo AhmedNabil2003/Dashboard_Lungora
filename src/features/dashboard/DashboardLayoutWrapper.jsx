@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "../../components/ui/sidebarNav";
 import Header from "../../components/ui/header";
-import { SidebarProvider } from "../../context/sidebarContext";
+import { SidebarProvider } from "../../context/SidebarContext";
 import { ThemeContext } from "../../context/ThemeProviderContext";
 import ScrollButton from "../../components/ui/scrollButton";
 import Footer from "../../components/ui/footer";

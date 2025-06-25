@@ -11,7 +11,7 @@ import ModelHistoryPage from "../pages/ModelHistoryPage";
 import Settings from "../pages/Settings";
 import PageNotFound from "../pages/PageNotFound";
 import LungoraModel from "../pages/LungoraModelPage";
-import PublicRoute from "./publicRoute";
+import PublicRoute from "./PublicRoute";
 import Profile from "../pages/Profile";
 
 const AppRoute = () => (
