@@ -4,7 +4,14 @@ import * as Yup from "yup";
 import { User, Mail, Shield, Camera, X } from "lucide-react";
 import { ThemeContext } from "../../context/themeContext";
 
-const UserForm = ({ isOpen, onClose, onSave, title, user, isSubmitting = false }) => {
+const UserForm = ({
+  isOpen,
+  onClose,
+  onSave,
+  title,
+  user,
+  isSubmitting = false,
+}) => {
   const { theme } = useContext(ThemeContext);
   const [imagePreview, setImagePreview] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -42,8 +49,7 @@ const UserForm = ({ isOpen, onClose, onSave, title, user, isSubmitting = false }
     email: Yup.string()
       .email("Invalid email address")
       .required("Email is required"),
-    status: Yup.string()
-      .required("Status is required"),
+    status: Yup.string().required("Status is required"),
     roles: Yup.array()
       .min(1, "At least one role is required")
       .required("Roles are required"),
@@ -151,7 +157,9 @@ const UserForm = ({ isOpen, onClose, onSave, title, user, isSubmitting = false }
           <button
             onClick={handleClose}
             className={`${
-              theme === "light" ? "text-gray-400 hover:text-gray-600" : "text-gray-500 hover:text-gray-300"
+              theme === "light"
+                ? "text-gray-400 hover:text-gray-600"
+                : "text-gray-500 hover:text-gray-300"
             } cursor-pointer text-sm`}
             disabled={isSubmitting}
           >
@@ -165,12 +173,20 @@ const UserForm = ({ isOpen, onClose, onSave, title, user, isSubmitting = false }
           onSubmit={handleSubmit}
           enableReinitialize
         >
-          {({ values, setFieldValue, errors, touched, isSubmitting: formIsSubmitting }) => (
+          {({
+            values,
+            setFieldValue,
+            errors,
+            touched,
+            isSubmitting: formIsSubmitting,
+          }) => (
             <Form className="space-y-1.5">
               {/* Profile Image Section */}
               <div
                 className={`p-2 rounded-md border ${
-                  theme === "light" ? "bg-sky-50 border-sky-100" : "bg-sky-900 border-sky-800"
+                  theme === "light"
+                    ? "bg-sky-50 border-sky-100"
+                    : "bg-sky-900 border-sky-800"
                 }`}
               >
                 <div className="flex items-center mb-1">
@@ -192,7 +208,8 @@ const UserForm = ({ isOpen, onClose, onSave, title, user, isSubmitting = false }
                     theme === "light" ? "text-gray-600" : "text-gray-400"
                   } mb-1.5`}
                 >
-                  Upload a profile image (Max size: 5MB, Formats: JPG, PNG, GIF).
+                  Upload a profile image (Max size: 5MB, Formats: JPG, PNG,
+                  GIF).
                 </p>
                 <div className="flex flex-col items-start space-y-1">
                   {imagePreview ? (
@@ -221,7 +238,11 @@ const UserForm = ({ isOpen, onClose, onSave, title, user, isSubmitting = false }
                         theme === "light"
                           ? "bg-sky-100 text-sky-700 hover:bg-sky-200 border border-gray-300"
                           : "bg-sky-900 text-sky-300 hover:bg-sky-800 border border-gray-600"
-                      } ${isSubmitting || formIsSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+                      } ${
+                        isSubmitting || formIsSubmitting
+                          ? "opacity-50 cursor-not-allowed"
+                          : ""
+                      }`}
                     >
                       {imagePreview ? "Edit Image" : "Upload Image"}
                     </label>
@@ -232,7 +253,9 @@ const UserForm = ({ isOpen, onClose, onSave, title, user, isSubmitting = false }
               {/* Personal Information Section */}
               <div
                 className={`p-2 rounded-md border ${
-                  theme === "light" ? "bg-sky-50 border-sky-100" : "bg-sky-900 border-sky-800"
+                  theme === "light"
+                    ? "bg-sky-50 border-sky-100"
+                    : "bg-sky-900 border-sky-800"
                 }`}
               >
                 <div className="flex items-center mb-1">
@@ -279,7 +302,11 @@ const UserForm = ({ isOpen, onClose, onSave, title, user, isSubmitting = false }
                         disabled={isSubmitting || formIsSubmitting}
                       />
                     </div>
-                    <ErrorMessage name="name" component="p" className="text-red-500 text-xs" />
+                    <ErrorMessage
+                      name="name"
+                      component="p"
+                      className="text-red-500 text-xs"
+                    />
                   </div>
 
                   <div className="space-y-0.5">
@@ -311,7 +338,11 @@ const UserForm = ({ isOpen, onClose, onSave, title, user, isSubmitting = false }
                         disabled={isSubmitting || formIsSubmitting}
                       />
                     </div>
-                    <ErrorMessage name="email" component="p" className="text-red-500 text-xs" />
+                    <ErrorMessage
+                      name="email"
+                      component="p"
+                      className="text-red-500 text-xs"
+                    />
                   </div>
                 </div>
               </div>
@@ -319,7 +350,9 @@ const UserForm = ({ isOpen, onClose, onSave, title, user, isSubmitting = false }
               {/* Status Section */}
               <div
                 className={`p-2 rounded-md border ${
-                  theme === "light" ? "bg-sky-50 border-sky-100" : "bg-sky-900 border-sky-800"
+                  theme === "light"
+                    ? "bg-sky-50 border-sky-100"
+                    : "bg-sky-900 border-sky-800"
                 }`}
               >
                 <div className="flex items-center mb-1">
@@ -360,14 +393,20 @@ const UserForm = ({ isOpen, onClose, onSave, title, user, isSubmitting = false }
                     <option value="Active">🟢 Active</option>
                     <option value="Not Active">🔴 Not Active</option>
                   </Field>
-                  <ErrorMessage name="status" component="p" className="text-red-500 text-xs" />
+                  <ErrorMessage
+                    name="status"
+                    component="p"
+                    className="text-red-500 text-xs"
+                  />
                 </div>
               </div>
 
               {/* Roles Section */}
               <div
                 className={`p-2 rounded-md border ${
-                  theme === "light" ? "bg-sky-50 border-sky-100" : "bg-sky-900 border-sky-800"
+                  theme === "light"
+                    ? "bg-sky-50 border-sky-100"
+                    : "bg-sky-900 border-sky-800"
                 }`}
               >
                 <div className="flex items-center mb-1">
@@ -408,9 +447,18 @@ const UserForm = ({ isOpen, onClose, onSave, title, user, isSubmitting = false }
                       <input
                         type="checkbox"
                         checked={values.roles.includes(role)}
-                        onChange={(e) => handleRoleChange(role, e.target.checked, values, setFieldValue)}
+                        onChange={(e) =>
+                          handleRoleChange(
+                            role,
+                            e.target.checked,
+                            values,
+                            setFieldValue
+                          )
+                        }
                         className={`h-3 w-3 text-sky-600 rounded border-gray-300 focus:ring-sky-500 ${
-                          isSubmitting || formIsSubmitting ? "opacity-50 cursor-not-allowed" : ""
+                          isSubmitting || formIsSubmitting
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
                         }`}
                         disabled={isSubmitting || formIsSubmitting}
                       />
@@ -418,13 +466,19 @@ const UserForm = ({ isOpen, onClose, onSave, title, user, isSubmitting = false }
                     </label>
                   ))}
                 </div>
-                <ErrorMessage name="roles" component="p" className="text-red-500 text-xs mt-1" />
+                <ErrorMessage
+                  name="roles"
+                  component="p"
+                  className="text-red-500 text-xs mt-1"
+                />
               </div>
 
               {errorMessage && (
                 <div
                   className={`p-2 rounded border text-xs mb-2 ${
-                    theme === "light" ? "bg-red-50 border-red-200 text-red-800" : "bg-red-900 border-red-800 text-red-200"
+                    theme === "light"
+                      ? "bg-red-50 border-red-200 text-red-800"
+                      : "bg-red-900 border-red-800 text-red-200"
                   }`}
                 >
                   {errorMessage}
@@ -441,9 +495,13 @@ const UserForm = ({ isOpen, onClose, onSave, title, user, isSubmitting = false }
                   type="button"
                   onClick={handleClose}
                   className={`${
-                    theme === "light" ? "bg-gray-400 hover:bg-gray-500" : "bg-gray-600 hover:bg-gray-700"
+                    theme === "light"
+                      ? "bg-gray-400 hover:bg-gray-500"
+                      : "bg-gray-600 hover:bg-gray-700"
                   } text-white px-2 py-0.5 rounded-md mr-1 transition-colors text-sm cursor-pointer ${
-                    isSubmitting || formIsSubmitting ? "opacity-50 cursor-not-allowed" : ""
+                    isSubmitting || formIsSubmitting
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
                   }`}
                   disabled={isSubmitting || formIsSubmitting}
                 >
@@ -452,13 +510,17 @@ const UserForm = ({ isOpen, onClose, onSave, title, user, isSubmitting = false }
                 <button
                   type="submit"
                   className={`${
-                    theme === "light" ? "bg-sky-600 hover:bg-sky-700" : "bg-sky-700 hover:bg-sky-800"
+                    theme === "light"
+                      ? "bg-sky-600 hover:bg-sky-700"
+                      : "bg-sky-700 hover:bg-sky-800"
                   } text-white px-2 py-0.5 rounded-md transition-colors text-sm cursor-pointer flex items-center justify-center relative ${
-                    isSubmitting || formIsSubmitting ? "opacity-50 cursor-not-allowed" : ""
+                    isSubmitting || formIsSubmitting
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
                   }`}
                   disabled={isSubmitting || formIsSubmitting}
                 >
-                  {(isSubmitting || formIsSubmitting) ? (
+                  {isSubmitting || formIsSubmitting ? (
                     <span className="flex items-center">
                       <svg
                         className="animate-spin h-4 w-4 mr-2 text-white"

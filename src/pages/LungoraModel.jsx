@@ -13,23 +13,19 @@ const LungoraModel = () => {
   const [showingResult, setShowingResult] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [logoPreview, setLogoPreview] = useState(null); // State for header logo
+  const [logoPreview, setLogoPreview] = useState(null); 
   const fileInputRef = useRef(null);
   const { theme } = useContext(ThemeContext);
-  const { dashboardSettings } = useDashboard(); // Access dashboard settings
+  const { dashboardSettings } = useDashboard(); 
 
-  // Load logo from dashboardSettings or localStorage on mount
   useEffect(() => {
-    // Prefer dashboardSettings.logoPreview if available
     if (dashboardSettings.logoPreview) {
       setLogoPreview(dashboardSettings.logoPreview);
     } else {
-      // Fallback to localStorage
       const storedLogo = localStorage.getItem("dashboardLogo");
       if (storedLogo) {
         setLogoPreview(storedLogo);
       } else {
-        // Fallback to static LungoraImage if no logo is found
         setLogoPreview(LungoraImage);
       }
     }
@@ -102,7 +98,7 @@ const LungoraModel = () => {
             <div className="mb-4 flex flex-col sm:flex-row items-center justify-center sm:justify-between">
               <div className="flex items-center mb-3 sm:mb-0">
                 <motion.img
-                  src={logoPreview} // Use dynamic logoPreview
+                  src={logoPreview} 
                   alt="Lungora Logo"
                   className="w-12 h-12 rounded-full shadow-md"
                   initial={{ rotate: 0 }}
