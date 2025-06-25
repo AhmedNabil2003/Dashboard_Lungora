@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRouteWrapper";
 import DashboardLayout from "../features/dashboard/dashboardLayout";
 import Login from "../pages/Login";
-import AddAdmin from "../pages/addAdmin";
+import AddAdmin from "../pages/AddAdminPage";
 import Dashboard from "../pages/Dashboard";
 import ManageUsers from "../pages/manageUsers";
 import ManageDoctors from "../pages/manageDoctors";
