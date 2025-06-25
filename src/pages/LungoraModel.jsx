@@ -3,7 +3,7 @@ import LungoraImage from "../assets/images.jpg";
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { uploadImage } from '../services/apiModel';
-import { ThemeContext } from '../context/ThemeContext';
+import { ThemeContext } from '../context/themeContext';
 import { useDashboard } from '../context/dashboardContext';
 
 const LungoraModel = () => {

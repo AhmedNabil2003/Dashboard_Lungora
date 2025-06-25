@@ -3,7 +3,7 @@ import React, { useState, useEffect, useContext, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, Edit2, Save, X, User, ArrowLeft } from "lucide-react";
 import { getUserData, editUserInfo } from "../services/apiAuth";
-import { ThemeContext } from "../context/ThemeContext";
+import { ThemeContext } from "../context/themeContext";
 import { useNavigate } from "react-router-dom"; 
 
 const Profile = () => {

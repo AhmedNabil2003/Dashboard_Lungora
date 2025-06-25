@@ -18,7 +18,7 @@ import {
   X,
   PlusCircle,
 } from "lucide-react"
-import { ThemeContext } from "../../context/ThemeContext"
+import { ThemeContext } from "../../context/themeContext"
 import { getDoctorWorkingHours } from "../../services/apiDoctors"
 import { toast } from "react-hot-toast"
 

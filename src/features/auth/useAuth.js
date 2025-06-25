@@ -6,7 +6,7 @@ import {
   removeTokenFromStorage,
   storeToken,
 } from "../../hooks/useLocalStorage";
-import AuthContext from "../../context/AuthContext";
+import AuthContext from "../../context/authContext";
 import toast from "react-hot-toast";
 import axiosInstance from "../../services/axiosInstance";
 

@@ -8,7 +8,7 @@ import {
   Mail,
   User,
 } from "lucide-react";
-import { ThemeContext } from "../../context/ThemeContext";
+import { ThemeContext } from "../../context/themeContext";
 
 const UserList = ({
   filteredUsers = [],
