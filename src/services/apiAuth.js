@@ -106,11 +106,23 @@ export const resetPassword = async (data) => {
   }
 };
 
-// Change password
 export const changePassword = async (data) => {
-  return await axiosInstance.post(`/Auth/ChangePassword`, data);
+  try {
+    const response = await axiosInstance.post(`/Auth/ChangePassword`, data);
+    console.log("Change password response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error changing password:", error);
+    console.error("Error response:", error.response?.data);
+    // Throw a custom error with detailed message
+    const errorMessage =
+      error.response?.data?.errors?.join("\n") ||
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to change password";
+    throw new Error(errorMessage);
+  }
 };
-
 // Get user data
 export const getUserData = async () => {
   const res = await axiosInstance.get(`/Auth/GetDataUser`);

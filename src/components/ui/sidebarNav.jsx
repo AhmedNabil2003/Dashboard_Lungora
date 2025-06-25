@@ -3,15 +3,17 @@ import { useContext, useState, useEffect } from "react"
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion"
 import LungoraImage from "../../assets/images.jpg"
-import AuthContext from "../../context/AuthContext"
-import { useSidebarContext } from "../../context/SidebarContext"
-import { ThemeContext } from "../../context/ThemeContext"
+import AuthContext from "../../context/authContext"
+import { useSidebarContext } from "../../context/sidebarContext"
+import { ThemeContext } from "../../context/themeContext"
+import { useDashboard } from "../../context/dashboardContext";
 
 const Sidebar = () => {
   const [showModal, setShowModal] = useState(false)
   const location = useLocation()
   const { logout } = useContext(AuthContext)
   const { theme } = useContext(ThemeContext)
+  const { dashboardSettings } = useDashboard();
   const {
     isSidebarOpen,
     showMobileSidebar,
@@ -154,7 +156,9 @@ const Sidebar = () => {
         )}
 
         <div className={`px-3 pt-4 ${isMobile ? "pt-10" : ""}`}>
-          <ProfileSection isSidebarOpen={isSidebarOpen} theme={theme} />
+          <ProfileSection isSidebarOpen={isSidebarOpen} 
+        theme={theme}
+        dashboardSettings={dashboardSettings} />
         </div>
 
         <div className="flex-grow px-3 py-2">
@@ -201,58 +205,36 @@ const Sidebar = () => {
   )
 }
 
-const ProfileSection = ({ isSidebarOpen, theme }) => (
+const ProfileSection = ({ isSidebarOpen, theme, dashboardSettings }) => (
   <Link to="/dashboard">
     <motion.div
       className={`flex ${isSidebarOpen ? "items-center" : "justify-center"} ${
         theme === "light" ? "bg-sky-700" : "bg-gray-800"
       } p-3 rounded-lg cursor-pointer hover:bg-sky-800 transition-all duration-300`}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 0.2 }}
-      style={{
-        transform: "scale(1)",
-        transformOrigin: "center",
-      }}
     >
       <div className="relative group">
-        <div
-          className="
-            absolute inset-0 rounded-full
-            border-2 border-transparent
-            group-hover:border-blue-300
-            transition-all duration-500
-            shadow-[0_0_10px_2px_rgba(96,165,250,0.7)]
-            hover:shadow-[0_0_15px_5px_rgba(96,165,250,0.9)]
-          "
-        ></div>
+        <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-blue-300 transition-all duration-500 shadow-[0_0_10px_2px_rgba(96,165,250,0.7)] hover:shadow-[0_0_15px_5px_rgba(96,165,250,0.9)]"></div>
         <img
-          src={LungoraImage || "/placeholder.svg"}
-          alt="Lungora"
-          className={`
-            ${isSidebarOpen ? "w-12 h-12" : "w-10 h-10"}
-            relative z-10
-            rounded-full border-2 border-white
-            object-cover shadow-md
-            hover:scale-105
-            transition-all duration-300
-            group-hover:brightness-110
-          `}
-          style={{
-            transform: "scale(1)",
-            transformOrigin: "center",
-          }}
+          src={dashboardSettings.logoPreview || "/placeholder.svg"}
+          alt={dashboardSettings.dashboardName}
+          className={`${
+            isSidebarOpen ? "w-12 h-12" : "w-10 h-10"
+          } relative z-10 rounded-full border-2 border-white object-cover shadow-md hover:scale-105 transition-all duration-300 group-hover:brightness-110`}
         />
       </div>
       {isSidebarOpen && (
         <div className="ml-3 text-white">
-          <h2 className="text-base font-bold truncate">Lungora</h2>
-          <p className="text-xs opacity-90">AI MODEL</p>
+          <h2 className="text-base font-bold truncate">
+            {dashboardSettings.dashboardName}
+          </h2>
+          <p className="text-xs opacity-90">
+            {dashboardSettings.description}
+          </p>
         </div>
       )}
     </motion.div>
   </Link>
-)
+);
 
 const MenuItem = ({ item, isActive, isSidebarOpen, theme, onClick }) => {
   const { to, label, icon } = item

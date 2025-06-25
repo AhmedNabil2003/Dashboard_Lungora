@@ -16,8 +16,9 @@ import {
   Edit,
   Trash,
   X,
+  PlusCircle,
 } from "lucide-react"
-import { ThemeContext } from "../../context/ThemeContext"
+import { ThemeContext } from "../../context/themeContext"
 import { getDoctorWorkingHours } from "../../services/apiDoctors"
 import { toast } from "react-hot-toast"
 
@@ -207,7 +208,7 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
               theme === "light" ? "bg-sky-600 hover:bg-sky-700" : "bg-sky-700 hover:bg-sky-800"
             }`}
           >
-            <Plus className="h-4 w-4" />
+            <PlusCircle size={20} />
             <span>Add Doctor</span>
           </button>
         </div>

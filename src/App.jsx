@@ -1,19 +1,19 @@
 import { BrowserRouter } from "react-router-dom";
 import AppRoute from "../src/routes/routes";
 import { Toaster } from "react-hot-toast";
-import { ThemeProvider } from "./context/ThemeContext";
-import { LanguageProvider } from "./context/LanguageContext";
+import { ThemeProvider } from "./context/themeContext";
+import { DashboardProvider } from "./context/dashboardContext";
 
 const App = () => (
   
+    <DashboardProvider>
   <BrowserRouter>
   <ThemeProvider>
-  <LanguageProvider>
       <AppRoute />
       <Toaster />
-      </LanguageProvider>
       </ThemeProvider>
   </BrowserRouter>
+    </DashboardProvider>
 );
 
 export default App;

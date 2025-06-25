@@ -8,10 +8,10 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import AddCategoryForm from "./AddCategoryForm";
+import AddCategoryForm from "./categoryAddForm";
 import { getArticlesByCategoryId } from "../../services/apiArticles";
 import toast from "react-hot-toast";
-import { ThemeContext } from "../../context/ThemeContext";
+import { ThemeContext } from "../../context/themeContext";
 
 export default function CategoryList({
   categories,
@@ -125,18 +125,21 @@ export default function CategoryList({
       });
     }
   };
-
-  const loadArticlesCount = async (categoryId) => {
-    try {
-      const articles = await getArticlesByCategoryId(categoryId);
-      setArticlesCount((prevState) => ({
-        ...prevState,
-        [categoryId]: articles.length,
-      }));
-    } catch (error) {
-      console.error("Failed to load articles:", error);
-    }
-  };
+const loadArticlesCount = async (categoryId) => {
+  try {
+    const response = await getArticlesByCategoryId(categoryId);
+    setArticlesCount((prevState) => ({
+      ...prevState,
+      [categoryId]: response.numberOfArticles || 0,
+    }));
+  } catch (error) {
+    console.error("Failed to load articles count:", error);
+    setArticlesCount((prevState) => ({
+      ...prevState,
+      [categoryId]: 0,
+    }));
+  }
+};
 
   useEffect(() => {
     categories.forEach((category) => {
@@ -331,8 +334,7 @@ export default function CategoryList({
                           theme === "light" ? "text-gray-500" : "text-gray-400"
                         }`}
                       >
-                        {articlesCount[category.id] || 0} articles
-                      </p>
+            {articlesCount[category.id] !== undefined ? articlesCount[category.id] : 'Loading...'} articles                      </p>
                     </div>
                     <div className="flex items-center space-x-1 relative">
                       <button

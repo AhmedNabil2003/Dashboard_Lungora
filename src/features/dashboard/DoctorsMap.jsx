@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
-import { useDoctors } from "../../features/doctors/useDoctors"
+import { useDoctors } from "../doctors/useDoctors"
 
 // Fix for default markers in react-leaflet
 delete L.Icon.Default.prototype._getIconUrl

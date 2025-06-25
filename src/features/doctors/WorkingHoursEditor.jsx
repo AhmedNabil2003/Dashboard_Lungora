@@ -3,6 +3,31 @@ import { Clock, Plus, Trash, Save, X, Edit } from "lucide-react";
 import { getDoctorWorkingHours, removeDoctorWorkingHours, editDoctorWorkingHours, createDoctorWorkingHours, getWorkingHourById } from "../../services/apiDoctors";
 import { toast } from "react-hot-toast";
 
+// Map day names to integers (0=Sunday, 1=Monday, ..., 6=Saturday)
+const daysOfWeek = [
+  { name: "Sunday", value: 0 },
+  { name: "Monday", value: 1 },
+  { name: "Tuesday", value: 2 },
+  { name: "Wednesday", value: 3 },
+  { name: "Thursday", value: 4 },
+  { name: "Friday", value: 5 },
+  { name: "Saturday", value: 6 },
+];
+
+// Convert time string (HH:mm:ss) to (HH:mm) for input fields
+const formatTimeForInput = (timeStr) => {
+  if (!timeStr) return "00:00";
+  const parts = timeStr.split(":");
+  return `${parts[0]}:${parts[1]}`;
+};
+
+// Convert time input (HH:mm) to (HH:mm:ss) for API
+const formatTimeForAPI = (timeStr) => {
+  if (!timeStr) return "00:00:00";
+  const parts = timeStr.split(":");
+  return `${parts[0]}:${parts[1]}:00`;
+};
+
 const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme, initialWorkingHours }) => {
   const [workingHours, setWorkingHours] = useState(initialWorkingHours || []);
   const [loading, setLoading] = useState(true);
@@ -10,12 +35,10 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme, initialWorkingHour
   const [editingId, setEditingId] = useState(null);
   const [newWorkingHour, setNewWorkingHour] = useState({
     doctorId: doctor?.id,
-    dayOfWeek: "Monday",
+    dayOfWeek: 1, // Default to Monday
     startTime: "09:00",
     endTime: "17:00",
   });
-
-  const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
   // Fetch working hours only if doctor exists
   useEffect(() => {
@@ -28,7 +51,15 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme, initialWorkingHour
       try {
         setLoading(true);
         const hours = await getDoctorWorkingHours(doctor.id);
-        setWorkingHours(hours || []);
+        
+        // Format times for display (convert HH:mm:ss to HH:mm for input fields)
+        const formattedHours = hours.map((hour) => ({
+          ...hour,
+          startTime: formatTimeForInput(hour.startTime),
+          endTime: formatTimeForInput(hour.endTime),
+        }));
+        
+        setWorkingHours(formattedHours || []);
       } catch (error) {
         console.error("Error fetching working hours:", error);
         toast.error("Failed to load working hours");
@@ -49,7 +80,7 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme, initialWorkingHour
   const resetForm = () => {
     setNewWorkingHour({
       doctorId: doctor?.id,
-      dayOfWeek: "Monday",
+      dayOfWeek: 1, // Default to Monday
       startTime: "09:00",
       endTime: "17:00",
     });
@@ -58,8 +89,28 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme, initialWorkingHour
   };
 
   const validateWorkingHour = (workingHour, existingHours) => {
-    if (workingHour.startTime >= workingHour.endTime) {
-      toast.error("End time must be after start time");
+    // Ensure times are in HH:mm:ss format
+    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/;
+    if (!timeRegex.test(workingHour.startTime) || !timeRegex.test(workingHour.endTime)) {
+      toast.error("Invalid time format. Use HH:mm:ss (e.g., 09:00:00)");
+      console.error("Invalid time format:", { startTime: workingHour.startTime, endTime: workingHour.endTime });
+      return false;
+    }
+
+    // Convert times to Date objects for comparison
+    const start = new Date(`1970-01-01T${workingHour.startTime}Z`);
+    const end = new Date(`1970-01-01T${workingHour.endTime}Z`);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      toast.error("Invalid time values");
+      console.error("Invalid time values:", { startTime: workingHour.startTime, endTime: workingHour.endTime });
+      return false;
+    }
+
+    // Ensure endTime is at least 1 minute later than startTime
+    if (end - start <= 0) {
+      toast.error("End time must be later than start time");
+      console.error("Time validation failed:", { startTime: workingHour.startTime, endTime: workingHour.endTime });
       return false;
     }
 
@@ -68,10 +119,12 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme, initialWorkingHour
     );
 
     const hasOverlap = sameDay.some((hour) => {
+      const hourStart = new Date(`1970-01-01T${formatTimeForAPI(hour.startTime)}Z`);
+      const hourEnd = new Date(`1970-01-01T${formatTimeForAPI(hour.endTime)}Z`);
       return (
-        (workingHour.startTime >= hour.startTime && workingHour.startTime < hour.endTime) ||
-        (workingHour.endTime > hour.startTime && workingHour.endTime <= hour.endTime) ||
-        (workingHour.startTime <= hour.startTime && workingHour.endTime >= hour.endTime)
+        (start >= hourStart && start < hourEnd) ||
+        (end > hourStart && end <= hourEnd) ||
+        (start <= hourStart && end >= hourEnd)
       );
     });
 
@@ -84,71 +137,111 @@ const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme, initialWorkingHour
   };
 
   const handleAddWorkingHour = async () => {
-    if (!validateWorkingHour(newWorkingHour, workingHours)) {
+    // Format times to HH:mm:ss before validation
+    const formattedWorkingHour = {
+      ...newWorkingHour,
+      startTime: formatTimeForAPI(newWorkingHour.startTime),
+      endTime: formatTimeForAPI(newWorkingHour.endTime),
+    };
+
+    if (!validateWorkingHour(formattedWorkingHour, workingHours)) {
       return;
     }
 
     if (doctor?.id) {
-      console.log("Doctor ID:", doctor.id);
       try {
-        const response = await createDoctorWorkingHours({
-          ...newWorkingHour,
+        const payload = {
           doctorId: doctor.id,
-        });
-        setWorkingHours([...workingHours, response]);
+          dayOfWeek: newWorkingHour.dayOfWeek,
+          startTime: formatTimeForAPI(newWorkingHour.startTime),
+          endTime: formatTimeForAPI(newWorkingHour.endTime),
+        };
+        
+        const response = await createDoctorWorkingHours(payload);
+        
+        setWorkingHours([
+          ...workingHours,
+          {
+            ...response,
+            startTime: formatTimeForInput(response.startTime),
+            endTime: formatTimeForInput(response.endTime),
+          },
+        ]);
         toast.success("Working hour added successfully");
+        resetForm();
       } catch (error) {
         console.error("Error adding working hour:", error);
-        toast.error("Failed to add working hour");
+        toast.error(error.message || "Failed to add working hour");
       }
     } else {
-      const newHour = { ...newWorkingHour, id: Date.now().toString() };
+      const newHour = {
+        ...newWorkingHour,
+        id: Date.now().toString(),
+        startTime: formatTimeForInput(newWorkingHour.startTime),
+        endTime: formatTimeForInput(newWorkingHour.endTime),
+      };
       setWorkingHours([...workingHours, newHour]);
       toast.success("Working hour added to form");
+      resetForm();
     }
-
-    resetForm();
   };
 
-const handleEditWorkingHour = async () => {
-  if (!validateWorkingHour(newWorkingHour, workingHours)) {
-    return;
-  }
-  if (doctor?.id) {
-    console.log("Doctor ID:", doctor.id, "Editing ID:", editingId);
-    console.log("newWorkingHour:", newWorkingHour);
-    try {
-      if (!newWorkingHour.dayOfWeek) {
-        toast.error("Please select a day of the week");
-        return;
-      }
-      if (!newWorkingHour.startTime || !newWorkingHour.endTime) {
-        toast.error("Please select start and end times");
-        return;
-      }
-      // Normalize time format to HH:mm
-      const normalizedStartTime = newWorkingHour.startTime.split(":").slice(0, 2).join(":");
-      const normalizedEndTime = newWorkingHour.endTime.split(":").slice(0, 2).join(":");
-      const response = await editDoctorWorkingHours(editingId, {
-        doctorId: doctor.id,
-        dayOfWeek: newWorkingHour.dayOfWeek,
-        startTime: normalizedStartTime,
-        endTime: normalizedEndTime,
-      });
-      setWorkingHours(workingHours.map((hour) => (hour.id === editingId ? response : hour)));
-      toast.success("Working hour updated successfully");
-    } catch (error) {
-      console.error("Error updating working hour:", error);
-      toast.error("Failed to update working hour");
+  const handleEditWorkingHour = async () => {
+    // Format times to HH:mm:ss before validation
+    const formattedWorkingHour = {
+      ...newWorkingHour,
+      startTime: formatTimeForAPI(newWorkingHour.startTime),
+      endTime: formatTimeForAPI(newWorkingHour.endTime),
+    };
+
+    if (!validateWorkingHour(formattedWorkingHour, workingHours)) {
+      return;
     }
-  } else {
-    setWorkingHours(
-      workingHours.map((hour) => (hour.id === editingId ? { ...newWorkingHour, id: editingId } : hour)),
-    );
-    toast.success("Working hour updated in form");
-  }
-  resetForm();
-};
+
+    if (doctor?.id && editingId) {
+      try {
+        const payload = {
+          dayOfWeek: newWorkingHour.dayOfWeek,
+          startTime: formatTimeForAPI(newWorkingHour.startTime),
+          endTime: formatTimeForAPI(newWorkingHour.endTime),
+        };
+        
+        const response = await editDoctorWorkingHours(editingId, payload);
+        
+        setWorkingHours(
+          workingHours.map((hour) =>
+            hour.id === editingId
+              ? {
+                  ...response,
+                  startTime: formatTimeForInput(response.startTime),
+                  endTime: formatTimeForInput(response.endTime),
+                }
+              : hour,
+          ),
+        );
+        toast.success("Working hour updated successfully");
+        resetForm();
+      } catch (error) {
+        console.error("Error updating working hour:", error);
+        toast.error(error.message || "Failed to update working hour");
+      }
+    } else {
+      setWorkingHours(
+        workingHours.map((hour) =>
+          hour.id === editingId
+            ? {
+                ...newWorkingHour,
+                id: editingId,
+                startTime: formatTimeForInput(newWorkingHour.startTime),
+                endTime: formatTimeForInput(newWorkingHour.endTime),
+              }
+            : hour,
+        ),
+      );
+      toast.success("Working hour updated in form");
+      resetForm();
+    }
+  };
 
   const handleDeleteWorkingHour = async (id) => {
     if (doctor?.id) {
@@ -172,13 +265,24 @@ const handleEditWorkingHour = async () => {
 
   const handleStartEdit = async (id) => {
     try {
-      const workingHour = await getWorkingHourById(id);
-      if (workingHour) {
+      let hour = workingHours.find((h) => h.id === id);
+      
+      // If not found in local state, fetch from API
+      if (!hour && doctor?.id) {
+        hour = await getWorkingHourById(id);
+        hour = {
+          ...hour,
+          startTime: formatTimeForInput(hour.startTime),
+          endTime: formatTimeForInput(hour.endTime),
+        };
+      }
+      
+      if (hour) {
         setNewWorkingHour({
           doctorId: doctor?.id,
-          dayOfWeek: workingHour.dayOfWeek,
-          startTime: workingHour.startTime,
-          endTime: workingHour.endTime,
+          dayOfWeek: hour.dayOfWeek,
+          startTime: hour.startTime,
+          endTime: hour.endTime,
         });
         setIsEditing(true);
         setEditingId(id);
@@ -189,34 +293,43 @@ const handleEditWorkingHour = async () => {
     }
   };
 
-  const handleCancelEdit = () => {
-    resetForm();
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewWorkingHour({ ...newWorkingHour, [name]: value });
+    setNewWorkingHour({
+      ...newWorkingHour,
+      [name]: name === "dayOfWeek" ? parseInt(value, 10) : value,
+    });
   };
 
   const handleDone = () => {
-    onClose(workingHours);
+    // Convert times back to API format before passing to parent
+    const formattedHours = workingHours.map((hour) => ({
+      ...hour,
+      startTime: formatTimeForAPI(hour.startTime),
+      endTime: formatTimeForAPI(hour.endTime),
+    }));
+    onClose(formattedHours);
   };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30 p-2 sm:p-4">
       <div
-        className={`rounded-lg shadow-xl w-full max-w-3xl max-h-[85vh] ${
+        className={`rounded-lg shadow-xl w-full max-w-3xl max-h-[85vh] overflow-y-auto ${
           theme === "light" ? "bg-white" : "bg-gray-800"
         }`}
       >
         {/* Modal Header */}
         <div
           className={`flex justify-between items-center p-4 border-b ${
-            theme === "light" ? "bg-white border-gray-200" : "bg-gray-800 border-gray-600"
+            theme === "light" ? "border-gray-200" : "border-gray-600"
           }`}
         >
-          <h2 className={`text-xl font-bold flex items-center ${theme === "light" ? "text-sky-600" : "text-sky-300"}`}>
-            <Clock className={`mr-2 h-5 w-5 ${theme === "light" ? "text-sky-500" : "text-sky-300"}`} />
+          <h2
+            className={`text-xl font-bold flex items-center ${
+              theme === "light" ? "text-sky-600" : "text-sky-300"
+            }`}
+          >
+            <Clock className={`mr-2 h-5 w-5`} />
             Working Hours - Dr. {doctor?.name || "New Doctor"}
           </h2>
           <button
@@ -245,7 +358,11 @@ const handleEditWorkingHour = async () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Left Column - Current Working Hours */}
               <div className="space-y-3">
-                <h3 className={`text-sm font-medium ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}>
+                <h3
+                  className={`text-sm font-medium ${
+                    theme === "light" ? "text-gray-700" : "text-gray-300"
+                  }`}
+                >
                   Current Schedule
                 </h3>
                 {workingHours.length === 0 ? (
@@ -255,7 +372,9 @@ const handleEditWorkingHour = async () => {
                     }`}
                   >
                     <Clock
-                      className={`w-8 h-8 mx-auto mb-2 ${theme === "light" ? "text-gray-400" : "text-gray-500"}`}
+                      className={`mx-auto mb-2 h-8 w-8 ${
+                        theme === "light" ? "text-gray-400" : "text-gray-500"
+                      }`}
                     />
                     <p className="text-xs">No working hours specified</p>
                   </div>
@@ -266,11 +385,7 @@ const handleEditWorkingHour = async () => {
                     }`}
                   >
                     {workingHours
-                      .sort((a, b) => {
-                        const dayOrder = daysOfWeek.indexOf(a.dayOfWeek) - daysOfWeek.indexOf(b.dayOfWeek);
-                        if (dayOrder !== 0) return dayOrder;
-                        return a.startTime.localeCompare(b.startTime);
-                      })
+                      .sort((a, b) => a.dayOfWeek - b.dayOfWeek || a.startTime.localeCompare(b.startTime))
                       .map((hour) => (
                         <div
                           key={hour.id}
@@ -278,13 +393,17 @@ const handleEditWorkingHour = async () => {
                             theme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-600 hover:bg-gray-700"
                           }`}
                         >
-                          <div className="flex-1">
+                          <div>
                             <div
-                              className={`font-medium text-sm ${theme === "light" ? "text-sky-700" : "text-sky-200"}`}
+                              className={`text-sm font-medium ${
+                                theme === "light" ? "text-sky-700" : "text-sky-200"
+                              }`}
                             >
-                              {hour.dayOfWeek}
+                              {daysOfWeek.find((day) => day.value === hour.dayOfWeek)?.name}
                             </div>
-                            <div className={`text-xs ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
+                            <div
+                              className={`text-xs ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}
+                            >
                               {hour.startTime} - {hour.endTime}
                             </div>
                           </div>
@@ -320,7 +439,11 @@ const handleEditWorkingHour = async () => {
 
               {/* Right Column - Add/Edit Form */}
               <div className="space-y-4">
-                <h3 className={`text-sm font-medium ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}>
+                <h3
+                  className={`text-sm font-medium ${
+                    theme === "light" ? "text-gray-700" : "text-gray-300"
+                  }`}
+                >
                   {isEditing ? "Edit Schedule" : "Add New Schedule"}
                 </h3>
 
@@ -341,12 +464,14 @@ const handleEditWorkingHour = async () => {
                       value={newWorkingHour.dayOfWeek}
                       onChange={handleChange}
                       className={`w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-sky-500 ${
-                        theme === "light" ? "bg-white border-gray-300" : "bg-gray-800 border-gray-600 text-gray-200"
+                        theme === "light"
+                          ? "bg-white border-gray-300 text-gray-900"
+                          : "bg-gray-800 border-gray-600 text-gray-200"
                       }`}
                     >
                       {daysOfWeek.map((day) => (
-                        <option key={day} value={day}>
-                          {day}
+                        <option key={day.value} value={day.value}>
+                          {day.name}
                         </option>
                       ))}
                     </select>
@@ -370,7 +495,9 @@ const handleEditWorkingHour = async () => {
                         value={newWorkingHour.startTime}
                         onChange={handleChange}
                         className={`w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-sky-500 ${
-                          theme === "light" ? "bg-white border-gray-300" : "bg-gray-800 border-gray-600 text-gray-200"
+                          theme === "light"
+                            ? "bg-white border-gray-300 text-gray-900"
+                            : "bg-gray-800 border-gray-600 text-gray-200"
                         }`}
                       />
                     </div>
@@ -390,7 +517,9 @@ const handleEditWorkingHour = async () => {
                         value={newWorkingHour.endTime}
                         onChange={handleChange}
                         className={`w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-sky-500 ${
-                          theme === "light" ? "bg-white border-gray-300" : "bg-gray-800 border-gray-600 text-gray-200"
+                          theme === "light"
+                            ? "bg-white border-gray-300 text-gray-900"
+                            : "bg-gray-800 border-gray-600 text-gray-200"
                         }`}
                       />
                     </div>
@@ -408,7 +537,7 @@ const handleEditWorkingHour = async () => {
                         <Save size={14} className="mr-1" /> Update
                       </button>
                       <button
-                        onClick={handleCancelEdit}
+                        onClick={resetForm}
                         className={`flex-1 flex items-center justify-center py-2 px-3 rounded text-white text-sm transition-colors ${
                           theme === "light" ? "bg-gray-400 hover:bg-gray-500" : "bg-gray-600 hover:bg-gray-700"
                         }`}
@@ -428,76 +557,40 @@ const handleEditWorkingHour = async () => {
                   )}
                 </div>
 
-                {/* Quick Add Buttons */}
+                {/* Quick Time Buttons */}
                 <div className="space-y-2">
-                  <h4 className={`text-xs font-medium ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}>
+                  <h4
+                    className={`text-xs font-medium ${
+                      theme === "light" ? "text-gray-700" : "text-gray-300"
+                    }`}
+                  >
                     Quick Add
                   </h4>
                   <div className="grid grid-cols-2 gap-2">
-                    <button
-                      onClick={() => {
-                        setNewWorkingHour({
-                          ...newWorkingHour,
-                          startTime: "09:00",
-                          endTime: "17:00",
-                        });
-                      }}
-                      className={`px-2 py-1 text-xs rounded border transition-colors ${
-                        theme === "light"
-                          ? "border-gray-300 text-gray-600 hover:bg-gray-50"
-                          : "border-gray-600 text-gray-400 hover:bg-gray-700"
-                      }`}
-                    >
-                      9 AM - 5 PM
-                    </button>
-                    <button
-                      onClick={() => {
-                        setNewWorkingHour({
-                          ...newWorkingHour,
-                          startTime: "08:00",
-                          endTime: "16:00",
-                        });
-                      }}
-                      className={`px-2 py-1 text-xs rounded border transition-colors ${
-                        theme === "light"
-                          ? "border-gray-300 text-gray-600 hover:bg-gray-50"
-                          : "border-gray-600 text-gray-400 hover:bg-gray-700"
-                      }`}
-                    >
-                      8 AM - 4 PM
-                    </button>
-                    <button
-                      onClick={() => {
-                        setNewWorkingHour({
-                          ...newWorkingHour,
-                          startTime: "10:00",
-                          endTime: "18:00",
-                        });
-                      }}
-                      className={`px-2 py-1 text-xs rounded border transition-colors ${
-                        theme === "light"
-                          ? "border-gray-300 text-gray-600 hover:bg-gray-50"
-                          : "border-gray-600 text-gray-400 hover:bg-gray-700"
-                      }`}
-                    >
-                      10 AM - 6 PM
-                    </button>
-                    <button
-                      onClick={() => {
-                        setNewWorkingHour({
-                          ...newWorkingHour,
-                          startTime: "14:00",
-                          endTime: "22:00",
-                        });
-                      }}
-                      className={`px-2 py-1 text-xs rounded border transition-colors ${
-                        theme === "light"
-                          ? "border-gray-300 text-gray-600 hover:bg-gray-50"
-                          : "border-gray-600 text-gray-400 hover:bg-gray-700"
-                      }`}
-                    >
-                      2 PM - 10 PM
-                    </button>
+                    {[
+                      { start: "09:00", end: "17:00" },
+                      { start: "08:00", end: "16:00" },
+                      { start: "10:00", end: "18:00" },
+                      { start: "14:00", end: "22:00" },
+                    ].map((time, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() =>
+                          setNewWorkingHour({
+                            ...newWorkingHour,
+                            startTime: time.start,
+                            endTime: time.end,
+                          })
+                        }
+                        className={`px-2 py-1 text-xs rounded border transition-colors ${
+                          theme === "light"
+                            ? "border-gray-300 text-gray-600 hover:bg-gray-50"
+                            : "border-gray-600 text-gray-400 hover:bg-gray-700"
+                        }`}
+                      >
+                        {time.start} - {time.end}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -512,12 +605,11 @@ const handleEditWorkingHour = async () => {
           >
             <button
               onClick={handleDone}
-              className={`flex items-center space-x-1 px-4 py-2 rounded text-white text-sm transition-colors ${
+              className={`flex items-center px-4 py-2 rounded text-white text-sm transition-colors ${
                 theme === "light" ? "bg-gray-400 hover:bg-gray-500" : "bg-gray-600 hover:bg-gray-700"
               }`}
             >
-              <Save size={14} />
-              <span>Done</span>
+              <Save size={14} className="mr-1" /> Done
             </button>
           </div>
         </div>

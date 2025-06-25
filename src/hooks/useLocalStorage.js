@@ -72,3 +72,5 @@ export const clearAuthStorage = () => {
     export const isTokenPresent = (key) => {
       return getTokenFromStorage(key) !== null;
     };
+
+    

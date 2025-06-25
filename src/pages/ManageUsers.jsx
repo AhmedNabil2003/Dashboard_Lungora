@@ -3,10 +3,10 @@ import React, { useState, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
-import UserForm from '../features/users/UserForm';
-import UserList from '../features/users/UserList';
+import UserForm from '../features/users/userAddForm';
+import UserList from '../features/users/userList';
 import { useUsers } from '../features/users/useUsers';
-import { ThemeContext } from '../context/ThemeContext';
+import { ThemeContext } from '../context/themeContext';
 
 const ManageUsers = () => {
   const { theme } = useContext(ThemeContext);

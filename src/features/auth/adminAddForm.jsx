@@ -1,12 +1,12 @@
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../auth/useAuth";
-import Input from "../../components/ui/Input";
+import { useAuth } from "./useAuth";
+import Input from "../../components/ui/inputField";
 import toast from "react-hot-toast";
 import { Eye, EyeOff, ArrowLeft, UserPlus } from "lucide-react";
 import { useContext, useState } from "react";
-import { ThemeContext } from "../../context/ThemeContext";
+import { ThemeContext } from "../../context/themeContext";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 

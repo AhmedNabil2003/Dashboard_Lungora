@@ -1,11 +1,11 @@
 import { Outlet } from "react-router-dom";
-import Sidebar from "../../components/ui/Sidebar";
-import Header from "../../components/ui/Header";
-import { SidebarProvider } from "../../context/SidebarContext";
+import Sidebar from "../../components/ui/sidebarNav";
+import Header from "../../components/ui/header";
+import { SidebarProvider } from "../../context/sidebarContext";
+import { ThemeContext } from "../../context/themeContext";
+import ScrollButton from "../../components/ui/scrollButton";
+import Footer from "../../components/ui/footer";
 import { useContext } from "react";
-import { ThemeContext } from "../../context/ThemeContext";
-import ScrollButton from "../../components/ui/ScrollButton";
-import Footer from "../../components/ui/Footer";
 
 const DashboardLayout = () => {
   const { theme } = useContext(ThemeContext);
@@ -37,8 +37,8 @@ const DashboardLayout = () => {
             <div className="max-w-screen-2xl mx-auto">
               {/* Outlet for child routes */}
               <Outlet />
-            </div>
             <Footer />
+            </div>
           </main>
         </div>
         <ScrollButton />

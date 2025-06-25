@@ -111,114 +111,42 @@ export const removeDoctor = async (id) => {
   }
 };
 
+// Convert day name to number (0=Sunday, 1=Monday, etc.)
+const dayNameToNumber = (dayName) => {
+  const days = {
+    Sunday: 0,
+    Monday: 1,
+    Tuesday: 2,
+    Wednesday: 3,
+    Thursday: 4,
+    Friday: 5,
+    Saturday: 6,
+  };
+  return days[dayName] ?? parseInt(dayName, 10);
+};
+
 // Get doctor's working hours
 export const getDoctorWorkingHours = async (doctorId) => {
   try {
     const res = await axiosInstance.get(`/WorkingHour/GetWorkingHourDoctorId/${doctorId}`);
     let workingHours = res.data.result;
+    
     if (!Array.isArray(workingHours)) {
       workingHours = [workingHours];
     }
-    return workingHours;
+    
+    // Normalize the response to ensure consistent format
+    const normalizedHours = workingHours.map((hour) => ({
+      ...hour,
+      dayOfWeek: dayNameToNumber(hour.dayOfWeek), // Convert string to number
+      startTime: hour.startTime, // Keep as string (HH:mm:ss)
+      endTime: hour.endTime, // Keep as string (HH:mm:ss)
+    }));
+    
+    return normalizedHours;
   } catch (error) {
     console.error(`Error fetching working hours for doctor ${doctorId}:`, error);
     throw error;
-  }
-};
-// Create doctor's working hours
-export const createDoctorWorkingHours = async (workingHourData) => {
-  try {
-    // Convert time format to TimeSpan string (HH:mm:ss)
-    const formatTimeSpan = (timeObj) => {
-      if (timeObj && timeObj.ticks) {
-        const totalSeconds = timeObj.ticks / 10000000;
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = Math.floor(totalSeconds % 60);
-        return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-      }
-      // If it's already a string, convert to TimeSpan format
-      if (typeof timeObj === 'string') {
-        return timeObj.includes(':') ? `${timeObj}:00` : timeObj;
-      }
-      return "00:00:00";
-    };
-
-    const payload = {
-      WorkingHourDTO: {
-        doctorId: workingHourData.doctorId,
-        dayOfWeek: workingHourData.dayOfWeek,
-        startTime: formatTimeSpan(workingHourData.startTime),
-        endTime: formatTimeSpan(workingHourData.endTime),
-      }
-    };
-    
-    console.log("Sending to createDoctorWorkingHours:", JSON.stringify(payload, null, 2));
-    const res = await axiosInstance.post("/WorkingHour/CreateWorkingHour", payload);
-    return res.data.result || res.data;
-  } catch (error) {
-    console.error("Error creating working hours:", error);
-    console.error("Error response:", JSON.stringify(error.response?.data, null, 2));
-    throw error;
-  }
-};
-
-export const editDoctorWorkingHours = async (id, workingHourData) => {
-  try {
-    // Convert time format to TimeSpan string (HH:mm:ss)
-    const formatTimeSpan = (timeObj) => {
-      if (timeObj && timeObj.ticks) {
-        const totalSeconds = timeObj.ticks / 10000000;
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = Math.floor(totalSeconds % 60);
-        return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-      }
-      // If it's already a string, convert to TimeSpan format
-      if (typeof timeObj === 'string') {
-        return timeObj.includes(':') ? `${timeObj}:00` : timeObj;
-      }
-      return "00:00:00";
-    };
-
-    const payload = {
-      dto: {
-        doctorId: workingHourData.doctorId,
-        dayOfWeek: workingHourData.dayOfWeek,
-        startTime: formatTimeSpan(workingHourData.startTime),
-        endTime: formatTimeSpan(workingHourData.endTime),
-      }
-    };
-    
-    console.log("Sending to editDoctorWorkingHours:", {
-      id,
-      payload: JSON.stringify(payload, null, 2),
-    });
-    
-    const res = await axiosInstance.put(`/WorkingHour/EditWorkingHour/${id}`, payload, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    
-    console.log("Edit working hours response:", res.data);
-    return res.data.result || res.data;
-  } catch (error) {
-    console.error(`Error editing working hours with ID ${id}:`, error);
-    console.error("Error response:", JSON.stringify(error.response?.data, null, 2));
-    
-    if (error.response?.status === 409) {
-      throw new Error("Cannot edit: A working hour with the same day already exists. Please delete the existing one first.");
-    }
-    
-    throw new Error(
-      `Failed to edit working hour: ${
-        error.response?.data?.errors?.[0] ||
-        error.response?.data?.title ||
-        Object.values(error.response?.data?.errors || {}).flat().join(", ") ||
-        error.message
-      }`
-    );
   }
 };
 
@@ -226,10 +154,104 @@ export const editDoctorWorkingHours = async (id, workingHourData) => {
 export const getWorkingHourById = async (id) => {
   try {
     const res = await axiosInstance.get(`/WorkingHour/GetWorkingHourById/${id}`);
-    return res.data.result;
+    const hour = res.data.result;
+    
+    // Normalize the response
+    return {
+      ...hour,
+      dayOfWeek: typeof hour.dayOfWeek === 'string' ? dayNameToNumber(hour.dayOfWeek) : hour.dayOfWeek,
+      startTime: hour.startTime, // Keep as string (HH:mm:ss)
+      endTime: hour.endTime, // Keep as string (HH:mm:ss)
+    };
   } catch (error) {
     console.error(`Error fetching working hour with ID ${id}:`, error);
     throw error;
+  }
+};
+
+// Create doctor's working hours
+export const createDoctorWorkingHours = async (workingHourData) => {
+  try {
+    // Send flat object matching WorkingHourCreateDTO
+    const payload = {
+      dayOfWeek: workingHourData.dayOfWeek,
+      startTime: workingHourData.startTime,
+      endTime: workingHourData.endTime,
+      doctorId: workingHourData.doctorId,
+    };
+
+    console.log("Sending to createDoctorWorkingHours:", JSON.stringify(payload, null, 2));
+    const res = await axiosInstance.post("/WorkingHour/CreateWorkingHour", payload, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    console.log("Create working hours response:", JSON.stringify(res.data, null, 2));
+    
+    const result = res.data.result || res.data;
+    
+    return {
+      ...result,
+      dayOfWeek: typeof result.dayOfWeek === 'string' ? dayNameToNumber(result.dayOfWeek) : result.dayOfWeek,
+      startTime: result.startTime,
+      endTime: result.endTime,
+    };
+  } catch (error) {
+    console.error("Error creating working hours:", error);
+    console.error("Error response:", JSON.stringify(error.response?.data, null, 2));
+    console.error("Request payload:", JSON.stringify(workingHourData, null, 2));
+    let errorMessage = "Failed to create working hour";
+    if (error.response?.status === 409) {
+      errorMessage = "A working hour for this day already exists.";
+    } else if (error.response?.status === 400) {
+      errorMessage = error.response?.data?.errors?.[0] || "Invalid data provided.";
+    }
+    throw new Error(errorMessage);
+  }
+};
+
+// Edit doctor's working hours
+export const editDoctorWorkingHours = async (id, workingHourData) => {
+  try {
+    // Send flat object matching WorkingHourUpdateDTO
+    const payload = {
+      dayOfWeek: workingHourData.dayOfWeek,
+      startTime: workingHourData.startTime,
+      endTime: workingHourData.endTime,
+    };
+
+    console.log("Sending to editDoctorWorkingHours:", {
+      id,
+      payload: JSON.stringify(payload, null, 2),
+    });
+
+    const res = await axiosInstance.put(`/WorkingHour/EditWorkingHour/${id}`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("Edit working hours response:", JSON.stringify(res.data, null, 2));
+    const result = res.data.result || res.data;
+    
+    return {
+      ...result,
+      dayOfWeek: typeof result.dayOfWeek === 'string' ? dayNameToNumber(result.dayOfWeek) : result.dayOfWeek,
+      startTime: result.startTime,
+      endTime: result.endTime,
+    };
+  } catch (error) {
+    console.error(`Error editing working hours with ID ${id}:`, error);
+    console.error("Error response:", JSON.stringify(error.response?.data, null, 2));
+    let errorMessage = "Failed to edit working hour";
+    if (error.response?.status === 409) {
+      errorMessage = "A working hour for this day already exists.";
+    } else if (error.response?.status === 400) {
+      errorMessage = error.response?.data?.errors?.[0] || "Invalid data provided.";
+    } else if (error.response?.status === 404) {
+      errorMessage = "Working hour not found.";
+    }
+    throw new Error(errorMessage);
   }
 };
 

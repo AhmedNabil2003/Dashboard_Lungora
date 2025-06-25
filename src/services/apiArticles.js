@@ -35,17 +35,19 @@ export const getArticleById = async (id) => {
 export const getArticlesByCategoryId = async (categoryId) => {
   try {
     const res = await axiosInstance.get(`/Article/GetArticlesByCategoryId/${categoryId}`);
-    if (res.data?.isSuccess && res.data.result&& Array.isArray(res.data.result.articles)) {
-      return res.data.result.articles;
+    if (res.data?.isSuccess && res.data.result) {
+      return {
+        articles: res.data.result.articles || [],
+        numberOfArticles: res.data.result.numerOfArticles || res.data.result.numberOfArticles || 0, // Handle typo
+      };
     }
     console.error(`No articles found for category ID: ${categoryId}`);
-    return [];
+    return { articles: [], numberOfArticles: 0 };
   } catch (error) {
     console.error(`Error fetching articles for category ${categoryId}:`, error);
     throw new Error(`Something went wrong while fetching articles for category ID ${categoryId}. Please try again later.`);
   }
 };
-
 // ✅ Create a new article
 export const createArticle = async (data) => {
   try {

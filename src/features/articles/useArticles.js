@@ -114,15 +114,21 @@ export const useArticles = () => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [numberOfArticles, setNumberOfArticles] = useState(0);
 
   const fetchAllArticles = async () => {
     setLoading(true);
     setError(null);
     try {
-      console.log("Fetching all articles...");
       const data = await getAllArticles();
-      console.log("Articles data received:", data);
-      setArticles(data);
+      if (Array.isArray(data)) {
+        setArticles(data);
+        setNumberOfArticles(data.length);
+      } else {
+        console.error("Expected array but got:", data);
+        setArticles([]);
+        setNumberOfArticles(0);
+      }
       return data;
     } catch (err) {
       setError("Failed to fetch articles");
@@ -132,6 +138,45 @@ export const useArticles = () => {
       setLoading(false);
     }
   };
+
+  const loadArticlesByCategory = async (categoryId) => {
+  setLoading(true);
+  setError(null);
+  try {
+    const numericCategoryId = Number(categoryId);
+    const response = await getArticlesByCategoryId(numericCategoryId);
+    
+    // التحقق من هيكل البيانات المستلمة
+    const receivedArticles = Array.isArray(response?.articles) 
+      ? response.articles 
+      : [];
+    
+    const receivedCount = typeof response?.numerOfArticles === 'number'
+      ? response.numerOfArticles
+      : typeof response?.numberOfArticles === 'number'
+      ? response.numberOfArticles
+      : receivedArticles.length;
+
+    setArticles(receivedArticles);
+    setNumberOfArticles(receivedCount);
+    
+    return {
+      articles: receivedArticles,
+      numberOfArticles: receivedCount
+    };
+  } catch (err) {
+    setError(`Failed to fetch articles for category ID: ${categoryId}`);
+    console.error(err);
+    setArticles([]);
+    setNumberOfArticles(0);
+    return {
+      articles: [],
+      numberOfArticles: 0
+    };
+  } finally {
+    setLoading(false);
+  }
+};
 
   const getArticleDetails = async (id) => {
     try {
@@ -143,25 +188,7 @@ export const useArticles = () => {
     }
   };
 
-  const loadArticlesByCategory = async (categoryId) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const numericCategoryId = Number(categoryId);
-      console.log(`Fetching articles for category ID: ${numericCategoryId}`);
-      const data = await getArticlesByCategoryId(numericCategoryId);
-      console.log("Category articles data received:", data);
-      setArticles(data);
-      return data;
-    } catch (err) {
-      setError(`Failed to fetch articles for category ID: ${categoryId}`);
-      console.error(err);
-      setArticles([]);
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  };
+ 
 
   const addArticle = async (formData, categoryId) => {
     setLoading(true);
@@ -301,6 +328,7 @@ export const useArticles = () => {
     articles,
     loading,
     error,
+    numberOfArticles,
     fetchAllArticles,
     getArticleDetails,
     loadArticlesByCategory,

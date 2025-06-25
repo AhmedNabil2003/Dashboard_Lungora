@@ -134,9 +134,7 @@ const ArticlesList = ({ articles, theme, loading, error }) => {
                           theme === "light" ? "text-gray-400" : "text-gray-500"
                         }`}
                       >
-                        {article.categoryName ||
-                          article.category?.name ||
-                          "General"}
+                        {article.category.categoryName || "General"}
                       </span>
                     </div>
                   </div>

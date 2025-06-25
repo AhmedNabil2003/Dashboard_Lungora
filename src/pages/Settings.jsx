@@ -1,66 +1,82 @@
-import React, { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Save,
   Settings,
-  Bell,
   Lock,
-  Image,
   Monitor,
-  Globe,
   Moon,
   Sun,
-  ChevronDown,
+  Upload,
+  Check,
+  X,
+  Image,
 } from "lucide-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import toast from "react-hot-toast";
-import { useAuth } from "../features/auth/useAuth";
-import { ThemeContext } from "../context/ThemeContext";
-import { LanguageContext } from "../context/LanguageContext";
-import Input from "../components/ui/Input";
-import Button from "../components/ui/Button";
+import { ThemeContext } from "../context/themeContext";
+import Input from "../components/ui/inputField";
+import { useDashboard } from "../context/dashboardContext";
 import { changePassword } from "../services/apiAuth";
-import axiosInstance from "../services/axiosInstance";
 
 const SettingsPage = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
-  const { language, setLanguage } = useContext(LanguageContext);
-  // eslint-disable-next-line no-empty-pattern
-  const {  } = useAuth();
   const [activeTab, setActiveTab] = useState("general");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const { dashboardSettings, updateDashboardSettings } = useDashboard();
+
+  // Load logo from dashboardSettings or localStorage on mount
+  useEffect(() => {
+    // Prefer dashboardSettings.logoPreview if available
+    if (dashboardSettings.logoPreview) {
+      setLogoPreview(dashboardSettings.logoPreview);
+    } else {
+      // Fallback to localStorage if dashboardSettings.logoPreview is not set
+      const storedLogo = localStorage.getItem("dashboardLogo");
+      if (storedLogo) {
+        setLogoPreview(storedLogo);
+      }
+    }
+  }, [dashboardSettings.logoPreview]);
 
   // Form validation schema
   const validationSchema = Yup.object({
-    notifications: Yup.object({
-      email: Yup.boolean(),
-      push: Yup.boolean(),
-    }),
     dashboard: Yup.object({
-      defaultView: Yup.string().required("Default view is required"),
-      showStats: Yup.boolean(),
-      showSalesChart: Yup.boolean(),
-      showAnalysisBox: Yup.boolean(),
+      dashboardName: Yup.string().required("Dashboard name is required"),
+      description: Yup.string().max(200, "Description must be less than 200 characters"),
     }),
     changePassword: Yup.object({
       currentPassword: Yup.string().when("newPassword", {
         is: (newPassword) => !!newPassword,
-        then: (schema) => schema.required("Current password is required"),
+        then: (schema) =>
+          schema
+            .required("Current password is required")
+            .test(
+              "current-password-requirements",
+              "Current password must be at least 9 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character",
+              function (value) {
+                if (!value) return true;
+                return (
+                  /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{9,}/.test(
+                    value
+                  )
+                );
+              }
+            ),
       }),
       newPassword: Yup.string().test(
         "password-requirements",
         "Password must be at least 9 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character",
         function (value) {
-          if (!value) return true; // Allow empty newPassword (optional)
+          if (!value) return true;
           return (
-            value.length >= 9 &&
-            /[A-Z]/.test(value) &&
-            /[a-z]/.test(value) &&
-            /[0-9]/.test(value) &&
-            /[@$!%*?&]/.test(value)
+            /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{9,}/.test(
+              value
+            )
           );
         }
       ),
@@ -78,15 +94,9 @@ const SettingsPage = () => {
   // Formik setup
   const formik = useFormik({
     initialValues: {
-      notifications: {
-        email: true,
-        push: true,
-      },
       dashboard: {
-        defaultView: "overview",
-        showStats: true,
-        showSalesChart: true,
-        showAnalysisBox: true,
+        dashboardName: dashboardSettings.dashboardName || "",
+        description: dashboardSettings.description || "",
       },
       changePassword: {
         currentPassword: "",
@@ -101,45 +111,48 @@ const SettingsPage = () => {
       const loadingId = toast.loading("Saving settings...");
 
       try {
-        // Handle logo upload
-        if (logoFile) {
-          const formData = new FormData();
-          formData.append("logo", logoFile);
-          await axiosInstance.post("/Settings/UploadLogo", formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-          });
-          toast.success("Logo uploaded successfully");
-        }
-
-        // Handle change password
+        // Handle password change
         if (values.changePassword.newPassword) {
           const response = await changePassword({
             currentPassword: values.changePassword.currentPassword,
             newPassword: values.changePassword.newPassword,
           });
-          if (response.data.isSuccess) {
+
+          console.log("Password change response:", response);
+
+          if (response.isSuccess) {
             toast.success("Password changed successfully");
+            // Clear password fields
+            formik.setFieldValue("changePassword.currentPassword", "");
+            formik.setFieldValue("changePassword.newPassword", "");
+            formik.setFieldValue("changePassword.confirmNewPassword", "");
           } else {
-            throw new Error(response.data.errors?.[0] || "Failed to change password");
+            // Display only the server's error message
+            throw new Error(response.errors?.[0] || "Failed to change password");
           }
         }
 
-        // Save other settings (mock API call)
-        await axiosInstance.post("/Settings/Update", {
-          language,
-          theme,
-          notifications: values.notifications,
-          dashboard: values.dashboard,
-          twoFactorAuth: values.twoFactorAuth,
-        });
+        // Handle dashboard settings only if no password change
+        if (!values.changePassword.newPassword) {
+          await updateDashboardSettings({
+            dashboardName: values.dashboard.dashboardName,
+            description: values.dashboard.description || dashboardSettings.description,
+            logo: logoFile,
+            logoPreview: logoPreview || dashboardSettings.logoPreview,
+          });
+          // Update localStorage with new logoPreview if a new logo was uploaded
+          if (logoFile && logoPreview) {
+            localStorage.setItem("dashboardLogo", logoPreview);
+          }
+          toast.success("Dashboard settings updated successfully");
+          setLogoFile(null);
+          // Do not clear logoPreview to keep displaying the logo
+        }
 
-        toast.success("Settings updated successfully");
       } catch (error) {
-        const errorMessage =
-          error.response?.data?.errors?.join("\n") ||
-          error.message ||
-          "Failed to save settings";
-        toast.error(errorMessage);
+        // Display the error message directly
+        toast.error(error.message);
+        console.error("Submission error:", error);
       } finally {
         setIsSubmitting(false);
         toast.dismiss(loadingId);
@@ -151,17 +164,25 @@ const SettingsPage = () => {
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
     if (file && file.type.startsWith("image/")) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast.error("Image size should be less than 5MB");
+        return;
+      }
       setLogoFile(file);
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => setLogoPreview(e.target.result);
+      reader.readAsDataURL(file);
     } else {
       toast.error("Please select a valid image file");
     }
   };
 
+
+
   const tabs = [
     { id: "general", label: "General", icon: <Settings size={18} /> },
-    { id: "notifications", label: "Notifications", icon: <Bell size={18} /> },
     { id: "security", label: "Security", icon: <Lock size={18} /> },
-    { id: "dashboard", label: "Dashboard", icon: <Monitor size={18} /> },
   ];
 
   return (
@@ -173,9 +194,36 @@ const SettingsPage = () => {
         theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
       }`}
     >
-      <h1 className="text-2xl lg:text-3xl font-bold mb-6 text-center text-sky-700">
-        Admin Settings
-      </h1>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <div
+            className={`p-3 rounded-lg ${
+              theme === "light"
+                ? "bg-gradient-to-r from-sky-700 to-sky-600"
+                : "bg-gradient-to-r from-sky-800 to-sky-700"
+            }`}
+          >
+            <Settings className="h-8 w-8 text-white" />
+          </div>
+          <div>
+            <h1
+              className={`text-2xl lg:text-3xl font-bold ${
+                theme === "light" ? "text-gray-900" : "text-gray-200"
+              }`}
+            >
+              Admin Settings
+            </h1>
+            <p
+              className={`text-sm ${
+                theme === "light" ? "text-gray-600" : "text-gray-400"
+              }`}
+            >
+              Customize your admin panel settings
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Tabs Navigation */}
       <div className="flex flex-wrap gap-2 mb-6 border-b border-gray-200">
@@ -200,7 +248,7 @@ const SettingsPage = () => {
       {/* Form Content */}
       <form onSubmit={formik.handleSubmit} className="space-y-8">
         <AnimatePresence mode="wait">
-          {/* General Settings */}
+          {/* Dashboard Settings */}
           {activeTab === "general" && (
             <motion.div
               key="general"
@@ -209,57 +257,30 @@ const SettingsPage = () => {
               exit={{ opacity: 0 }}
               className="space-y-6"
             >
-              {/* Language Selection */}
-              <div className="space-y-2">
-                <label
-                  className={`block text-sm font-medium ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-700"
-                  }`}
-                  htmlFor="language"
-                >
-                  Language
-                </label>
-                <div className="relative">
-                  <select
-                    id="language"
-                    name="language"
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value)}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all appearance-none ${
-                      theme === "dark"
-                        ? "bg-gray-700 text-white border-gray-600"
-                        : "bg-white border-sky-200"
-                    }`}
-                  >
-                    <option value="en">English</option>
-                    <option value="ar">العربية</option>
-                  </select>
-                  <ChevronDown
-                    size={20}
-                    className={`absolute right-4 top-1/2 transform -translate-y-1/2 ${
-                      theme === "dark" ? "text-gray-400" : "text-gray-500"
-                    } pointer-events-none`}
-                  />
-                </div>
-              </div>
-
+              <h3
+                className={`text-lg font-semibold ${
+                  theme === "dark" ? "text-gray-300" : "text-gray-700"
+                }`}
+              >
+                Dashboard Customization
+              </h3>
               {/* Theme Toggle */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <label
                   className={`block text-sm font-medium ${
                     theme === "dark" ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
-                  Theme
+                  Theme Preference
                 </label>
-                <div className="flex gap-4">
+                <div className="flex gap-3">
                   <label
-                    className={`flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                    className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all flex-1 ${
                       theme === "light"
-                        ? "border-sky-500 bg-sky-50"
+                        ? "border-sky-500 bg-sky-50 text-sky-700"
                         : theme === "dark"
-                        ? "border-gray-600 hover:border-sky-400"
-                        : "border-gray-200 hover:border-sky-200"
+                        ? "border-gray-600 hover:border-sky-400 text-gray-300"
+                        : "border-gray-300 hover:border-sky-400 text-gray-700"
                     }`}
                   >
                     <input
@@ -274,15 +295,16 @@ const SettingsPage = () => {
                       size={20}
                       className={theme === "light" ? "text-sky-500" : "text-gray-500"}
                     />
-                    <span>Light</span>
+                    <div>
+                      <span className="font-medium">Light Mode</span>
+                      <p className="text-xs opacity-75">Classic bright interface</p>
+                    </div>
                   </label>
                   <label
-                    className={`flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                    className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all flex-1 ${
                       theme === "dark"
-                        ? "border-sky-500 bg-gray-700"
-                        : theme === "dark"
-                        ? "border-gray-600 hover:border-sky-400"
-                        : "border-gray-200 hover:border-sky-200"
+                        ? "border-sky-500 bg-gray-700 text-sky-300"
+                        : "border-gray-300 hover:border-sky-400 text-gray-700"
                     }`}
                   >
                     <input
@@ -295,96 +317,158 @@ const SettingsPage = () => {
                     />
                     <Moon
                       size={20}
-                      className={theme === "dark" ? "text-sky-500" : "text-gray-500"}
+                      className={theme === "dark" ? "text-sky-400" : "text-gray-500"}
                     />
-                    <span>Dark</span>
+                    <div>
+                      <span className="font-medium">Dark Mode</span>
+                      <p className="text-xs opacity-75">Easy on the eyes</p>
+                    </div>
                   </label>
                 </div>
               </div>
 
-              {/* Logo Upload */}
-              <div className="space-y-2">
-                <label
-                  className={`block text-sm font-medium ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-700"
-                  }`}
-                  htmlFor="logo"
-                >
-                  Dashboard Logo
-                </label>
-                <input
-                  type="file"
-                  id="logo"
-                  accept="image/*"
-                  onChange={handleLogoChange}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all ${
-                    theme === "dark"
-                      ? "bg-gray-700 text-white border-gray-600"
-                      : "bg-white border-sky-200"
-                  }`}
-                />
-                {logoFile && (
-                  <p className="text-sm text-gray-500">
-                    Selected: {logoFile.name}
-                  </p>
-                )}
-              </div>
-            </motion.div>
-          )}
+              {/* Logo Section */}
+              <div className="space-y-4">
+                <div>
+                  <label
+                    className={`block text-sm font-medium mb-2 ${
+                      theme === "dark" ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
+                    Dashboard Logo
+                  </label>
+                  {/* Logo Preview */}
+                  <div className="flex items-start gap-4 mb-4">
+                    <div
+                      className={`w-24 h-24 rounded-xl border-2 border-dashed flex items-center justify-center relative overflow-hidden ${
+                        theme === "dark" ? "border-gray-600 bg-gray-700" : "border-gray-300 bg-gray-50"
+                      }`}
+                    >
+                      {logoPreview ? (
+                        <>
+                          <img
+                            src={logoPreview}
+                            alt="Logo preview"
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                         
+                        </>
+                      ) : (
+                        <Image className="w-8 h-8 text-gray-400" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <input
+                        type="file"
+                        id="logo"
+                        accept="image/*"
+                        onChange={handleLogoChange}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="logo"
+                        className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 cursor-pointer transition-all font-medium ${
+                          theme === "dark"
+                            ? "border-gray-600 hover:border-sky-400 text-gray-300 hover:bg-gray-700"
+                            : "border-gray-300 hover:border-sky-500 text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        <Upload size={16} />
+                        Choose Logo
+                      </label>
+                      {logoFile && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <Check size={16} className="text-green-500" />
+                          <p className="text-sm text-green-600">
+                            {logoFile.name} ({(logoFile.size / 1024).toFixed(1)} KB)
+                          </p>
+                        </div>
+                      )}
+                      <p
+                        className={`text-xs mt-1 ${
+                          theme === "dark" ? "text-gray-400" : "text-gray-600"
+                        }`}
+                      >
+                        PNG, JPG up to 5MB. Recommended: 200x200px
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
-          {/* Notifications Settings */}
-          {activeTab === "notifications" && (
-            <motion.div
-              key="notifications"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="space-y-6"
-            >
-              <h3
-                className={`text-lg font-semibold ${
-                  theme === "dark" ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Notifications
-              </h3>
+                {/* Dashboard Name */}
+                <div>
+                  <label
+                    className={`block text-sm font-medium mb-2 ${
+                      theme === "dark" ? "text-gray-300" : "text-gray-700"
+                    }`}
+                    htmlFor="dashboard.dashboardName"
+                  >
+                    Dashboard Name
+                  </label>
+                  <Input
+                    type="text"
+                    id="dashboard.dashboardName"
+                    name="dashboard.dashboardName"
+                    value={formik.values.dashboard.dashboardName}
+                    onChange={formik.handleChange}
+                    placeholder="Enter dashboard name"
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all ${
+                      theme === "dark"
+                        ? "bg-gray-700 text-white border-gray-600"
+                        : "bg-white border-gray-300"
+                    }`}
+                  />
+                  {formik.touched.dashboard?.dashboardName &&
+                    formik.errors.dashboard?.dashboardName && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {formik.errors.dashboard.dashboardName}
+                      </p>
+                    )}
+                </div>
 
-              <div className="flex items-center justify-between">
-                <label
-                  className={`text-sm ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-700"
-                  }`}
-                  htmlFor="notifications.email"
-                >
-                  Email Notifications
-                </label>
-                <input
-                  type="checkbox"
-                  id="notifications.email"
-                  name="notifications.email"
-                  checked={formik.values.notifications.email}
-                  onChange={formik.handleChange}
-                  className="w-4 h-4 text-sky-600 border-gray-300 rounded focus:ring-sky-500"
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <label
-                  className={`text-sm ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-700"
-                  }`}
-                  htmlFor="notifications.push"
-                >
-                  Push Notifications
-                </label>
-                <input
-                  type="checkbox"
-                  id="notifications.push"
-                  name="notifications.push"
-                  checked={formik.values.notifications.push}
-                  onChange={formik.handleChange}
-                  className="w-4 h-4 text-sky-600 border-gray-300 rounded focus:ring-sky-500"
-                />
+                {/* Description */}
+                <div>
+                  <label
+                    className={`block text-sm font-medium mb-2 ${
+                      theme === "dark" ? "text-gray-300" : "text-gray-700"
+                    }`}
+                    htmlFor="dashboard.description"
+                  >
+                    Description
+                  </label>
+                  <textarea
+                    id="dashboard.description"
+                    name="dashboard.description"
+                    value={formik.values.dashboard.description}
+                    onChange={formik.handleChange}
+                    placeholder="Brief description of your dashboard"
+                    rows={3}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all resize-none ${
+                      theme === "dark"
+                        ? "bg-gray-700 text-white border-gray-600"
+                        : "bg-white border-gray-300"
+                    }`}
+                  />
+                  <div className="flex justify-between items-center mt-1">
+                    {formik.touched.dashboard?.description &&
+                      formik.errors.dashboard?.description && (
+                        <p className="text-red-500 text-sm">
+                          {formik.errors.dashboard.description}
+                        </p>
+                      )}
+                    <p
+                      className={`text-sm ml-auto ${
+                        formik.values.dashboard.description.length > 180
+                          ? "text-red-500"
+                          : theme === "dark"
+                          ? "text-gray-400"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      {formik.values.dashboard.description.length}/200
+                    </p>
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}
@@ -403,14 +487,12 @@ const SettingsPage = () => {
                   theme === "dark" ? "text-gray-300" : "text-gray-700"
                 }`}
               >
-                Security
+                Change Password
               </h3>
-
-              {/* Change Password */}
               <div className="space-y-4">
                 <div>
                   <label
-                    className={`block text-sm font-medium ${
+                    className={`block text-sm font-medium mb-2 ${
                       theme === "dark" ? "text-gray-300" : "text-gray-700"
                     }`}
                     htmlFor="changePassword.currentPassword"
@@ -423,10 +505,12 @@ const SettingsPage = () => {
                     name="changePassword.currentPassword"
                     value={formik.values.changePassword.currentPassword}
                     onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    placeholder="Enter current password"
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all ${
                       theme === "dark"
                         ? "bg-gray-700 text-white border-gray-600"
-                        : "bg-white border-sky-200"
+                        : "bg-white border-gray-300"
                     }`}
                   />
                   {formik.touched.changePassword?.currentPassword &&
@@ -436,10 +520,9 @@ const SettingsPage = () => {
                       </p>
                     )}
                 </div>
-
                 <div>
                   <label
-                    className={`block text-sm font-medium ${
+                    className={`block text-sm font-medium mb-2 ${
                       theme === "dark" ? "text-gray-300" : "text-gray-700"
                     }`}
                     htmlFor="changePassword.newPassword"
@@ -452,10 +535,12 @@ const SettingsPage = () => {
                     name="changePassword.newPassword"
                     value={formik.values.changePassword.newPassword}
                     onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    placeholder="Enter new password"
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all ${
                       theme === "dark"
                         ? "bg-gray-700 text-white border-gray-600"
-                        : "bg-white border-sky-200"
+                        : "bg-white border-gray-300"
                     }`}
                   />
                   {formik.touched.changePassword?.newPassword &&
@@ -464,11 +549,17 @@ const SettingsPage = () => {
                         {formik.errors.changePassword.newPassword}
                       </p>
                     )}
+                  <p
+                    className={`text-xs mt-1 ${
+                      theme === "dark" ? "text-gray-400" : "text-gray-600"
+                    }`}
+                  >
+                    Password must be at least 9 characters with uppercase, lowercase, number, and special character
+                  </p>
                 </div>
-
                 <div>
                   <label
-                    className={`block text-sm font-medium ${
+                    className={`block text-sm font-medium mb-2 ${
                       theme === "dark" ? "text-gray-300" : "text-gray-700"
                     }`}
                     htmlFor="changePassword.confirmNewPassword"
@@ -481,10 +572,12 @@ const SettingsPage = () => {
                     name="changePassword.confirmNewPassword"
                     value={formik.values.changePassword.confirmNewPassword}
                     onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    placeholder="Confirm new password"
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all ${
                       theme === "dark"
                         ? "bg-gray-700 text-white border-gray-600"
-                        : "bg-white border-sky-200"
+                        : "bg-white border-gray-300"
                     }`}
                   />
                   {formik.touched.changePassword?.confirmNewPassword &&
@@ -495,159 +588,35 @@ const SettingsPage = () => {
                     )}
                 </div>
               </div>
-
-              {/* Two-Factor Authentication */}
-              <div className="flex items-center justify-between">
-                <label
-                  className={`text-sm ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-700"
-                  }`}
-                  htmlFor="twoFactorAuth"
-                >
-                  Two-Factor Authentication
-                </label>
-                <input
-                  type="checkbox"
-                  id="twoFactorAuth"
-                  name="twoFactorAuth"
-                  checked={formik.values.twoFactorAuth}
-                  onChange={formik.handleChange}
-                  className="w-4 h-4 text-sky-600 border-gray-300 rounded focus:ring-sky-500"
-                />
-              </div>
-            </motion.div>
-          )}
-
-          {/* Dashboard Settings */}
-          {activeTab === "dashboard" && (
-            <motion.div
-              key="dashboard"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="space-y-6"
-            >
-              <h3
-                className={`text-lg font-semibold ${
-                  theme === "dark" ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Dashboard Customization
-              </h3>
-
-              {/* Default View */}
-              <div className="space-y-2">
-                <label
-                  className={`block text-sm font-medium ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-700"
-                  }`}
-                  htmlFor="dashboard.defaultView"
-                >
-                  Default Dashboard View
-                </label>
-                <select
-                  id="dashboard.defaultView"
-                  name="dashboard.defaultView"
-                  value={formik.values.dashboard.defaultView}
-                  onChange={formik.handleChange}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all ${
-                    theme === "dark"
-                      ? "bg-gray-700 text-white border-gray-600"
-                      : "bg-white border-sky-200"
-                  }`}
-                >
-                  <option value="overview">Overview</option>
-                  <option value="articles">Articles</option>
-                  <option value="doctors">Doctors</option>
-                  <option value="users">Users</option>
-                  <option value="categories">Categories</option>
-                </select>
-                {formik.touched.dashboard?.defaultView &&
-                  formik.errors.dashboard?.defaultView && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {formik.errors.dashboard.defaultView}
-                    </p>
-                  )}
-              </div>
-
-              {/* Widget Visibility */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <label
-                    className={`text-sm ${
-                      theme === "dark" ? "text-gray-300" : "text-gray-700"
-                    }`}
-                    htmlFor="dashboard.showStats"
-                  >
-                    Show Stats Widget
-                  </label>
-                  <input
-                    type="checkbox"
-                    id="dashboard.showStats"
-                    name="dashboard.showStats"
-                    checked={formik.values.dashboard.showStats}
-                    onChange={formik.handleChange}
-                    className="w-4 h-4 text-sky-600 border-gray-300 rounded focus:ring-sky-500"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <label
-                    className={`text-sm ${
-                      theme === "dark" ? "text-gray-300" : "text-gray-700"
-                    }`}
-                    htmlFor="dashboard.showSalesChart"
-                  >
-                    Show Sales Chart
-                  </label>
-                  <input
-                    type="checkbox"
-                    id="dashboard.showSalesChart"
-                    name="dashboard.showSalesChart"
-                    checked={formik.values.dashboard.showSalesChart}
-                    onChange={formik.handleChange}
-                    className="w-4 h-4 text-sky-600 border-gray-300 rounded focus:ring-sky-500"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <label
-                    className={`text-sm ${
-                      theme === "dark" ? "text-gray-300" : "text-gray-700"
-                    }`}
-                    htmlFor="dashboard.showAnalysisBox"
-                  >
-                    Show Analysis Box
-                  </label>
-                  <input
-                    type="checkbox"
-                    id="dashboard.showAnalysisBox"
-                    name="dashboard.showAnalysisBox"
-                    checked={formik.values.dashboard.showAnalysisBox}
-                    onChange={formik.handleChange}
-                    className="w-4 h-4 text-sky-600 border-gray-300 rounded focus:ring-sky-500"
-                  />
-                </div>
-              </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Save Button */}
-        <div className="flex justify-center mt-6">
-          <Button
+        {/* Enhanced Save Button */}
+        <div className="flex justify-center pt-6 border-t border-gray-200">
+          <button
             type="submit"
             disabled={isSubmitting}
-            className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+            className={`relative flex items-center gap-3 px-8 py-3.5 rounded-xl font-semibold transition-all transform hover:scale-105 active:scale-95 shadow-lg ${
               isSubmitting
                 ? "opacity-50 cursor-not-allowed"
                 : theme === "dark"
-                ? "bg-sky-600 text-white hover:bg-sky-700"
-                : "bg-sky-600 text-white hover:bg-sky-700"
+                ? "bg-gradient-to-r from-sky-600 to-sky-700 text-white hover:from-sky-700 hover:to-sky-800 shadow-sky-500/25"
+                : "bg-gradient-to-r from-sky-600 to-sky-700 text-white hover:from-sky-700 hover:to-sky-800 shadow-sky-500/25"
             }`}
           >
-            {isSubmitting ? "Saving..." : "Save Settings"}
-          </Button>
+            {isSubmitting ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Saving Changes...</span>
+              </>
+            ) : (
+              <>
+                <Save size={18} />
+                <span>Save All Settings</span>
+              </>
+            )}
+          </button>
         </div>
       </form>
     </motion.div>

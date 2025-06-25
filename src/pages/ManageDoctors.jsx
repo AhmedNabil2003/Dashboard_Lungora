@@ -1,15 +1,13 @@
-
-
 /* eslint-disable no-unused-vars */
 import { useState, useContext } from "react"
 import { motion } from "framer-motion"
 import { toast } from "react-hot-toast"
-import { ThemeContext } from "../context/ThemeContext"
-import DoctorList from "../features/doctors/DoctorList"
-import DoctorForm from "../features/doctors/DoctorForm"
+import { ThemeContext } from "../context/themeContext"
+import DoctorList from "../features/doctors/doctorList"
+import DoctorForm from "../features/doctors/doctorAddForm"
 import { useDoctors } from "../features/doctors/useDoctors"
 import { useCategories } from "../features/categories/useCategories"
-import WorkingHoursEditor from "../features/doctors/WorkingHoursEditor"
+import WorkingHoursEditor from "../features/doctors/workingHoursEditor"
 
 const ManageDoctors = () => {
   const { theme } = useContext(ThemeContext)

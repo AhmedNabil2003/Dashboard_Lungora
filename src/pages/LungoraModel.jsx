@@ -1,9 +1,10 @@
-import React, { useState, useRef, useContext } from 'react';
+import  { useState, useRef, useContext, useEffect } from 'react';
 import LungoraImage from "../assets/images.jpg";
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { uploadImage } from '../services/apiModel';
-import { ThemeContext } from '../context/ThemeContext';
+import { ThemeContext } from '../context/themeContext';
+import { useDashboard } from '../context/dashboardContext';
 
 const LungoraModel = () => {
   const [file, setFile] = useState(null);
@@ -12,8 +13,27 @@ const LungoraModel = () => {
   const [showingResult, setShowingResult] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [logoPreview, setLogoPreview] = useState(null); // State for header logo
   const fileInputRef = useRef(null);
   const { theme } = useContext(ThemeContext);
+  const { dashboardSettings } = useDashboard(); // Access dashboard settings
+
+  // Load logo from dashboardSettings or localStorage on mount
+  useEffect(() => {
+    // Prefer dashboardSettings.logoPreview if available
+    if (dashboardSettings.logoPreview) {
+      setLogoPreview(dashboardSettings.logoPreview);
+    } else {
+      // Fallback to localStorage
+      const storedLogo = localStorage.getItem("dashboardLogo");
+      if (storedLogo) {
+        setLogoPreview(storedLogo);
+      } else {
+        // Fallback to static LungoraImage if no logo is found
+        setLogoPreview(LungoraImage);
+      }
+    }
+  }, [dashboardSettings.logoPreview]);
 
   const handleFileUpload = (e) => {
     const uploadedFile = e.target.files[0];
@@ -82,7 +102,7 @@ const LungoraModel = () => {
             <div className="mb-4 flex flex-col sm:flex-row items-center justify-center sm:justify-between">
               <div className="flex items-center mb-3 sm:mb-0">
                 <motion.img
-                  src={LungoraImage}
+                  src={logoPreview} // Use dynamic logoPreview
                   alt="Lungora Logo"
                   className="w-12 h-12 rounded-full shadow-md"
                   initial={{ rotate: 0 }}

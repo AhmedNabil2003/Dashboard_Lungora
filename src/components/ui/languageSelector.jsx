@@ -1,6 +1,5 @@
-// src/components/ui/LanguageToggle.jsx
-import { useLanguage } from "../../context/LanguageContext";
-import { Globe } from 'lucide-react'; // تأكد من تثبيت مكتبة lucide-react
+import { useLanguage } from "../../context/languageContext";
+import { Globe } from 'lucide-react'; 
 
 export function LanguageToggle() {
   const { language, toggleLanguage, } = useLanguage();

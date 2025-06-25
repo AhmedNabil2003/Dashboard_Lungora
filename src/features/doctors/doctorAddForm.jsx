@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { MapPin, Clock } from "lucide-react"
-import WorkingHoursEditor from "./WorkingHoursEditor"
+import WorkingHoursEditor from "./workingHoursEditor"
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"

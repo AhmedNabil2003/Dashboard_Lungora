@@ -13,10 +13,10 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
@@ -44,7 +44,11 @@ axiosInstance.interceptors.response.use(
 
     const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
 
-    if (error.response?.status === 401 && !originalRequest._retry && isAuthenticated) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      isAuthenticated
+    ) {
       originalRequest._retry = true;
 
       if (isRefreshing) {
@@ -59,8 +63,14 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
+        const storedRefreshToken =
+          localStorage.getItem("refreshToken") ||
+          sessionStorage.getItem("refreshToken");
+
         const response = await axios.get(`${BASE_URL}/Auth/refreshToken`, {
-          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${storedRefreshToken}`,
+          },
         });
 
         const { token, refreshToken } = response.data?.result || {};
@@ -93,6 +103,5 @@ axiosInstance.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
 
 export default axiosInstance;
