@@ -7,7 +7,7 @@ import DoctorList from "../features/doctors/DoctorList"
 import DoctorForm from "../features/doctors/DoctorAddForm"
 import { useDoctors } from "../features/doctors/useDoctors"
 import { useCategories } from "../features/categories/useCategories"
-import WorkingHoursEditor from "../features/doctors/workingHoursEditor"
+import WorkingHoursEditor from "../features/doctors/WorkingHours"
 
 const ManageDoctors = () => {
   const { theme } = useContext(ThemeContext)

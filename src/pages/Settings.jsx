@@ -18,7 +18,7 @@ import * as Yup from "yup";
 import toast from "react-hot-toast";
 import { ThemeContext } from "../context/ThemeProviderContext";
 import Input from "../components/ui/InputField";
-import { useDashboard } from "../context/dashboardContext";
+import { useDashboard } from "../context/DashboardContext";
 import { changePassword } from "../services/apiAuth";
 
 const SettingsPage = () => {

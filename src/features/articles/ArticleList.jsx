@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { Edit, Trash, PlusCircle, Eye, Search } from "lucide-react";
-import AddArticleForm from "./ArticleAddForm";
+import AddArticleForm from "./ArticleForm";
 import toast from "react-hot-toast";
 import { ThemeContext } from "../../context/ThemeProviderContext";
 

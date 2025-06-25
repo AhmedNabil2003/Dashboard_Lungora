@@ -6,7 +6,7 @@ import LungoraImage from "../../assets/images.jpg";
 import AuthContext from "../../context/AuthProviderContext";
 import { useSidebarContext } from "../../context/SidebarContext";
 import { ThemeContext } from "../../context/ThemeProviderContext";
-import { useDashboard } from "../../context/dashboardContext";
+import { useDashboard } from "../../context/DashboardContext";
 
 const Sidebar = () => {
   const [showModal, setShowModal] = useState(false);
@@ -244,7 +244,7 @@ const Sidebar = () => {
 };
 
 const ProfileSection = ({ isSidebarOpen, theme, dashboardSettings }) => (
-  <Link to="/dashboard">
+  <Link to="/dashboard/settings">
     <motion.div
       className={`flex ${isSidebarOpen ? "items-center" : "justify-center"} ${
         theme === "light" ? "bg-sky-700" : "bg-gray-800"
@@ -346,7 +346,7 @@ const LogoutModal = ({ onConfirm, onCancel, theme }) => (
     exit={{ opacity: 0 }}
   >
     <motion.div
-      className="absolute inset-0 bg-black bg-opacity-50"
+      className="absolute inset-0  bg-black/30"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}

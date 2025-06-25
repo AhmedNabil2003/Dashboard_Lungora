@@ -1,6 +1,6 @@
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
-import AddAdminForm from "../features/auth/AdminAddForm";
+import AddAdminForm from "../features/auth/AddAdminForm";
 import { ThemeContext } from "../context/ThemeProviderContext";
 import { useContext } from "react";
 

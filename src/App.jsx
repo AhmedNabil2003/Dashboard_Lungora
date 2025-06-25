@@ -2,7 +2,7 @@ import { BrowserRouter } from "react-router-dom";
 import AppRoute from "../src/routes/routes";
 import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "./context/ThemeProviderContext";
-import { DashboardProvider } from "./context/dashboardContext";
+import { DashboardProvider } from "./context/DashboardContext";
 
 const App = () => (
   <DashboardProvider>

@@ -4,7 +4,7 @@ import LungoraImage from "../assets/images.jpg";
 import { motion } from 'framer-motion';
 import { uploadImage } from '../services/apiModel';
 import { ThemeContext } from '../context/ThemeProviderContext';
-import { useDashboard } from '../context/dashboardContext';
+import { useDashboard } from '../context/DashboardContext';
 
 const LungoraModel = () => {
   const [file, setFile] = useState(null);

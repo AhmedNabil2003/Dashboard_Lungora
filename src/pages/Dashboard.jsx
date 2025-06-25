@@ -3,10 +3,10 @@ import { ThemeContext } from "../context/ThemeProviderContext";
 import { useDashboard } from "../features/dashboard/useDashboard";
 import AnalysisBox from "../features/dashboard/AnalysisBox";
 import Stats from "../features/dashboard/Stats";
-import DoctorsList from "../features/dashboard/LastDoctorsList";
-import ArticlesList from "../features/dashboard/LastArticlesList";
+import DoctorsList from "../features/dashboard/LastDoctorList";
+import ArticlesList from "../features/dashboard/LastArticale";
 import DoctorsMap from "../features/dashboard/DoctorsMap";
-import MedicalHistory from "../features/dashboard/MedicalHistory";
+import MedicalHistory from "../features/dashboard/LastMedicalHistory";
 const Dashboard = () => {
   const { theme } = useContext(ThemeContext);
   const { data, loading, error, refetch } = useDashboard();
