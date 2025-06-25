@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Input from "../../components/ui/inputField";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
-import AuthContext from "../../context/authContext";
+import AuthContext from "../../context/AuthProviderContext";
 import { loginUser } from "../../services/apiAuth";
 import { storeToken } from "../../hooks/useLocalStorage";
 import { ThemeContext } from "../../context/themeContext";

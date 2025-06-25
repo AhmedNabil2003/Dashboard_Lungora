@@ -3,7 +3,7 @@ import { useContext, useState, useEffect } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import LungoraImage from "../../assets/images.jpg";
-import AuthContext from "../../context/authContext";
+import AuthContext from "../../context/AuthProviderContext";
 import { useSidebarContext } from "../../context/sidebarContext";
 import { ThemeContext } from "../../context/themeContext";
 import { useDashboard } from "../../context/dashboardContext";
