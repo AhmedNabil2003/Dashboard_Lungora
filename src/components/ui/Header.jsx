@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState, useRef } from "react";
-import AuthContext from "../../context/authContext";
+import AuthContext from "../../context/AuthContext";
 import { Link } from "react-router-dom";
 import { ThemeContext } from "../../context/themeContext";
 import { getUserData } from "../../services/apiAuth";
