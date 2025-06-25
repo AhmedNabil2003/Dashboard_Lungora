@@ -16,7 +16,7 @@ import {
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import toast from "react-hot-toast";
-import { ThemeContext } from "../context/themeContext";
+import { ThemeContext } from "../context/ThemeContext";
 import Input from "../components/ui/inputField";
 import { useDashboard } from "../context/dashboardContext";
 import { changePassword } from "../services/apiAuth";

@@ -6,7 +6,7 @@ import { AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import UserForm from '../features/users/userAddForm';
 import UserList from '../features/users/userList';
 import { useUsers } from '../features/users/useUsers';
-import { ThemeContext } from '../context/themeContext';
+import { ThemeContext } from '../context/ThemeContext';
 
 const ManageUsers = () => {
   const { theme } = useContext(ThemeContext);

@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import AuthContext from "../../context/AuthContext";
 import { loginUser } from "../../services/apiAuth";
 import { storeToken } from "../../hooks/useLocalStorage";
-import { ThemeContext } from "../../context/themeContext";
+import { ThemeContext } from "../../context/ThemeContext";
 
 const PasswordInput = ({ name, placeholder, value, onChange, onBlur, error, ref, theme }) => {
   const [showPassword, setShowPassword] = useState(false);

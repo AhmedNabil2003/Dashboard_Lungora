@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Home, Rocket } from 'lucide-react';
-import { ThemeContext } from '../context/themeContext'; 
+import { ThemeContext } from '../context/ThemeContext'; 
 
 const PageNotFound = () => {
   const navigate = useNavigate();

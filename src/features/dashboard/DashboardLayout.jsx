@@ -2,7 +2,7 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "../../components/ui/sidebarNav";
 import Header from "../../components/ui/header";
 import { SidebarProvider } from "../../context/sidebarContext";
-import { ThemeContext } from "../../context/themeContext";
+import { ThemeContext } from "../../context/ThemeContext";
 import ScrollButton from "../../components/ui/scrollButton";
 import Footer from "../../components/ui/footer";
 import { useContext } from "react";
