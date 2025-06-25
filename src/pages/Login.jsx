@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import LoginForm from "../features/auth/LoginForm";
 import { BrainCircuit } from "lucide-react";
 import { useContext } from "react";
-import { ThemeContext } from "../context/themeContext";
+import { ThemeContext } from "../context/ThemeProviderContext";
 
 const Login = () => {
   const { theme } = useContext(ThemeContext);

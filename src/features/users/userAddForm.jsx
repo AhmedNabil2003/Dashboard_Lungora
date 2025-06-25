@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { User, Mail, Shield, Camera, X } from "lucide-react";
-import { ThemeContext } from "../../context/themeContext";
+import { ThemeContext } from "../../context/ThemeProviderContext";
 
 const UserForm = ({
   isOpen,

@@ -11,7 +11,7 @@ import {
 import AddCategoryForm from "./categoryAddForm";
 import { getArticlesByCategoryId } from "../../services/apiArticles";
 import toast from "react-hot-toast";
-import { ThemeContext } from "../../context/themeContext";
+import { ThemeContext } from "../../context/ThemeProviderContext";
 
 export default function CategoryList({
   categories,

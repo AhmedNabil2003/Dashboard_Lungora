@@ -1,7 +1,7 @@
 import { useState, useRef, useContext } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { ThemeContext } from "../../context/themeContext";
+import { ThemeContext } from "../../context/ThemeProviderContext";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 

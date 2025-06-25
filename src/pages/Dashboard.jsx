@@ -1,5 +1,5 @@
 import { useContext, useEffect } from "react";
-import { ThemeContext } from "../context/themeContext";
+import { ThemeContext } from "../context/ThemeProviderContext";
 import { useDashboard } from "../features/dashboard/useDashboard";
 import AnalysisBox from "../features/dashboard/analysisBox";
 import Stats from "../features/dashboard/Stats";

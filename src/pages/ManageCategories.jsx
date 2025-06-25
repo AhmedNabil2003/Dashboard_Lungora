@@ -3,7 +3,7 @@ import { useCategories } from "../features/categories/useCategories";
 import { useArticles } from "../features/articles/useArticles";
 import CategoryList from "../features/categories/categoryList";
 import ArticleList from "../features/articles/articleList";
-import { ThemeContext } from "../context/themeContext";
+import { ThemeContext } from "../context/ThemeProviderContext";
 import toast from "react-hot-toast";
 
 export default function ManageCategories() {

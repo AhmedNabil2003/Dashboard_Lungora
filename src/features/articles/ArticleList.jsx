@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 import { Edit, Trash, PlusCircle, Eye, Search } from "lucide-react";
 import AddArticleForm from "./articleAddForm";
 import toast from "react-hot-toast";
-import { ThemeContext } from "../../context/themeContext";
+import { ThemeContext } from "../../context/ThemeProviderContext";
 
 export default function ArticleList({
   articles,

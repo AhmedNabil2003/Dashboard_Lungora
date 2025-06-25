@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import LungoraImage from "../../assets/images.jpg";
 import AuthContext from "../../context/AuthProviderContext";
 import { useSidebarContext } from "../../context/sidebarContext";
-import { ThemeContext } from "../../context/themeContext";
+import { ThemeContext } from "../../context/ThemeProviderContext";
 import { useDashboard } from "../../context/dashboardContext";
 
 const Sidebar = () => {

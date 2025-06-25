@@ -1,7 +1,7 @@
 import { useContext } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
-import { ThemeContext } from "../context/themeContext";
+import { ThemeContext } from "../context/ThemeProviderContext";
 import { useModelHistory } from "../features/history/useModelHistory";
 import ModelHistoryList from "../features/history/ModelHistoryList";
 import ModelHistoryDetail from "../features/history/ModelHistoryDetail";

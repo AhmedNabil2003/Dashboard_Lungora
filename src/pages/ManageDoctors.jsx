@@ -2,7 +2,7 @@
 import { useState, useContext } from "react"
 import { motion } from "framer-motion"
 import { toast } from "react-hot-toast"
-import { ThemeContext } from "../context/themeContext"
+import { ThemeContext } from "../context/ThemeProviderContext"
 import DoctorList from "../features/doctors/doctorList"
 import DoctorForm from "../features/doctors/doctorAddForm"
 import { useDoctors } from "../features/doctors/useDoctors"

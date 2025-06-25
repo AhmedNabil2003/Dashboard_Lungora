@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState, useRef } from "react";
 import AuthContext from "../../context/AuthProviderContext";
 import { Link } from "react-router-dom";
-import { ThemeContext } from "../../context/themeContext";
+import { ThemeContext } from "../../context/ThemeProviderContext";
 import { getUserData } from "../../services/apiAuth";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
