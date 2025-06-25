@@ -1,6 +1,7 @@
 import toast from "react-hot-toast";
-import axiosInstance from "./axiosInstance"; 
+import axiosInstance from "./axiosInstance"; // استبدل axios بـ axiosInstance
 
+// جلب جميع الأقسام
 export const getAllCategories = async () => {
   try {
     const res = await axiosInstance.get("/Category/GetAllCategories");
@@ -18,6 +19,7 @@ export const getAllCategories = async () => {
   }
 };
 
+// إنشاء قسم جديد
 export const createCategory = async (data) => {
   try {
     const payload = { categoryName: data.name };
@@ -36,6 +38,7 @@ export const createCategory = async (data) => {
   }
 };
 
+// تعديل قسم
 export const updateCategory = async (id, name) => {
   try {
     if (!name.trim()) {
@@ -51,6 +54,7 @@ export const updateCategory = async (id, name) => {
   }
 };
 
+// حذف قسم
 export const deleteCategory = async (id) => {
   try {
     const res = await axiosInstance.delete(`/Category/RemoveCategory/${id}`);

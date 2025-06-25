@@ -1,18 +1,18 @@
-import { Link, useLocation } from "react-router-dom";
-import { useContext, useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom"
+import { useContext, useState, useEffect } from "react"
 // eslint-disable-next-line no-unused-vars
-import { motion, AnimatePresence } from "framer-motion";
-import LungoraImage from "../../assets/images.jpg";
-import AuthContext from "../../context/authContext";
-import { useSidebarContext } from "../../context/sidebarContext";
-import { ThemeContext } from "../../context/themeContext";
+import { motion, AnimatePresence } from "framer-motion"
+import LungoraImage from "../../assets/images.jpg"
+import AuthContext from "../../context/authContext"
+import { useSidebarContext } from "../../context/sidebarContext"
+import { ThemeContext } from "../../context/themeContext"
 import { useDashboard } from "../../context/dashboardContext";
 
 const Sidebar = () => {
-  const [showModal, setShowModal] = useState(false);
-  const location = useLocation();
-  const { logout } = useContext(AuthContext);
-  const { theme } = useContext(ThemeContext);
+  const [showModal, setShowModal] = useState(false)
+  const location = useLocation()
+  const { logout } = useContext(AuthContext)
+  const { theme } = useContext(ThemeContext)
   const { dashboardSettings } = useDashboard();
   const {
     isSidebarOpen,
@@ -22,74 +22,50 @@ const Sidebar = () => {
     setIsMobile,
     setSidebarOpen,
     setShowMobileSidebar,
-  } = useSidebarContext();
-  const [isTablet, setIsTablet] = useState(false);
+  } = useSidebarContext()
+  const [isTablet, setIsTablet] = useState(false)
 
   const menuItems = [
     { to: "/dashboard", label: "Dashboard", icon: "fa-solid fa-house" },
     { to: "/dashboard/users", label: "Users", icon: "fa-solid fa-users" },
-    {
-      to: "/dashboard/doctors",
-      label: "Doctors",
-      icon: "fa-solid fa-user-doctor",
-    },
-    {
-      to: "/dashboard/categories",
-      label: "Categories & Articles",
-      icon: "fa-solid fa-list",
-    },
-    {
-      to: "/dashboard/lungora-ai",
-      label: "Lungora AI",
-      icon: "fa-solid fa-robot",
-    },
-    {
-      to: "/dashboard/history",
-      label: "History",
-      icon: "fa-solid fa-clock-rotate-left",
-    },
+    { to: "/dashboard/doctors", label: "Doctors", icon: "fa-solid fa-user-doctor" },
+    { to: "/dashboard/categories", label: "Categories & Articles", icon: "fa-solid fa-list" },
+    { to: "/dashboard/lungora-ai", label: "Lungora AI", icon: "fa-solid fa-robot" },
+    { to: "/dashboard/history", label: "History", icon: "fa-solid fa-clock-rotate-left" },
     { to: "/dashboard/settings", label: "Settings", icon: "fa-solid fa-cog" },
-    {
-      to: "#",
-      label: "Logout",
-      icon: "fa-solid fa-sign-out-alt",
-      isLogout: true,
-    },
-  ];
+    { to: "#", label: "Logout", icon: "fa-solid fa-sign-out-alt", isLogout: true },
+  ]
 
   useEffect(() => {
     const handleResize = () => {
-      const width = window.innerWidth;
-      setIsMobile(width < 768);
-      setIsTablet(width >= 768 && width < 1024);
+      const width = window.innerWidth
+      setIsMobile(width < 768)
+      setIsTablet(width >= 768 && width < 1024)
 
       if (width < 768) {
-        setSidebarOpen(false);
-        setShowMobileSidebar(false);
+        setSidebarOpen(false)
+        setShowMobileSidebar(false)
       } else if (width < 1024) {
-        setSidebarOpen(false);
+        setSidebarOpen(false)
       } else {
-        setSidebarOpen(true);
+        setSidebarOpen(true)
       }
-    };
+    }
 
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [setSidebarOpen, setShowMobileSidebar, setIsMobile]);
+    handleResize()
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [setSidebarOpen, setShowMobileSidebar, setIsMobile])
 
   const handleLogout = () => {
-    setShowModal(false);
-    logout();
-  };
+    setShowModal(false)
+    logout()
+  }
 
   const sidebarVariants = {
     open: { x: 0, transition: { type: "spring", stiffness: 250, damping: 25 } },
-    closed: {
-      x: "-100%",
-      transition: { type: "spring", stiffness: 300, damping: 35 },
-    },
-  };
+    closed: { x: "-100%", transition: { type: "spring", stiffness: 300, damping: 35 } },
+  }
 
   return (
     <>
@@ -128,9 +104,7 @@ const Sidebar = () => {
 
       <motion.aside
         className={`h-screen ${
-          theme === "light"
-            ? "bg-gradient-to-r from-sky-700 to-sky-800"
-            : "bg-gradient-to-r from-gray-800 to-gray-900"
+          theme === "light" ? "bg-gradient-to-r from-sky-700 to-sky-800" : "bg-gradient-to-r from-gray-800 to-gray-900"
         } shadow-lg ${isSidebarOpen ? "w-45" : "w-20"} ${
           isMobile ? "fixed top-0 left-0 z-50" : "relative"
         } flex flex-col shadow-2xl transition-all overflow-hidden`}
@@ -182,19 +156,15 @@ const Sidebar = () => {
         )}
 
         <div className={`px-3 pt-4 ${isMobile ? "pt-10" : ""}`}>
-          <ProfileSection
-            isSidebarOpen={isSidebarOpen}
-            theme={theme}
-            dashboardSettings={dashboardSettings}
-          />
+          <ProfileSection isSidebarOpen={isSidebarOpen} 
+        theme={theme}
+        dashboardSettings={dashboardSettings} />
         </div>
 
         <div className="flex-grow px-3 py-2">
           <div
             className={`rounded-xl shadow-inner p-2 flex flex-col w-full h-full gap-2 ${
-              theme === "light"
-                ? "bg-white text-gray-800"
-                : "bg-gray-800 text-gray-200"
+              theme === "light" ? "bg-white text-gray-800" : "bg-gray-800 text-gray-200"
             }`}
           >
             {menuItems.map((item, index) => (
@@ -207,20 +177,18 @@ const Sidebar = () => {
                   onClick={
                     item.isLogout
                       ? () => {
-                          if (isMobile) toggleMobileSidebar();
-                          setShowModal(true);
+                          if (isMobile) toggleMobileSidebar()
+                          setShowModal(true)
                         }
                       : isMobile
-                      ? toggleMobileSidebar
-                      : undefined
+                        ? toggleMobileSidebar
+                        : undefined
                   }
                 />
                 {index < menuItems.length - 1 && (
                   <div
                     className={`w-full my-1 ${
-                      theme === "light"
-                        ? "border-t-2 border-slate-300"
-                        : "border-t-2 border-gray-600"
+                      theme === "light" ? "border-t-2 border-slate-300" : "border-t-2 border-gray-600"
                     }`}
                   />
                 )}
@@ -231,17 +199,11 @@ const Sidebar = () => {
       </motion.aside>
 
       <AnimatePresence>
-        {showModal && (
-          <LogoutModal
-            onConfirm={handleLogout}
-            onCancel={() => setShowModal(false)}
-            theme={theme}
-          />
-        )}
+        {showModal && <LogoutModal onConfirm={handleLogout} onCancel={() => setShowModal(false)} theme={theme} />}
       </AnimatePresence>
     </>
-  );
-};
+  )
+}
 
 const ProfileSection = ({ isSidebarOpen, theme, dashboardSettings }) => (
   <Link to="/dashboard">
@@ -265,7 +227,9 @@ const ProfileSection = ({ isSidebarOpen, theme, dashboardSettings }) => (
           <h2 className="text-base font-bold truncate">
             {dashboardSettings.dashboardName}
           </h2>
-          <p className="text-xs opacity-90">{dashboardSettings.description}</p>
+          <p className="text-xs opacity-90">
+            {dashboardSettings.description}
+          </p>
         </div>
       )}
     </motion.div>
@@ -273,7 +237,7 @@ const ProfileSection = ({ isSidebarOpen, theme, dashboardSettings }) => (
 );
 
 const MenuItem = ({ item, isActive, isSidebarOpen, theme, onClick }) => {
-  const { to, label, icon } = item;
+  const { to, label, icon } = item
 
   return (
     <motion.div
@@ -299,8 +263,8 @@ const MenuItem = ({ item, isActive, isSidebarOpen, theme, onClick }) => {
               ? "bg-gradient-to-r from-sky-500 to-sky-700 shadow-lg text-white"
               : "bg-gradient-to-r from-gray-700 to-gray-800 shadow-lg text-white"
             : theme === "light"
-            ? "bg-white text-slate-700 shadow-md hover:bg-sky-200"
-            : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-white text-slate-700 shadow-md hover:bg-sky-200"
+              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
         }`}
         style={{
           transform: "scale(1)",
@@ -309,23 +273,15 @@ const MenuItem = ({ item, isActive, isSidebarOpen, theme, onClick }) => {
       >
         <i
           className={`${icon} ${
-            isSidebarOpen
-              ? "text-cyan-800 text-xl mr-3"
-              : theme === "light"
-              ? "text-sky-700"
-              : "text-gray-300"
+            isSidebarOpen ? "text-cyan-800 text-xl mr-3" : theme === "light" ? "text-sky-700" : "text-gray-300"
           }`}
           style={{
-            fontSize: isSidebarOpen
-              ? "clamp(16px, 1.25rem, 20px)"
-              : "clamp(14px, 1rem, 18px)",
+            fontSize: isSidebarOpen ? "clamp(16px, 1.25rem, 20px)" : "clamp(14px, 1rem, 18px)",
           }}
         ></i>
         {isSidebarOpen && (
           <span
-            className={`text-base font-medium truncate ${
-              theme === "light" ? "text-gray-800" : "text-gray-200"
-            }`}
+            className={`text-base font-medium truncate ${theme === "light" ? "text-gray-800" : "text-gray-200"}`}
             style={{
               fontSize: "clamp(14px, 1rem, 16px)",
             }}
@@ -335,8 +291,8 @@ const MenuItem = ({ item, isActive, isSidebarOpen, theme, onClick }) => {
         )}
       </Link>
     </motion.div>
-  );
-};
+  )
+}
 
 const LogoutModal = ({ onConfirm, onCancel, theme }) => (
   <motion.div
@@ -354,9 +310,7 @@ const LogoutModal = ({ onConfirm, onCancel, theme }) => (
     />
     <motion.div
       className={`relative w-full max-w-sm overflow-hidden rounded-xl shadow-2xl ${
-        theme === "light"
-          ? "bg-white text-gray-800"
-          : "bg-gray-800 text-gray-200"
+        theme === "light" ? "bg-white text-gray-800" : "bg-gray-800 text-gray-200"
       }`}
       initial={{ scale: 0.8, y: 30, opacity: 0 }}
       animate={{ scale: 1, y: 0, opacity: 1 }}
@@ -367,22 +321,14 @@ const LogoutModal = ({ onConfirm, onCancel, theme }) => (
         transformOrigin: "center",
       }}
     >
-      <div
-        className={`p-4 ${
-          theme === "light" ? "bg-sky-600 text-white" : "bg-gray-700 text-white"
-        }`}
-      >
+      <div className={`p-4 ${theme === "light" ? "bg-sky-600 text-white" : "bg-gray-700 text-white"}`}>
         <h2 className="text-lg font-semibold flex items-center">
           <i className="fa-solid fa-sign-out-alt mr-2"></i>
           Confirm Logout
         </h2>
       </div>
       <div className="p-5">
-        <p
-          className={`text-gray-600 ${
-            theme === "dark" ? "text-gray-300" : "text-gray-600"
-          }`}
-        >
+        <p className={`text-gray-600 ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
           Are you sure you want to logout from your account?
         </p>
         <div className="mt-6 flex justify-end space-x-3">
@@ -401,9 +347,7 @@ const LogoutModal = ({ onConfirm, onCancel, theme }) => (
           <motion.button
             onClick={onConfirm}
             className={`px-3 py-1.5 rounded-lg cursor-pointer hover:bg-red-700 transition-colors ${
-              theme === "light"
-                ? "bg-red-500 text-white"
-                : "bg-red-700 text-gray-100"
+              theme === "light" ? "bg-red-500 text-white" : "bg-red-700 text-gray-100"
             }`}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -418,6 +362,6 @@ const LogoutModal = ({ onConfirm, onCancel, theme }) => (
       </div>
     </motion.div>
   </motion.div>
-);
+)
 
-export default Sidebar;
+export default Sidebar

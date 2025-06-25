@@ -29,10 +29,13 @@ const SettingsPage = () => {
   const [logoPreview, setLogoPreview] = useState(null);
   const { dashboardSettings, updateDashboardSettings } = useDashboard();
 
+  // Load logo from dashboardSettings or localStorage on mount
   useEffect(() => {
+    // Prefer dashboardSettings.logoPreview if available
     if (dashboardSettings.logoPreview) {
       setLogoPreview(dashboardSettings.logoPreview);
     } else {
+      // Fallback to localStorage if dashboardSettings.logoPreview is not set
       const storedLogo = localStorage.getItem("dashboardLogo");
       if (storedLogo) {
         setLogoPreview(storedLogo);
@@ -40,13 +43,11 @@ const SettingsPage = () => {
     }
   }, [dashboardSettings.logoPreview]);
 
+  // Form validation schema
   const validationSchema = Yup.object({
     dashboard: Yup.object({
       dashboardName: Yup.string().required("Dashboard name is required"),
-      description: Yup.string().max(
-        200,
-        "Description must be less than 200 characters"
-      ),
+      description: Yup.string().max(200, "Description must be less than 200 characters"),
     }),
     changePassword: Yup.object({
       currentPassword: Yup.string().when("newPassword", {
@@ -59,8 +60,10 @@ const SettingsPage = () => {
               "Current password must be at least 9 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character",
               function (value) {
                 if (!value) return true;
-                return /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{9,}/.test(
-                  value
+                return (
+                  /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{9,}/.test(
+                    value
+                  )
                 );
               }
             ),
@@ -70,8 +73,10 @@ const SettingsPage = () => {
         "Password must be at least 9 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character",
         function (value) {
           if (!value) return true;
-          return /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{9,}/.test(
-            value
+          return (
+            /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{9,}/.test(
+              value
+            )
           );
         }
       ),
@@ -106,6 +111,7 @@ const SettingsPage = () => {
       const loadingId = toast.loading("Saving settings...");
 
       try {
+        // Handle password change
         if (values.changePassword.newPassword) {
           const response = await changePassword({
             currentPassword: values.changePassword.currentPassword,
@@ -116,31 +122,35 @@ const SettingsPage = () => {
 
           if (response.isSuccess) {
             toast.success("Password changed successfully");
+            // Clear password fields
             formik.setFieldValue("changePassword.currentPassword", "");
             formik.setFieldValue("changePassword.newPassword", "");
             formik.setFieldValue("changePassword.confirmNewPassword", "");
           } else {
-            throw new Error(
-              response.errors?.[0] || "Failed to change password"
-            );
+            // Display only the server's error message
+            throw new Error(response.errors?.[0] || "Failed to change password");
           }
         }
 
+        // Handle dashboard settings only if no password change
         if (!values.changePassword.newPassword) {
           await updateDashboardSettings({
             dashboardName: values.dashboard.dashboardName,
-            description:
-              values.dashboard.description || dashboardSettings.description,
+            description: values.dashboard.description || dashboardSettings.description,
             logo: logoFile,
             logoPreview: logoPreview || dashboardSettings.logoPreview,
           });
+          // Update localStorage with new logoPreview if a new logo was uploaded
           if (logoFile && logoPreview) {
             localStorage.setItem("dashboardLogo", logoPreview);
           }
           toast.success("Dashboard settings updated successfully");
           setLogoFile(null);
+          // Do not clear logoPreview to keep displaying the logo
         }
+
       } catch (error) {
+        // Display the error message directly
         toast.error(error.message);
         console.error("Submission error:", error);
       } finally {
@@ -150,14 +160,16 @@ const SettingsPage = () => {
     },
   });
 
+  // Handle logo file change
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
     if (file && file.type.startsWith("image/")) {
-      if (file.size > 5 * 1024 * 1024) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
         toast.error("Image size should be less than 5MB");
         return;
       }
       setLogoFile(file);
+      // Create preview
       const reader = new FileReader();
       reader.onload = (e) => setLogoPreview(e.target.result);
       reader.readAsDataURL(file);
@@ -165,6 +177,8 @@ const SettingsPage = () => {
       toast.error("Please select a valid image file");
     }
   };
+
+
 
   const tabs = [
     { id: "general", label: "General", icon: <Settings size={18} /> },
@@ -279,15 +293,11 @@ const SettingsPage = () => {
                     />
                     <Sun
                       size={20}
-                      className={
-                        theme === "light" ? "text-sky-500" : "text-gray-500"
-                      }
+                      className={theme === "light" ? "text-sky-500" : "text-gray-500"}
                     />
                     <div>
                       <span className="font-medium">Light Mode</span>
-                      <p className="text-xs opacity-75">
-                        Classic bright interface
-                      </p>
+                      <p className="text-xs opacity-75">Classic bright interface</p>
                     </div>
                   </label>
                   <label
@@ -307,9 +317,7 @@ const SettingsPage = () => {
                     />
                     <Moon
                       size={20}
-                      className={
-                        theme === "dark" ? "text-sky-400" : "text-gray-500"
-                      }
+                      className={theme === "dark" ? "text-sky-400" : "text-gray-500"}
                     />
                     <div>
                       <span className="font-medium">Dark Mode</span>
@@ -333,9 +341,7 @@ const SettingsPage = () => {
                   <div className="flex items-start gap-4 mb-4">
                     <div
                       className={`w-24 h-24 rounded-xl border-2 border-dashed flex items-center justify-center relative overflow-hidden ${
-                        theme === "dark"
-                          ? "border-gray-600 bg-gray-700"
-                          : "border-gray-300 bg-gray-50"
+                        theme === "dark" ? "border-gray-600 bg-gray-700" : "border-gray-300 bg-gray-50"
                       }`}
                     >
                       {logoPreview ? (
@@ -345,6 +351,7 @@ const SettingsPage = () => {
                             alt="Logo preview"
                             className="w-full h-full object-cover rounded-lg"
                           />
+                         
                         </>
                       ) : (
                         <Image className="w-8 h-8 text-gray-400" />
@@ -373,8 +380,7 @@ const SettingsPage = () => {
                         <div className="mt-2 flex items-center gap-2">
                           <Check size={16} className="text-green-500" />
                           <p className="text-sm text-green-600">
-                            {logoFile.name} ({(logoFile.size / 1024).toFixed(1)}{" "}
-                            KB)
+                            {logoFile.name} ({(logoFile.size / 1024).toFixed(1)} KB)
                           </p>
                         </div>
                       )}
@@ -548,8 +554,7 @@ const SettingsPage = () => {
                       theme === "dark" ? "text-gray-400" : "text-gray-600"
                     }`}
                   >
-                    Password must be at least 9 characters with uppercase,
-                    lowercase, number, and special character
+                    Password must be at least 9 characters with uppercase, lowercase, number, and special character
                   </p>
                 </div>
                 <div>

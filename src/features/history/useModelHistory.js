@@ -77,17 +77,15 @@ export const useModelHistory = () => {
     }));
   };
 
-  const filteredData = history.filter((item) => {
-    const matchesSearch = searchQuery
-      ? Object.values(item).some((val) =>
-          val?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      : true;
-
-    const matchesStatus = statusFilter
-      ? item.status?.toLowerCase() === statusFilter.toLowerCase()
-      : true;
-
+ const filteredData = history.filter(item => {
+    const matchesSearch = searchQuery ? 
+      Object.values(item).some(
+        val => val?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      ) : true;
+    
+    const matchesStatus = statusFilter ? 
+      item.status?.toLowerCase() === statusFilter.toLowerCase() : true;
+    
     return matchesSearch && matchesStatus;
   });
 

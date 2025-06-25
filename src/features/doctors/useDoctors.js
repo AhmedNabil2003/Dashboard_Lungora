@@ -37,88 +37,71 @@ export const useDoctors = (id) => {
     fetchDoctors();
   }, [id]);
 
-  const addDoctor = async (doctorData) => {
-    try {
-      console.log("Adding doctor with data:", doctorData);
-
-      // التحقق من وجود categoryId
-      if (!doctorData.categoryId) {
-        throw new Error("Category selection is required");
-      }
-
-      // إنشاء FormData
-      const formData = new FormData();
-
-      // إضافة الحقول الأساسية
-      const fieldsToAdd = [
-        "name",
-        "numOfPatients",
-        "about",
-        "emailDoctor",
-        "phone",
-        "teliphone",
-        "experianceYears",
-        "location",
-        "locationLink",
-        "whatsAppLink",
-        "latitude",
-        "longitude",
-        "categoryId",
-      ];
-
-      fieldsToAdd.forEach((field) => {
-        if (doctorData[field] !== undefined) {
-          formData.append(
-            field === "name"
-              ? "Name"
-              : field === "emailDoctor"
-              ? "EmailDoctor"
-              : field === "teliphone"
-              ? "Teliphone"
-              : field === "experianceYears"
-              ? "ExperianceYears"
-              : field === "locationLink"
-              ? "LocationLink"
-              : field === "whatsAppLink"
-              ? "WhatsAppLink"
-              : field === "categoryId"
-              ? "CategoryId"
-              : field,
-            doctorData[field]
-          );
-        }
-      });
-
-      // إضافة الصورة
-      if (doctorData.imageDoctor) {
-        formData.append("ImageDoctor", doctorData.imageDoctor);
-      }
-
-      console.log("FormData contents:");
-      for (let [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
-      }
-
-      const response = await createDoctor(formData);
-      const newDoctor = response.result?.doctor || response.result || response;
-
-      if (!newDoctor?.id) {
-        throw new Error("Invalid doctor data received from server");
-      }
-
-      setDoctors((prev) => [...prev, newDoctor]);
-      return newDoctor;
-    } catch (error) {
-      console.error("Full error details:", {
-        message: error.message,
-        response: error.response?.data,
-        stack: error.stack,
-      });
-
-      setError(error.message || "Error adding doctor");
-      throw error;
+ const addDoctor = async (doctorData) => {
+  try {
+    console.log('Adding doctor with data:', doctorData);
+    
+    // التحقق من وجود categoryId
+    if (!doctorData.categoryId) {
+      throw new Error("Category selection is required");
     }
-  };
+
+    // إنشاء FormData
+    const formData = new FormData();
+    
+    // إضافة الحقول الأساسية
+    const fieldsToAdd = [
+      'name', 'numOfPatients', 'about', 'emailDoctor', 
+      'phone', 'teliphone', 'experianceYears', 'location',
+      'locationLink', 'whatsAppLink', 'latitude', 'longitude', 'categoryId'
+    ];
+
+    fieldsToAdd.forEach(field => {
+      if (doctorData[field] !== undefined) {
+        formData.append(
+          field === 'name' ? 'Name' : 
+          field === 'emailDoctor' ? 'EmailDoctor' :
+          field === 'teliphone' ? 'Teliphone' :
+          field === 'experianceYears' ? 'ExperianceYears' :
+          field === 'locationLink' ? 'LocationLink' :
+          field === 'whatsAppLink' ? 'WhatsAppLink' :
+          field === 'categoryId' ? 'CategoryId' :
+          field,
+          doctorData[field]
+        );
+      }
+    });
+
+    // إضافة الصورة
+    if (doctorData.imageDoctor) {
+      formData.append('ImageDoctor', doctorData.imageDoctor);
+    }
+
+    console.log('FormData contents:');
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
+
+    const response = await createDoctor(formData);
+    const newDoctor = response.result?.doctor || response.result || response;
+
+    if (!newDoctor?.id) {
+      throw new Error("Invalid doctor data received from server");
+    }
+
+    setDoctors(prev => [...prev, newDoctor]);
+    return newDoctor;
+  } catch (error) {
+    console.error('Full error details:', {
+      message: error.message,
+      response: error.response?.data,
+      stack: error.stack
+    });
+    
+    setError(error.message || "Error adding doctor");
+    throw error;
+  }
+};
   // Update doctor - CORRECTED VERSION
   const updateDoctor = async (updatedDoctor) => {
     try {

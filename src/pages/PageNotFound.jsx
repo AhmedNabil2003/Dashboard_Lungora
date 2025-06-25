@@ -14,6 +14,7 @@ const PageNotFound = () => {
     }`}>
       {/* Main Content */}
       <div className="max-w-md mx-auto">
+        {/* Animated 404 Graphic */}
         <div className="relative mb-10">
           <div className="absolute inset-0 flex items-center justify-center">
             <span className={`text-[120px] font-bold ${

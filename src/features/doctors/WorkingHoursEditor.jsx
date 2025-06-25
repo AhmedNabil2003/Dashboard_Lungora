@@ -1,12 +1,6 @@
 import { useState, useEffect } from "react";
 import { Clock, Plus, Trash, Save, X, Edit } from "lucide-react";
-import {
-  getDoctorWorkingHours,
-  removeDoctorWorkingHours,
-  editDoctorWorkingHours,
-  createDoctorWorkingHours,
-  getWorkingHourById,
-} from "../../services/apiDoctors";
+import { getDoctorWorkingHours, removeDoctorWorkingHours, editDoctorWorkingHours, createDoctorWorkingHours, getWorkingHourById } from "../../services/apiDoctors";
 import { toast } from "react-hot-toast";
 
 // Map day names to integers (0=Sunday, 1=Monday, ..., 6=Saturday)
@@ -34,13 +28,7 @@ const formatTimeForAPI = (timeStr) => {
   return `${parts[0]}:${parts[1]}:00`;
 };
 
-const WorkingHoursEditor = ({
-  isOpen,
-  onClose,
-  doctor,
-  theme,
-  initialWorkingHours,
-}) => {
+const WorkingHoursEditor = ({ isOpen, onClose, doctor, theme, initialWorkingHours }) => {
   const [workingHours, setWorkingHours] = useState(initialWorkingHours || []);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -63,14 +51,14 @@ const WorkingHoursEditor = ({
       try {
         setLoading(true);
         const hours = await getDoctorWorkingHours(doctor.id);
-
+        
         // Format times for display (convert HH:mm:ss to HH:mm for input fields)
         const formattedHours = hours.map((hour) => ({
           ...hour,
           startTime: formatTimeForInput(hour.startTime),
           endTime: formatTimeForInput(hour.endTime),
         }));
-
+        
         setWorkingHours(formattedHours || []);
       } catch (error) {
         console.error("Error fetching working hours:", error);
@@ -103,15 +91,9 @@ const WorkingHoursEditor = ({
   const validateWorkingHour = (workingHour, existingHours) => {
     // Ensure times are in HH:mm:ss format
     const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/;
-    if (
-      !timeRegex.test(workingHour.startTime) ||
-      !timeRegex.test(workingHour.endTime)
-    ) {
+    if (!timeRegex.test(workingHour.startTime) || !timeRegex.test(workingHour.endTime)) {
       toast.error("Invalid time format. Use HH:mm:ss (e.g., 09:00:00)");
-      console.error("Invalid time format:", {
-        startTime: workingHour.startTime,
-        endTime: workingHour.endTime,
-      });
+      console.error("Invalid time format:", { startTime: workingHour.startTime, endTime: workingHour.endTime });
       return false;
     }
 
@@ -121,33 +103,23 @@ const WorkingHoursEditor = ({
 
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
       toast.error("Invalid time values");
-      console.error("Invalid time values:", {
-        startTime: workingHour.startTime,
-        endTime: workingHour.endTime,
-      });
+      console.error("Invalid time values:", { startTime: workingHour.startTime, endTime: workingHour.endTime });
       return false;
     }
 
     // Ensure endTime is at least 1 minute later than startTime
     if (end - start <= 0) {
       toast.error("End time must be later than start time");
-      console.error("Time validation failed:", {
-        startTime: workingHour.startTime,
-        endTime: workingHour.endTime,
-      });
+      console.error("Time validation failed:", { startTime: workingHour.startTime, endTime: workingHour.endTime });
       return false;
     }
 
     const sameDay = existingHours.filter(
-      (hour) =>
-        hour.dayOfWeek === workingHour.dayOfWeek &&
-        (isEditing ? hour.id !== editingId : true)
+      (hour) => hour.dayOfWeek === workingHour.dayOfWeek && (isEditing ? hour.id !== editingId : true),
     );
 
     const hasOverlap = sameDay.some((hour) => {
-      const hourStart = new Date(
-        `1970-01-01T${formatTimeForAPI(hour.startTime)}Z`
-      );
+      const hourStart = new Date(`1970-01-01T${formatTimeForAPI(hour.startTime)}Z`);
       const hourEnd = new Date(`1970-01-01T${formatTimeForAPI(hour.endTime)}Z`);
       return (
         (start >= hourStart && start < hourEnd) ||
@@ -184,9 +156,9 @@ const WorkingHoursEditor = ({
           startTime: formatTimeForAPI(newWorkingHour.startTime),
           endTime: formatTimeForAPI(newWorkingHour.endTime),
         };
-
+        
         const response = await createDoctorWorkingHours(payload);
-
+        
         setWorkingHours([
           ...workingHours,
           {
@@ -233,9 +205,9 @@ const WorkingHoursEditor = ({
           startTime: formatTimeForAPI(newWorkingHour.startTime),
           endTime: formatTimeForAPI(newWorkingHour.endTime),
         };
-
+        
         const response = await editDoctorWorkingHours(editingId, payload);
-
+        
         setWorkingHours(
           workingHours.map((hour) =>
             hour.id === editingId
@@ -244,8 +216,8 @@ const WorkingHoursEditor = ({
                   startTime: formatTimeForInput(response.startTime),
                   endTime: formatTimeForInput(response.endTime),
                 }
-              : hour
-          )
+              : hour,
+          ),
         );
         toast.success("Working hour updated successfully");
         resetForm();
@@ -263,8 +235,8 @@ const WorkingHoursEditor = ({
                 startTime: formatTimeForInput(newWorkingHour.startTime),
                 endTime: formatTimeForInput(newWorkingHour.endTime),
               }
-            : hour
-        )
+            : hour,
+        ),
       );
       toast.success("Working hour updated in form");
       resetForm();
@@ -294,7 +266,7 @@ const WorkingHoursEditor = ({
   const handleStartEdit = async (id) => {
     try {
       let hour = workingHours.find((h) => h.id === id);
-
+      
       // If not found in local state, fetch from API
       if (!hour && doctor?.id) {
         hour = await getWorkingHourById(id);
@@ -304,7 +276,7 @@ const WorkingHoursEditor = ({
           endTime: formatTimeForInput(hour.endTime),
         };
       }
-
+      
       if (hour) {
         setNewWorkingHour({
           doctorId: doctor?.id,
@@ -396,9 +368,7 @@ const WorkingHoursEditor = ({
                 {workingHours.length === 0 ? (
                   <div
                     className={`text-center py-6 rounded border-2 border-dashed ${
-                      theme === "light"
-                        ? "border-gray-300 text-gray-500"
-                        : "border-gray-600 text-gray-400"
+                      theme === "light" ? "border-gray-300 text-gray-500" : "border-gray-600 text-gray-400"
                     }`}
                   >
                     <Clock
@@ -415,40 +385,24 @@ const WorkingHoursEditor = ({
                     }`}
                   >
                     {workingHours
-                      .sort(
-                        (a, b) =>
-                          a.dayOfWeek - b.dayOfWeek ||
-                          a.startTime.localeCompare(b.startTime)
-                      )
+                      .sort((a, b) => a.dayOfWeek - b.dayOfWeek || a.startTime.localeCompare(b.startTime))
                       .map((hour) => (
                         <div
                           key={hour.id}
                           className={`flex items-center justify-between p-3 border-b last:border-b-0 ${
-                            theme === "light"
-                              ? "border-gray-200 hover:bg-gray-50"
-                              : "border-gray-600 hover:bg-gray-700"
+                            theme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-600 hover:bg-gray-700"
                           }`}
                         >
                           <div>
                             <div
                               className={`text-sm font-medium ${
-                                theme === "light"
-                                  ? "text-sky-700"
-                                  : "text-sky-200"
+                                theme === "light" ? "text-sky-700" : "text-sky-200"
                               }`}
                             >
-                              {
-                                daysOfWeek.find(
-                                  (day) => day.value === hour.dayOfWeek
-                                )?.name
-                              }
+                              {daysOfWeek.find((day) => day.value === hour.dayOfWeek)?.name}
                             </div>
                             <div
-                              className={`text-xs ${
-                                theme === "light"
-                                  ? "text-gray-600"
-                                  : "text-gray-400"
-                              }`}
+                              className={`text-xs ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}
                             >
                               {hour.startTime} - {hour.endTime}
                             </div>
@@ -577,9 +531,7 @@ const WorkingHoursEditor = ({
                       <button
                         onClick={handleEditWorkingHour}
                         className={`flex-1 flex items-center justify-center py-2 px-3 rounded text-white text-sm transition-colors ${
-                          theme === "light"
-                            ? "bg-sky-600 hover:bg-sky-700"
-                            : "bg-sky-700 hover:bg-sky-800"
+                          theme === "light" ? "bg-sky-600 hover:bg-sky-700" : "bg-sky-700 hover:bg-sky-800"
                         }`}
                       >
                         <Save size={14} className="mr-1" /> Update
@@ -587,9 +539,7 @@ const WorkingHoursEditor = ({
                       <button
                         onClick={resetForm}
                         className={`flex-1 flex items-center justify-center py-2 px-3 rounded text-white text-sm transition-colors ${
-                          theme === "light"
-                            ? "bg-gray-400 hover:bg-gray-500"
-                            : "bg-gray-600 hover:bg-gray-700"
+                          theme === "light" ? "bg-gray-400 hover:bg-gray-500" : "bg-gray-600 hover:bg-gray-700"
                         }`}
                       >
                         <X size={14} className="mr-1" /> Cancel
@@ -599,9 +549,7 @@ const WorkingHoursEditor = ({
                     <button
                       onClick={handleAddWorkingHour}
                       className={`w-full flex items-center justify-center py-2 px-3 rounded text-white text-sm transition-colors ${
-                        theme === "light"
-                          ? "bg-sky-600 hover:bg-sky-700"
-                          : "bg-sky-700 hover:bg-sky-800"
+                        theme === "light" ? "bg-sky-600 hover:bg-sky-700" : "bg-sky-700 hover:bg-sky-800"
                       }`}
                     >
                       <Plus size={14} className="mr-1" /> Add Working Hour
@@ -658,9 +606,7 @@ const WorkingHoursEditor = ({
             <button
               onClick={handleDone}
               className={`flex items-center px-4 py-2 rounded text-white text-sm transition-colors ${
-                theme === "light"
-                  ? "bg-gray-400 hover:bg-gray-500"
-                  : "bg-gray-600 hover:bg-gray-700"
+                theme === "light" ? "bg-gray-400 hover:bg-gray-500" : "bg-gray-600 hover:bg-gray-700"
               }`}
             >
               <Save size={14} className="mr-1" /> Done

@@ -45,10 +45,10 @@ const ModelHistoryList = ({
     switch (statusStr) {
       case "high":
         return "bg-green-100 text-green-700 border border-green-200";
-      case "medium":
-        return "bg-blue-100 text-blue-700 border border-blue-200";
-      default:
-        return "bg-red-100 text-red-700 border border-red-200";
+        case "medium":
+          return "bg-blue-100 text-blue-700 border border-blue-200";
+        default:
+          return "bg-red-100 text-red-700 border border-red-200";
     }
   };
 
@@ -198,11 +198,11 @@ const ModelHistoryList = ({
         }`}
       >
         <div className="overflow-x-auto">
-          <table
-            className={`min-w-full divide-y ${
-              theme === "light" ? "divide-sky-200" : "divide-sky-500"
-            }`}
-          >
+         <table
+                className={`min-w-full divide-y ${
+                  theme === "light" ? "divide-sky-200" : "divide-sky-500"
+                }`}
+              >
             <thead
               className={`bg-gradient-to-r ${
                 theme === "light"

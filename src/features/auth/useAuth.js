@@ -138,7 +138,7 @@ export const useAuth = () => {
       clearInterval(interval);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); 
+  }, []); // Remove token from dependencies
 
   return { user, loading, login, logout, addAdmin };
 };

@@ -4,9 +4,9 @@ import AuthContext from "../context/authContext";
 
 const ProtectedRoute = ({ children }) => {
   const { token, isLoading } = useContext(AuthContext);
-
+  
   console.log("Current Token:", token);
-
+  
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -14,11 +14,11 @@ const ProtectedRoute = ({ children }) => {
       </div>
     );
   }
-
+  
   if (!token) {
     return <Navigate to="/" />;
   }
-
+  
   return children ? children : <Outlet />;
 };
 

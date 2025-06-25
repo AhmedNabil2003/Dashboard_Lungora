@@ -4,21 +4,17 @@ import axiosInstance from "./axiosInstance";
 export const getUsers = async () => {
   try {
     const res = await axiosInstance.get("/Auth/GetAllUsersAsync");
-    if (
-      res.data?.isSuccess &&
-      res.data.result &&
-      Array.isArray(res.data.result?.users)
-    ) {
-      const formattedUsers = res.data.result.users.map((user) => ({
+    if (res.data?.isSuccess && res.data.result && Array.isArray(res.data.result?.users)) {
+      const formattedUsers = res.data.result.users.map(user => ({
         id: user.userId,
         name: user.fullName,
         email: user.email,
         status: user.isActive ? "Active" : "Not Active",
-        date: new Date(user.createdDate).toLocaleDateString("en-GB"),
+        date: new Date(user.createdDate).toLocaleDateString('en-GB'),
         imageUser: user.imageUser,
         roles: user.roles,
         createdDate: user.createdDate,
-        isActive: user.isActive,
+        isActive: user.isActive
       }));
       return formattedUsers;
     }
@@ -26,12 +22,11 @@ export const getUsers = async () => {
     return [];
   } catch (error) {
     console.error("Error fetching all users:", error);
-    throw new Error(
-      "Something went wrong while fetching users. Please try again later."
-    );
+    throw new Error("Something went wrong while fetching users. Please try again later.");
   }
 };
 
+// ✅ Update user
 // ✅ Fixed updateUser function
 export const updateUser = async (id, userData) => {
   try {
@@ -62,35 +57,30 @@ export const updateUser = async (id, userData) => {
     );
 
     if (res.data?.isSuccess) {
+      // ✅ إرجاع البيانات المحدثة فقط (بدون إنشاء تاريخ جديد)
       const updatedFields = {
         name: userData.name,
         email: userData.email,
         status: userData.status,
         roles: userData.roles || ["User"],
-        isActive: userData.status === "Active",
+        isActive: userData.status === "Active"
       };
-
+      
+      // إضافة الصورة فقط إذا تم تحديثها
       if (userData.imageUser instanceof File) {
+        // في الحالة الحقيقية، يجب أن تحصل على رابط الصورة الجديد من الاستجابة
         updatedFields.imageUser = userData.imageUser;
       }
-
-      return {
-        ...updatedFields,
-        message: res.data.result?.Message || "User updated successfully.",
+      
+      return { 
+        ...updatedFields, 
+        message: res.data.result?.Message || "User updated successfully." 
       };
     }
     throw new Error(res.data.result?.Message || "Failed to update user.");
   } catch (error) {
-    console.error(
-      "Error updating user:",
-      error.response?.data,
-      error.response?.status
-    );
-    throw new Error(
-      error.response?.data?.result?.Message ||
-        error.message ||
-        `Something went wrong while updating user with ID ${id}. Please try again later.`
-    );
+    console.error("Error updating user:", error.response?.data, error.response?.status);
+    throw new Error(error.response?.data?.result?.Message || error.message || `Something went wrong while updating user with ID ${id}. Please try again later.`);
   }
 };
 
@@ -99,7 +89,7 @@ export const deleteUser = async (id) => {
   try {
     const res = await axiosInstance.delete(`/Auth/RemoveUser/${id}`);
     const data = res?.data;
-
+    
     if (data?.isSuccess) {
       return { message: data.result?.message || "This Account Removed it" };
     }

@@ -3,8 +3,8 @@ import React, { useState, useEffect, useContext, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, Edit2, Save, X, User, ArrowLeft } from "lucide-react";
 import { getUserData, editUserInfo } from "../services/apiAuth";
-import { ThemeContext } from "../context/themeContext";
-import { useNavigate } from "react-router-dom"; 
+import { ThemeContext } from "../context/ThemeContext";
+import { useNavigate } from "react-router-dom"; // استيراد useNavigate
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -20,9 +20,9 @@ const Profile = () => {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [fileError, setFileError] = useState(""); 
+  const [fileError, setFileError] = useState(""); // رسالة خطأ لتحميل الملف
   const { theme } = useContext(ThemeContext);
-  const navigate = useNavigate(); 
+  const navigate = useNavigate(); // تعريف navigate
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -56,13 +56,15 @@ const Profile = () => {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    setFileError("");
+    setFileError(""); // إعادة تعيين رسالة الخطأ
 
     if (file) {
+      // التحقق من نوع الملف
       if (!file.type.startsWith("image/")) {
         setFileError("Please upload a valid image file (e.g., JPG, PNG).");
         return;
       }
+      // التحقق من حجم الملف (حد أقصى 5 ميجابايت)
       if (file.size > 5 * 1024 * 1024) {
         setFileError("Image size must be less than 5MB.");
         return;
@@ -85,7 +87,7 @@ const Profile = () => {
 
     const updatedData = {
       ...formData,
-      avatar: avatarFile || formData.avatar, 
+      avatar: avatarFile || formData.avatar, // استخدام الصورة القديمة إذا لم يتم تحميل صورة جديدة
     };
 
     try {
@@ -95,6 +97,7 @@ const Profile = () => {
         setShowSuccess(false);
         setEditMode(false);
       }, 2000);
+      // تحديث حالة user بعد النجاح
       setUser({
         ...user,
         fullName: updatedData.name,
