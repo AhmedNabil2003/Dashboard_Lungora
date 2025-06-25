@@ -22,7 +22,9 @@ const DashboardLayout = () => {
 
         <div
           className={`flex-1 flex flex-col ${
-            theme === "light" ? "bg-gray-100 text-gray-900" : "bg-gray-800 text-gray-100"
+            theme === "light"
+              ? "bg-gray-100 text-gray-900"
+              : "bg-gray-800 text-gray-100"
           } overflow-hidden`}
         >
           {/* Header */}
@@ -37,7 +39,7 @@ const DashboardLayout = () => {
             <div className="max-w-screen-2xl mx-auto">
               {/* Outlet for child routes */}
               <Outlet />
-            <Footer />
+              <Footer />
             </div>
           </main>
         </div>
