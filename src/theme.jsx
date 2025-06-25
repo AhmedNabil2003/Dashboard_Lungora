@@ -1,79 +1,62 @@
-// // theme.js
-// import { extendTheme } from "@chakra-ui/react";
-
-// const config = {
-//   initialColorMode: "light", // الوضع الافتراضي
-//   useSystemColorMode: false, // تجاهل نظام الجهاز
-// };
-
-// const theme = extendTheme({ config });
-
-// export default theme;
-
-// This file contains theme configuration for the application
-// src/theme.jsx
-
-// تعريف الألوان للوضع النهاري والليلي
 const colors = {
   primary: {
-    light: "#0369a1", // sky-700
-    dark: "#38bdf8", // sky-400
+    light: "#0369a1", 
+    dark: "#38bdf8",
   },
   secondary: {
-    light: "#6b7280", // gray-500
-    dark: "#9ca3af", // gray-400
+    light: "#6b7280", 
+    dark: "#9ca3af", 
   },
   background: {
     light: "#ffffff",
-    dark: "#111827", // gray-900
+    dark: "#111827", 
   },
   surface: {
-    light: "#f9fafb", // gray-50
-    dark: "#1f2937", // gray-800
+    light: "#f9fafb", 
+    dark: "#1f2937", 
   },
   card: {
     light: "#ffffff",
-    dark: "#1f2937", // gray-800
+    dark: "#1f2937", 
   },
   text: {
     primary: {
-      light: "#1f2937", // gray-800
-      dark: "#f9fafb", // gray-50
+      light: "#1f2937", 
+      dark: "#f9fafb",
     },
     secondary: {
-      light: "#6b7280", // gray-500
-      dark: "#9ca3af", // gray-400
+      light: "#6b7280",
+      dark: "#9ca3af", 
     },
     disabled: {
-      light: "#9ca3af", // gray-400
-      dark: "#6b7280", // gray-500
+      light: "#9ca3af",
+      dark: "#6b7280",
     },
   },
   border: {
-    light: "#e5e7eb", // gray-200
-    dark: "#374151", // gray-700
+    light: "#e5e7eb", 
+    dark: "#374151", 
   },
   input: {
-    light: "#f9fafb", // gray-50
-    dark: "#1f2937", // gray-800
+    light: "#f9fafb",
+    dark: "#1f2937", 
   },
   success: {
-    light: "#10b981", // emerald-500
-    dark: "#34d399", // emerald-400
+    light: "#10b981", 
+    dark: "#34d399",
   },
   error: {
-    light: "#ef4444", // red-500
-    dark: "#f87171", // red-400
+    light: "#ef4444", 
+    dark: "#f87171", 
   },
   warning: {
-    light: "#f59e0b", // amber-500
-    dark: "#fbbf24", // amber-400
+    light: "#f59e0b", 
+    dark: "#fbbf24", 
   },
   info: {
-    light: "#3b82f6", // blue-500
-    dark: "#60a5fa", // blue-400
+    light: "#3b82f6", 
+    dark: "#60a5fa", 
   },
-  // تعريف كامل لألوان السماء (sky)
   sky: {
     50: "#f0f9ff",
     100: "#e0f2fe",
@@ -88,60 +71,56 @@ const colors = {
   },
 };
 
-// تعريف أحجام الخطوط
 const fontSizes = {
-  xs: "0.75rem", // 12px
-  sm: "0.875rem", // 14px
-  md: "1rem", // 16px
-  lg: "1.125rem", // 18px
-  xl: "1.25rem", // 20px
-  "2xl": "1.5rem", // 24px
-  "3xl": "1.875rem", // 30px
-  "4xl": "2.25rem", // 36px
-  "5xl": "3rem", // 48px
+  xs: "0.75rem", 
+  sm: "0.875rem",
+  md: "1rem",
+  lg: "1.125rem", 
+  xl: "1.25rem", 
+  "2xl": "1.5rem", 
+  "3xl": "1.875rem", 
+  "4xl": "2.25rem", 
+  "5xl": "3rem", 
 };
 
-// تعريف المسافات
 const spacing = {
   px: "1px",
   0: "0",
-  0.5: "0.125rem", // 2px
-  1: "0.25rem", // 4px
-  1.5: "0.375rem", // 6px
-  2: "0.5rem", // 8px
-  2.5: "0.625rem", // 10px
-  3: "0.75rem", // 12px
-  3.5: "0.875rem", // 14px
-  4: "1rem", // 16px
-  5: "1.25rem", // 20px
-  6: "1.5rem", // 24px
-  8: "2rem", // 32px
-  10: "2.5rem", // 40px
-  12: "3rem", // 48px
-  16: "4rem", // 64px
-  20: "5rem", // 80px
-  24: "6rem", // 96px
-  32: "8rem", // 128px
-  40: "10rem", // 160px
-  48: "12rem", // 192px
-  56: "14rem", // 224px
-  64: "16rem", // 256px
+  0.5: "0.125rem", 
+  1: "0.25rem", 
+  1.5: "0.375rem", 
+  2: "0.5rem", 
+  2.5: "0.625rem", 
+  3: "0.75rem", 
+  3.5: "0.875rem", 
+  4: "1rem", 
+  5: "1.25rem", 
+  6: "1.5rem", 
+  8: "2rem", 
+  10: "2.5rem", 
+  12: "3rem", 
+  16: "4rem",
+  20: "5rem", 
+  24: "6rem", 
+  32: "8rem", 
+  40: "10rem", 
+  48: "12rem", 
+  56: "14rem", 
+  64: "16rem", 
 };
 
-// تعريف نصف القطر للزوايا
 const borderRadius = {
   none: "0",
-  sm: "0.125rem", // 2px
-  DEFAULT: "0.25rem", // 4px
-  md: "0.375rem", // 6px
-  lg: "0.5rem", // 8px
-  xl: "0.75rem", // 12px
-  "2xl": "1rem", // 16px
-  "3xl": "1.5rem", // 24px
+  sm: "0.125rem",
+  DEFAULT: "0.25rem", 
+  md: "0.375rem", 
+  lg: "0.5rem", 
+  xl: "0.75rem", 
+  "2xl": "1rem", 
+  "3xl": "1.5rem", 
   full: "9999px",
 };
 
-// تعريف الظلال
 const shadows = {
   sm: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
   DEFAULT: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
@@ -153,7 +132,6 @@ const shadows = {
   none: "none",
 };
 
-// تعريف متغيرات RTL
 const rtl = {
   marginLeft: "margin-right",
   marginRight: "margin-left",
@@ -169,7 +147,6 @@ const rtl = {
   },
 };
 
-// تصدير كائن الثيم الكامل
 export const theme = {
   colors,
   fontSizes,
@@ -200,9 +177,7 @@ export const theme = {
   },
 };
 
-// دوال مساعدة للوصول إلى قيم الثيم
 
-// الحصول على لون بناءً على الوضع (نهاري/ليلي)
 export const getColor = (colorName, colorVariant, mode = "light") => {
   if (colorVariant) {
     return colors[colorName]?.[colorVariant] || colors.primary[mode];
@@ -210,22 +185,18 @@ export const getColor = (colorName, colorVariant, mode = "light") => {
   return colors[colorName]?.[mode] || colors.primary[mode];
 };
 
-// الحصول على لون نص بناءً على الوضع (نهاري/ليلي)
 export const getTextColor = (variant = "primary", mode = "light") => {
   return colors.text[variant]?.[mode] || colors.text.primary[mode];
 };
 
-// الحصول على لون سماء محدد
 export const getSkyColor = (shade = 700) => {
   return colors.sky[shade] || colors.sky[700];
 };
 
-// إنشاء أنماط CSS للعنصر بناءً على الوضع والاتجاه
 export const createStyles = (isDarkMode, isRTL) => {
   const mode = isDarkMode ? "dark" : "light";
   
   return {
-    // أنماط عامة
     app: {
       backgroundColor: colors.background[mode],
       color: colors.text.primary[mode],
@@ -233,7 +204,6 @@ export const createStyles = (isDarkMode, isRTL) => {
       transition: "background-color 0.3s, color 0.3s",
     },
     
-    // أنماط البطاقات
     card: {
       backgroundColor: colors.card[mode],
       borderColor: colors.border[mode],
@@ -241,7 +211,6 @@ export const createStyles = (isDarkMode, isRTL) => {
       borderRadius: borderRadius.lg,
     },
     
-    // أنماط الأزرار
     button: {
       primary: {
         backgroundColor: colors.primary[mode],
@@ -261,7 +230,6 @@ export const createStyles = (isDarkMode, isRTL) => {
       },
     },
     
-    // أنماط حقول الإدخال
     input: {
       backgroundColor: colors.input[mode],
       borderColor: colors.border[mode],
@@ -269,14 +237,12 @@ export const createStyles = (isDarkMode, isRTL) => {
       borderRadius: borderRadius.md,
     },
     
-    // أنماط الشريط الجانبي
     sidebar: {
       backgroundColor: colors.card[mode],
       borderColor: colors.border[mode],
       color: colors.text.primary[mode],
     },
     
-    // أنماط الرأس
     header: {
       backgroundColor: colors.card[mode],
       borderColor: colors.border[mode],
@@ -285,7 +251,6 @@ export const createStyles = (isDarkMode, isRTL) => {
   };
 };
 
-// دالة لإنشاء أنماط CSS للعناصر المتأثرة بالاتجاه (RTL/LTR)
 export const createRTLStyles = (isRTL) => {
   if (!isRTL) return {};
   
@@ -302,5 +267,4 @@ export const createRTLStyles = (isRTL) => {
   };
 };
 
-// تصدير الثيم كافتراضي
 export default theme;

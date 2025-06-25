@@ -8,7 +8,12 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const Header = () => {
   const { logout } = useContext(AuthContext);
-  const [user, setUser] = useState({ name: "", avatar: "",email: "", online: false });
+  const [user, setUser] = useState({
+    name: "",
+    avatar: "",
+    email: "",
+    online: false,
+  });
   const [isOpen, setIsOpen] = useState(false);
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [showModal, setShowModal] = useState(false);
@@ -22,7 +27,7 @@ const Header = () => {
         setUser({
           name: userData.fullName || "Guest",
           avatar: userData.imageUser || "/images/default-avatar.png",
-          email: userData.email||"No Email",
+          email: userData.email || "No Email",
           online: true,
         });
       } catch (error) {
@@ -31,20 +36,23 @@ const Header = () => {
     };
 
     fetchUser();
-    
+
     // Close dropdown when clicking outside
     const handleClickOutside = (event) => {
       if (isOpen && !event.target.closest(".user-dropdown")) {
         setIsOpen(false);
       }
-      
-      if (isMobileMenuOpen && mobileMenuRef.current && !mobileMenuRef.current.contains(event.target) && 
-          !event.target.closest(".mobile-menu-button")) {
+
+      if (
+        isMobileMenuOpen &&
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target) &&
+        !event.target.closest(".mobile-menu-button")
+      ) {
         setIsMobileMenuOpen(false);
       }
     };
 
-    // Close mobile menu when screen size changes to desktop
     const handleResize = () => {
       if (window.innerWidth > 768) {
         setIsMobileMenuOpen(false);
@@ -53,7 +61,7 @@ const Header = () => {
 
     document.addEventListener("mousedown", handleClickOutside);
     window.addEventListener("resize", handleResize);
-    
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       window.removeEventListener("resize", handleResize);
@@ -73,7 +81,6 @@ const Header = () => {
           : "bg-gradient-to-r from-gray-800"
       }`}
     >
-      {/* Left: Logo and AI Model */}
       <div className="flex items-center space-x-4">
         <motion.div
           className="w-fit flex items-center"
@@ -95,15 +102,19 @@ const Header = () => {
           </Link>
         </motion.div>
       </div>
-      
+
       {/* Mobile Menu Button - Visible only on small screens */}
       <div className="md:hidden flex justify-center">
-        <button 
+        <button
           className="text-white p-1 rounded-md mobile-menu-button cursor-pointer"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           aria-label="Toggle mobile menu"
         >
-          <i className={`fa-solid ${isMobileMenuOpen ? 'fa-times' : 'fa-bars'} text-xl`}></i>
+          <i
+            className={`fa-solid ${
+              isMobileMenuOpen ? "fa-times" : "fa-bars"
+            } text-xl`}
+          ></i>
         </button>
       </div>
 
@@ -119,8 +130,6 @@ const Header = () => {
           <span>Add Admin</span>
         </Link>
 
-
-        {/* Notifications Button with Counter */}
         <button
           className="text-white flex items-center cursor-pointer hover:text-sky-200 transition-colors"
           title="Notifications"
@@ -134,13 +143,16 @@ const Header = () => {
           <span>Notifications</span>
         </button>
 
-        {/* Theme Toggle Button */}
         <button
           onClick={toggleTheme}
           className="text-white flex items-center cursor-pointer hover:text-sky-200 transition-colors"
           title={theme === "light" ? "Dark Mode" : "Light Mode"}
         >
-          <i className={`fa-solid ${theme === "light" ? "fa-moon" : "fa-sun"} mr-1`}></i>
+          <i
+            className={`fa-solid ${
+              theme === "light" ? "fa-moon" : "fa-sun"
+            } mr-1`}
+          ></i>
           <span>{theme === "light" ? "Dark Mode" : "Light Mode"}</span>
         </button>
 
@@ -156,16 +168,16 @@ const Header = () => {
                 src={user.avatar || "/images/default-avatar.png"}
                 alt="User Avatar"
                 className={`w-8 h-8 rounded-full border-2 ${
-    theme === "light" ? "border-white" : "border-gray-800"
-  } object-cover`}
+                  theme === "light" ? "border-white" : "border-gray-800"
+                } object-cover`}
               />
               {/* Online/Offline Indicator */}
               <div
                 className={`absolute bottom-0 right-0 w-2 h-2 rounded-full ${
                   user.online ? "bg-green-400" : "bg-red-400"
                 } border-2 ${
-            theme === "light" ? "border-white" : "border-gray-800"
-          }`}
+                  theme === "light" ? "border-white" : "border-gray-800"
+                }`}
               ></div>
             </div>
           </div>
@@ -186,33 +198,31 @@ const Header = () => {
               >
                 <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
                   <p className="text-sm font-medium">{user.name || "Guest"}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{user.email||"user@example.com"}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {user.email || "user@example.com"}
+                  </p>
                 </div>
-                
+
                 <Link
                   to="/dashboard/profile"
                   className={`block rounded py-2 px-4 text-sm transition-colors flex items-center ${
-                    theme === "light"
-                      ? "hover:bg-sky-300"
-                      : "hover:bg-sky-700"
+                    theme === "light" ? "hover:bg-sky-300" : "hover:bg-sky-700"
                   }`}
                 >
                   <i className="fa-solid fa-user-edit mr-2"></i>
                   Edit Profile
                 </Link>
-                
+
                 <Link
                   to="/dashboard/settings"
                   className={`block rounded py-2 px-4 text-sm transition-colors flex items-center ${
-                    theme === "light"
-                      ? "hover:bg-sky-300"
-                      : "hover:bg-sky-700"
+                    theme === "light" ? "hover:bg-sky-300" : "hover:bg-sky-700"
                   }`}
                 >
                   <i className="fa-solid fa-cog mr-2"></i>
                   Settings
                 </Link>
-                
+
                 <div className="border-t border-gray-200 dark:border-gray-700 mt-1 pt-1">
                   <button
                     onClick={() => setShowModal(true)}
@@ -243,15 +253,19 @@ const Header = () => {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            <div className={`shadow-lg rounded-lg overflow-hidden ${
-              theme === "light" 
-                ? "bg-white text-gray-800 border border-gray-200" 
-                : "bg-gray-800 text-white border border-gray-700"
-            }`}>
+            <div
+              className={`shadow-lg rounded-lg overflow-hidden ${
+                theme === "light"
+                  ? "bg-white text-gray-800 border border-gray-200"
+                  : "bg-gray-800 text-white border border-gray-700"
+              }`}
+            >
               {/* User Profile in Mobile Menu */}
-              <div className={`p-4 flex items-center space-x-3 border-b ${
-                theme === "light" ? "border-gray-200" : "border-gray-700"
-              }`}>
+              <div
+                className={`p-4 flex items-center space-x-3 border-b ${
+                  theme === "light" ? "border-gray-200" : "border-gray-700"
+                }`}
+              >
                 <div className="relative">
                   <img
                     src={user.avatar || "/images/default-avatar.png"}
@@ -266,37 +280,45 @@ const Header = () => {
                 </div>
                 <div>
                   <p className="font-medium">{user.name || "Guest"}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{user.email||"user@gmail.com"}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {user.email || "user@gmail.com"}
+                  </p>
                 </div>
               </div>
-              
+
               {/* Mobile Menu Items */}
               <div className="p-2">
                 <Link
                   to="/dashboard/AddAdmin"
                   className={`flex items-center p-3 rounded-md ${
-                    theme === "light" ? "hover:bg-gray-100" : "hover:bg-gray-700"
+                    theme === "light"
+                      ? "hover:bg-gray-100"
+                      : "hover:bg-gray-700"
                   } transition-colors`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <i className="fa-solid fa-user-plus w-6 text-center"></i>
                   <span>Add Admin</span>
                 </Link>
-                
+
                 <Link
                   to="/dashboard/settings"
                   className={`flex items-center p-3 rounded-md ${
-                    theme === "light" ? "hover:bg-gray-100" : "hover:bg-gray-700"
+                    theme === "light"
+                      ? "hover:bg-gray-100"
+                      : "hover:bg-gray-700"
                   } transition-colors`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <i className="fa-solid fa-cog w-6 text-center"></i>
                   <span>Settings</span>
                 </Link>
-                
+
                 <button
                   className={`w-full flex items-center p-3 rounded-md text-left ${
-                    theme === "light" ? "hover:bg-gray-100" : "hover:bg-gray-700"
+                    theme === "light"
+                      ? "hover:bg-gray-100"
+                      : "hover:bg-gray-700"
                   } transition-colors cursor-pointer`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
@@ -308,42 +330,54 @@ const Header = () => {
                   </div>
                   <span>Notifications</span>
                 </button>
-                
+
                 <button
                   onClick={() => {
                     toggleTheme();
                     setIsMobileMenuOpen(false);
                   }}
                   className={`w-full flex items-center p-3 rounded-md text-left ${
-                    theme === "light" ? "hover:bg-gray-100" : "hover:bg-gray-700"
+                    theme === "light"
+                      ? "hover:bg-gray-100"
+                      : "hover:bg-gray-700"
                   } transition-colors cursor-pointer`}
                 >
-                  <i className={`fa-solid ${theme === "light" ? "fa-moon" : "fa-sun"} w-6 text-center`}></i>
+                  <i
+                    className={`fa-solid ${
+                      theme === "light" ? "fa-moon" : "fa-sun"
+                    } w-6 text-center`}
+                  ></i>
                   <span>{theme === "light" ? "Dark Mode" : "Light Mode"}</span>
                 </button>
-                
-                <div className={`border-t my-2 ${
-                  theme === "light" ? "border-gray-200" : "border-gray-700"
-                }`}></div>
-                
+
+                <div
+                  className={`border-t my-2 ${
+                    theme === "light" ? "border-gray-200" : "border-gray-700"
+                  }`}
+                ></div>
+
                 <Link
                   to="/dashboard/profile"
                   className={`flex items-center p-3 rounded-md ${
-                    theme === "light" ? "hover:bg-gray-100" : "hover:bg-gray-700"
+                    theme === "light"
+                      ? "hover:bg-gray-100"
+                      : "hover:bg-gray-700"
                   } transition-colors`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <i className="fa-solid fa-user-edit w-6 text-center"></i>
                   <span>Edit Profile</span>
                 </Link>
-                
+
                 <button
                   onClick={() => {
                     setShowModal(true);
                     setIsMobileMenuOpen(false);
                   }}
                   className={`w-full flex items-center p-3 rounded-md text-left text-red-500 ${
-                    theme === "light" ? "hover:bg-gray-100" : "hover:bg-gray-700"
+                    theme === "light"
+                      ? "hover:bg-gray-100"
+                      : "hover:bg-gray-700"
                   } transition-colors cursor-pointer`}
                 >
                   <i className="fa-solid fa-sign-out-alt w-6 text-center"></i>
@@ -402,9 +436,7 @@ const LogoutModal = ({ onConfirm, onCancel, theme }) => (
       {/* Modal body */}
       <div className="p-5">
         <p
-          className={`${
-            theme === "dark" ? "text-gray-300" : "text-gray-600"
-          }`}
+          className={`${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}
         >
           Are you sure you want to logout from your account?
         </p>

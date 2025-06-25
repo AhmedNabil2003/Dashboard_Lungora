@@ -1,17 +1,17 @@
-
 export const saveToLocalStorage = (key, value) => {
   try {
-    const valueToStore = typeof value === "object" ? JSON.stringify(value) : value;
+    const valueToStore =
+      typeof value === "object" ? JSON.stringify(value) : value;
     localStorage.setItem(key, valueToStore);
   } catch (error) {
     console.error("❌ فشل في الحفظ داخل localStorage:", error);
   }
 };
 
-
 export const saveToSessionStorage = (key, value) => {
   try {
-    const valueToStore = typeof value === "object" ? JSON.stringify(value) : value;
+    const valueToStore =
+      typeof value === "object" ? JSON.stringify(value) : value;
     sessionStorage.setItem(key, valueToStore);
   } catch (error) {
     console.error("❌ فشل في الحفظ داخل sessionStorage:", error);
@@ -20,9 +20,9 @@ export const saveToSessionStorage = (key, value) => {
 
 export const getTokenFromStorage = (key) => {
   try {
-    let value = localStorage.getItem(key);  
-    if (!value) { 
-      value = sessionStorage.getItem(key);  
+    let value = localStorage.getItem(key);
+    if (!value) {
+      value = sessionStorage.getItem(key);
     }
     return value && value.startsWith("{") ? JSON.parse(value) : value;
   } catch (error) {
@@ -40,7 +40,11 @@ export const removeTokenFromStorage = (key) => {
   }
 };
 
-export const storeToken = (token, rememberMe = false, isRefreshToken = false) => {
+export const storeToken = (
+  token,
+  rememberMe = false,
+  isRefreshToken = false
+) => {
   if (isRefreshToken) {
     console.log("Storing refresh token...");
   } else {
@@ -49,7 +53,7 @@ export const storeToken = (token, rememberMe = false, isRefreshToken = false) =>
       saveToLocalStorage("rememberMe", true, false);
     } else {
       saveToSessionStorage("token", token, true);
-      saveToLocalStorage("rememberMe", false, false); 
+      saveToLocalStorage("rememberMe", false, false);
     }
   }
 };
@@ -69,8 +73,6 @@ export const clearAuthStorage = () => {
   }
 };
 
-    export const isTokenPresent = (key) => {
-      return getTokenFromStorage(key) !== null;
-    };
-
-    
+export const isTokenPresent = (key) => {
+  return getTokenFromStorage(key) !== null;
+};

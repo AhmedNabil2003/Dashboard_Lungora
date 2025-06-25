@@ -5,14 +5,17 @@ import toast from "react-hot-toast";
 // Login user
 export const loginUser = async (values) => {
   try {
-    const response = await axiosInstance.post(`/Auth/Login`, values, { withCredentials: true });
-    
+    const response = await axiosInstance.post(`/Auth/Login`, values, {
+      withCredentials: true,
+    });
+
     if (!response.data.isSuccess) {
       toast.error("Login failed. Please check your credentials.");
       return null;
     }
-    
-    const { token, refreshToken, refreshTokenExpiration } = response.data.result;
+
+    const { token, refreshToken, refreshTokenExpiration } =
+      response.data.result;
 
     if (token && refreshToken) {
       // Store tokens based on rememberMe preference
@@ -21,15 +24,21 @@ export const loginUser = async (values) => {
 
       // Set authentication flag
       localStorage.setItem("isAuthenticated", "true");
-      
-      return { token, refreshToken, refreshTokenExpiration, userInfo: { email: values.email } };
+
+      return {
+        token,
+        refreshToken,
+        refreshTokenExpiration,
+        userInfo: { email: values.email },
+      };
     } else {
       toast.error("Failed to log in. Please check your credentials.");
       return null;
     }
   } catch (error) {
     console.error("Login failed:", error);
-    const errorMessage = error.response?.data?.errors?.[0] || "Login failed. Please try again.";
+    const errorMessage =
+      error.response?.data?.errors?.[0] || "Login failed. Please try again.";
     toast.error(errorMessage);
     throw error;
   }
@@ -39,14 +48,15 @@ export const loginUser = async (values) => {
 export const registerUser = async (userData) => {
   try {
     const response = await axiosInstance.post(`/Auth/Register`, userData);
-    
+
     if (response.data.isSuccess) {
       toast.success("Registration successful!");
     }
-    
+
     return response.data;
   } catch (error) {
-    const errorMessage = error.response?.data?.errors?.[0] || "Registration failed";
+    const errorMessage =
+      error.response?.data?.errors?.[0] || "Registration failed";
     toast.error(errorMessage);
     throw error;
   }
@@ -55,14 +65,16 @@ export const registerUser = async (userData) => {
 // Request password reset
 export const forgotPassword = async (email) => {
   try {
-    const response = await axiosInstance.post(`/Auth/ForgotPassword`, { email });
-    
+    const response = await axiosInstance.post(`/Auth/ForgotPassword`, {
+      email,
+    });
+
     if (response.data.isSuccess) {
       toast.success("Password reset email sent. Please check your inbox.");
     } else {
       toast.error(response.data.errors?.[0] || "Failed to send reset email");
     }
-    
+
     return response.data;
   } catch (error) {
     toast.error("Failed to process password reset request");
@@ -73,14 +85,16 @@ export const forgotPassword = async (email) => {
 // Verify reset code
 export const verifyResetCode = async (code) => {
   try {
-    const response = await axiosInstance.post(`/Auth/VerifyResetCode`, { code });
-    
+    const response = await axiosInstance.post(`/Auth/VerifyResetCode`, {
+      code,
+    });
+
     if (response.data.isSuccess) {
       toast.success("Code verified successfully");
     } else {
       toast.error(response.data.errors?.[0] || "Invalid verification code");
     }
-    
+
     return response.data;
   } catch (error) {
     toast.error("Failed to verify reset code");
@@ -92,13 +106,15 @@ export const verifyResetCode = async (code) => {
 export const resetPassword = async (data) => {
   try {
     const response = await axiosInstance.post(`/Auth/ResetPassword`, data);
-    
+
     if (response.data.isSuccess) {
-      toast.success("Password reset successful! You can now log in with your new password.");
+      toast.success(
+        "Password reset successful! You can now log in with your new password."
+      );
     } else {
       toast.error(response.data.errors?.[0] || "Failed to reset password");
     }
-    
+
     return response.data;
   } catch (error) {
     toast.error("Failed to reset password");
@@ -126,43 +142,43 @@ export const changePassword = async (data) => {
 // Get user data
 export const getUserData = async () => {
   const res = await axiosInstance.get(`/Auth/GetDataUser`);
-  if(res.data && res.data.result && res.data.isSuccess){
-  return res.data.result;
-}else {
-  throw new Error("Failed to get user data");
-}
+  if (res.data && res.data.result && res.data.isSuccess) {
+    return res.data.result;
+  } else {
+    throw new Error("Failed to get user data");
+  }
 };
 
 // Edit user info
 export const editUserInfo = async (data) => {
   const formData = new FormData();
-  
-  formData.append('FullName', data.name);
+
+  formData.append("FullName", data.name);
   if (data.avatar) {
-    formData.append('ImageUser', data.avatar); 
+    formData.append("ImageUser", data.avatar);
   }
 
   try {
     const response = await axiosInstance.post(`/Auth/EditInfo`, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data', 
+        "Content-Type": "multipart/form-data",
       },
     });
     return response.data;
-  // eslint-disable-next-line no-unused-vars
+    // eslint-disable-next-line no-unused-vars
   } catch (error) {
-    throw new Error('Error updating user info');
+    throw new Error("Error updating user info");
   }
 };
 // Logout from all devices
 export const logoutAll = async () => {
   try {
     const response = await axiosInstance.post(`/Auth/LogOutAll`);
-    
+
     if (response.data.isSuccess) {
       toast.success("Logged out from all devices");
     }
-    
+
     return response.data;
   } catch (error) {
     toast.error("Failed to logout from all devices");
@@ -174,11 +190,11 @@ export const logoutAll = async () => {
 export const logoutSingle = async () => {
   try {
     const response = await axiosInstance.post(`/Auth/LogOutSingle`);
-    
+
     if (response.data.isSuccess) {
       toast.success("Logged out successfully");
     }
-    
+
     return response.data;
   } catch (error) {
     console.error("Logout error:", error);

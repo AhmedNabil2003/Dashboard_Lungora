@@ -16,11 +16,14 @@ import Profile from "../pages/Profile";
 
 const AppRoute = () => (
   <Routes>
-    <Route path="/" element={
-       <PublicRoute>
-      <Login />
-       </PublicRoute>
-      } />
+    <Route
+      path="/"
+      element={
+        <PublicRoute>
+          <Login />
+        </PublicRoute>
+      }
+    />
     <Route
       path="/dashboard"
       element={
@@ -30,13 +33,13 @@ const AppRoute = () => (
       }
     >
       <Route index element={<Dashboard />} />
-      <Route path="profile" element={<Profile/>} />
-      <Route path="addadmin" element={<AddAdmin/>} />
+      <Route path="profile" element={<Profile />} />
+      <Route path="addadmin" element={<AddAdmin />} />
       <Route path="users" element={<ManageUsers />} />
       <Route path="doctors" element={<ManageDoctors />} />
       <Route path="categories" element={<ManageCategories />} />
       <Route path="history" element={<ModelHistoryPage />} />
-      <Route path="lungora-ai" element={<LungoraModel/>} />
+      <Route path="lungora-ai" element={<LungoraModel />} />
       <Route path="settings" element={<Settings />} />
     </Route>
 

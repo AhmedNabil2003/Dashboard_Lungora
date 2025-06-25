@@ -5,15 +5,14 @@ import { ThemeProvider } from "./context/themeContext";
 import { DashboardProvider } from "./context/dashboardContext";
 
 const App = () => (
-  
-    <DashboardProvider>
-  <BrowserRouter>
-  <ThemeProvider>
-      <AppRoute />
-      <Toaster />
+  <DashboardProvider>
+    <BrowserRouter>
+      <ThemeProvider>
+        <AppRoute />
+        <Toaster />
       </ThemeProvider>
-  </BrowserRouter>
-    </DashboardProvider>
+    </BrowserRouter>
+  </DashboardProvider>
 );
 
 export default App;
