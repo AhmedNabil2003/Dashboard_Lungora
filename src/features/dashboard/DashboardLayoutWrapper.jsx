@@ -1,10 +1,10 @@
 import { Outlet } from "react-router-dom";
-import Sidebar from "../../components/ui/sidebarNav";
-import Header from "../../components/ui/header";
+import Sidebar from "../../components/ui/SidebarNav";
+import Header from "../../components/ui/Header";
 import { SidebarProvider } from "../../context/SidebarContext";
 import { ThemeContext } from "../../context/ThemeProviderContext";
-import ScrollButton from "../../components/ui/scrollButton";
-import Footer from "../../components/ui/footer";
+import ScrollButton from "../../components/ui/ScrollButton";
+import Footer from "../../components/ui/Footer";
 import { useContext } from "react";
 
 const DashboardLayout = () => {

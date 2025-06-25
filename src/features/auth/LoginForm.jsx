@@ -2,7 +2,7 @@ import { useContext, useState, useRef } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
-import Input from "../../components/ui/inputField";
+import Input from "../../components/ui/InputField";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import AuthContext from "../../context/AuthProviderContext";
