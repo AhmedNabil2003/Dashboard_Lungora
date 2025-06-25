@@ -1,8 +1,8 @@
 import { useContext, useState } from "react";
 import { useCategories } from "../features/categories/useCategories";
 import { useArticles } from "../features/articles/useArticles";
-import CategoryList from "../features/categories/categoryList";
-import ArticleList from "../features/articles/articleList";
+import CategoryList from "../features/categories/CategoryList";
+import ArticleList from "../features/articles/ArticleList";
 import { ThemeContext } from "../context/ThemeProviderContext";
 import toast from "react-hot-toast";
 

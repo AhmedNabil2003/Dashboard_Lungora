@@ -3,8 +3,8 @@ import React, { useState, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
-import UserForm from '../features/users/userAddForm';
-import UserList from '../features/users/userList';
+import UserForm from '../features/users/UserAddForm';
+import UserList from '../features/users/UserList';
 import { useUsers } from '../features/users/useUsers';
 import { ThemeContext } from '../context/ThemeProviderContext';
 

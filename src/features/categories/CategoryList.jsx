@@ -8,7 +8,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import AddCategoryForm from "./categoryAddForm";
+import AddCategoryForm from "./CategoryAddForm";
 import { getArticlesByCategoryId } from "../../services/apiArticles";
 import toast from "react-hot-toast";
 import { ThemeContext } from "../../context/ThemeProviderContext";
