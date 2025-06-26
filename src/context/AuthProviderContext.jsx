@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await logoutSingle(); 
     } catch (err) {
-      console.error("❌ فشل أثناء محاولة تسجيل الخروج من السيرفر:", err);
+      console.error("❌ error logout", err);
     } finally {
       clearAuthStorage();
       setToken(null); 

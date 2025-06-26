@@ -98,7 +98,7 @@ const LungoraModel = () => {
             <div className="mb-4 flex flex-col sm:flex-row items-center justify-center sm:justify-between">
               <div className="flex items-center mb-3 sm:mb-0">
                 <motion.img
-                  src={logoPreview} 
+                  src={LungoraImage || logoPreview} 
                   alt="Lungora Logo"
                   className="w-12 h-12 rounded-full shadow-md"
                   initial={{ rotate: 0 }}

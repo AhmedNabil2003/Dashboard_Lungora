@@ -253,7 +253,7 @@ const ProfileSection = ({ isSidebarOpen, theme, dashboardSettings }) => (
       <div className="relative group">
         <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-blue-300 transition-all duration-500 shadow-[0_0_10px_2px_rgba(96,165,250,0.7)] hover:shadow-[0_0_15px_5px_rgba(96,165,250,0.9)]"></div>
         <img
-          src={dashboardSettings.logoPreview || "/placeholder.svg"}
+          src={ LungoraImage|| dashboardSettings.logoPreview}
           alt={dashboardSettings.dashboardName}
           className={`${
             isSidebarOpen ? "w-12 h-12" : "w-10 h-10"

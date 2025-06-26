@@ -1,6 +1,6 @@
 import { isRememberMe, storeToken } from "../hooks/useLocalStorage";
-import axiosInstance from "./axiosInstance";
 import toast from "react-hot-toast";
+import axiosInstance from "./axiosInstance";
 
 // Login user
 export const loginUser = async (values) => {
@@ -58,66 +58,6 @@ export const registerUser = async (userData) => {
     const errorMessage =
       error.response?.data?.errors?.[0] || "Registration failed";
     toast.error(errorMessage);
-    throw error;
-  }
-};
-
-// Request password reset
-export const forgotPassword = async (email) => {
-  try {
-    const response = await axiosInstance.post(`/Auth/ForgotPassword`, {
-      email,
-    });
-
-    if (response.data.isSuccess) {
-      toast.success("Password reset email sent. Please check your inbox.");
-    } else {
-      toast.error(response.data.errors?.[0] || "Failed to send reset email");
-    }
-
-    return response.data;
-  } catch (error) {
-    toast.error("Failed to process password reset request");
-    throw error;
-  }
-};
-
-// Verify reset code
-export const verifyResetCode = async (code) => {
-  try {
-    const response = await axiosInstance.post(`/Auth/VerifyResetCode`, {
-      code,
-    });
-
-    if (response.data.isSuccess) {
-      toast.success("Code verified successfully");
-    } else {
-      toast.error(response.data.errors?.[0] || "Invalid verification code");
-    }
-
-    return response.data;
-  } catch (error) {
-    toast.error("Failed to verify reset code");
-    throw error;
-  }
-};
-
-// Reset password
-export const resetPassword = async (data) => {
-  try {
-    const response = await axiosInstance.post(`/Auth/ResetPassword`, data);
-
-    if (response.data.isSuccess) {
-      toast.success(
-        "Password reset successful! You can now log in with your new password."
-      );
-    } else {
-      toast.error(response.data.errors?.[0] || "Failed to reset password");
-    }
-
-    return response.data;
-  } catch (error) {
-    toast.error("Failed to reset password");
     throw error;
   }
 };

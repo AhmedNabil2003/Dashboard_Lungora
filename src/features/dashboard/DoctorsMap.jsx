@@ -1,41 +1,49 @@
-
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 // eslint-disable-next-line no-unused-vars
-import { motion } from "framer-motion"
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
-import L from "leaflet"
-import "leaflet/dist/leaflet.css"
-import { useDoctors } from "../doctors/useDoctors"
+import { motion } from "framer-motion";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { useDoctors } from "../doctors/useDoctors";
 
 // Fix for default markers in react-leaflet
-delete L.Icon.Default.prototype._getIconUrl
+delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-})
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+});
 
 // Map control component for auto-fitting bounds
 const MapController = ({ doctors, doctorCoordinates }) => {
-  const map = useMap()
+  const map = useMap();
 
   useEffect(() => {
-    if (doctors && doctors.length > 0 && Object.keys(doctorCoordinates).length > 0) {
-      const coordinates = Object.values(doctorCoordinates)
+    if (
+      doctors &&
+      doctors.length > 0 &&
+      Object.keys(doctorCoordinates).length > 0
+    ) {
+      const coordinates = Object.values(doctorCoordinates);
       if (coordinates.length > 0) {
-        const group = new L.featureGroup(coordinates.map((coord) => L.marker(coord)))
-        map.fitBounds(group.getBounds().pad(0.1))
+        const group = new L.featureGroup(
+          coordinates.map((coord) => L.marker(coord))
+        );
+        map.fitBounds(group.getBounds().pad(0.1));
       }
     }
-  }, [map, doctors, doctorCoordinates])
+  }, [map, doctors, doctorCoordinates]);
 
-  return null
-}
+  return null;
+};
 
 const DoctorsMap = ({ theme }) => {
-  const { doctors, loading, error } = useDoctors()
-  const [doctorCoordinates, setDoctorCoordinates] = useState({})
-  const [geocodingProgress, setGeocodingProgress] = useState(0)
+  const { doctors, loading, error } = useDoctors();
+  const [doctorCoordinates, setDoctorCoordinates] = useState({});
+  const [geocodingProgress, setGeocodingProgress] = useState(0);
 
   useEffect(() => {
     const mapStyles = `
@@ -74,26 +82,26 @@ const DoctorsMap = ({ theme }) => {
       .fixed {
         z-index: 60 !important;
       }
-    `
+    `;
 
-    const styleElement = document.createElement("style")
-    styleElement.id = "doctors-map-styles"
-    styleElement.textContent = mapStyles
+    const styleElement = document.createElement("style");
+    styleElement.id = "doctors-map-styles";
+    styleElement.textContent = mapStyles;
 
-    const existingStyle = document.getElementById("doctors-map-styles")
+    const existingStyle = document.getElementById("doctors-map-styles");
     if (existingStyle) {
-      existingStyle.remove()
+      existingStyle.remove();
     }
 
-    document.head.appendChild(styleElement)
+    document.head.appendChild(styleElement);
 
     return () => {
-      const styleToRemove = document.getElementById("doctors-map-styles")
+      const styleToRemove = document.getElementById("doctors-map-styles");
       if (styleToRemove) {
-        styleToRemove.remove()
+        styleToRemove.remove();
       }
-    }
-  }, [])
+    };
+  }, []);
 
   // Create simple doctor marker icon
   const createDoctorIcon = (doctor) => {
@@ -118,7 +126,7 @@ const DoctorsMap = ({ theme }) => {
           onerror="this.src='/placeholder.svg?height=50&width=50'" 
         />
       </div>
-    `
+    `;
 
     return L.divIcon({
       html: iconHtml,
@@ -126,56 +134,64 @@ const DoctorsMap = ({ theme }) => {
       iconSize: [50, 50],
       iconAnchor: [25, 25],
       popupAnchor: [0, -25],
-    })
-  }
+    });
+  };
 
   // Geocoding effect
   useEffect(() => {
     const geocodeDoctors = async () => {
-      if (!doctors || doctors.length === 0) return
+      if (!doctors || doctors.length === 0) return;
 
-      const coordinates = {}
-      const totalDoctors = doctors.length
-      let geocodedCount = 0
+      const coordinates = {};
+      const totalDoctors = doctors.length;
+      let geocodedCount = 0;
 
       try {
         for (const doctor of doctors) {
           if (doctor.latitude && doctor.longitude) {
-            const lat = Number.parseFloat(doctor.latitude)
-            const lng = Number.parseFloat(doctor.longitude)
+            const lat = Number.parseFloat(doctor.latitude);
+            const lng = Number.parseFloat(doctor.longitude);
             if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
-              coordinates[doctor.id] = [lat, lng]
+              coordinates[doctor.id] = [lat, lng];
             }
           } else if (doctor.location) {
             try {
               const response = await fetch(
-                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(doctor.location + ", Egypt")}&limit=1`,
-              )
-              const data = await response.json()
+                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+                  doctor.location + ", Egypt"
+                )}&limit=1`
+              );
+              const data = await response.json();
 
               if (data && data.length > 0) {
-                coordinates[doctor.id] = [Number.parseFloat(data[0].lat), Number.parseFloat(data[0].lon)]
+                coordinates[doctor.id] = [
+                  Number.parseFloat(data[0].lat),
+                  Number.parseFloat(data[0].lon),
+                ];
               }
             } catch (error) {
-              console.error(`Error geocoding address for doctor ${doctor.id}:`, error)
+              console.error(
+                `Error geocoding address for doctor ${doctor.id}:`,
+                error
+              );
             }
           }
 
-          geocodedCount++
-          setGeocodingProgress((geocodedCount / totalDoctors) * 100)
-          await new Promise((resolve) => setTimeout(resolve, 50))
+          geocodedCount++;
+          setGeocodingProgress((geocodedCount / totalDoctors) * 100);
+          await new Promise((resolve) => setTimeout(resolve, 50));
         }
 
-        setDoctorCoordinates(coordinates)
-        setGeocodingProgress(100)
+        setDoctorCoordinates(coordinates);
+        setGeocodingProgress(100);
       } catch (error) {
-        console.error("Error in geocoding:", error)
-        setGeocodingProgress(100)
+        console.error("Error in geocoding:", error);
+        setGeocodingProgress(100);
       }
-    }
+    };
 
-    geocodeDoctors()
-  }, [doctors])
+    geocodeDoctors();
+  }, [doctors]);
 
   return (
     <motion.div
@@ -188,12 +204,24 @@ const DoctorsMap = ({ theme }) => {
       transition={{ delay: 0.5 }}
     >
       {/* Simple Header */}
-      <div className={`p-2 border-b ${theme === "light" ? "border-gray-200" : "border-gray-600"}`}>
-        <h3 className={`text-sm font-semibold ${theme === "light" ? "text-gray-800" : "text-gray-100"}`}>
+      <div
+        className={`p-2 border-b ${
+          theme === "light" ? "border-gray-200" : "border-gray-600"
+        }`}
+      >
+        <h3
+          className={`text-sm font-semibold ${
+            theme === "light" ? "text-gray-800" : "text-gray-100"
+          }`}
+        >
           <i className="fas fa-map-marked-alt mr-2 text-blue-500"></i>
           Doctors Locations Map
         </h3>
-        <p className={`text-sm ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
+        <p
+          className={`text-sm ${
+            theme === "light" ? "text-gray-600" : "text-gray-400"
+          }`}
+        >
           {doctors.length} doctors across Egypt
         </p>
       </div>
@@ -202,8 +230,14 @@ const DoctorsMap = ({ theme }) => {
       {geocodingProgress > 0 && geocodingProgress < 100 && (
         <div className="px-4 py-3">
           <div className="flex items-center justify-between text-sm mb-2">
-            <span className={theme === "light" ? "text-gray-600" : "text-gray-400"}>Loading doctor locations...</span>
-            <span className="font-medium text-blue-600">{Math.round(geocodingProgress)}%</span>
+            <span
+              className={theme === "light" ? "text-gray-600" : "text-gray-400"}
+            >
+              Loading doctor locations...
+            </span>
+            <span className="font-medium text-blue-600">
+              {Math.round(geocodingProgress)}%
+            </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
@@ -217,7 +251,11 @@ const DoctorsMap = ({ theme }) => {
       {/* Map Container */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className={`flex items-center space-x-3 ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}>
+          <div
+            className={`flex items-center space-x-3 ${
+              theme === "light" ? "text-gray-500" : "text-gray-400"
+            }`}
+          >
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
             <span className="text-lg">Loading doctors...</span>
           </div>
@@ -226,7 +264,9 @@ const DoctorsMap = ({ theme }) => {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <i className="fas fa-exclamation-triangle text-red-500 text-4xl mb-4"></i>
-            <p className="text-red-500 text-sm">Error loading doctors: {error}</p>
+            <p className="text-red-500 text-sm">
+              Error loading doctors: {error}
+            </p>
           </div>
         </div>
       ) : (
@@ -254,14 +294,22 @@ const DoctorsMap = ({ theme }) => {
               zIndex={1}
             />
 
-            <MapController doctors={doctors} doctorCoordinates={doctorCoordinates} />
+            <MapController
+              doctors={doctors}
+              doctorCoordinates={doctorCoordinates}
+            />
 
             {doctors.map((doctor) => {
-              const coordinates = doctorCoordinates[doctor.id]
-              if (!coordinates) return null
+              const coordinates = doctorCoordinates[doctor.id];
+              if (!coordinates) return null;
 
               return (
-                <Marker key={doctor.id} position={coordinates} icon={createDoctorIcon(doctor)} zIndexOffset={100}>
+                <Marker
+                  key={doctor.id}
+                  position={coordinates}
+                  icon={createDoctorIcon(doctor)}
+                  zIndexOffset={100}
+                >
                   <Popup
                     maxWidth={280}
                     closeButton={true}
@@ -273,24 +321,35 @@ const DoctorsMap = ({ theme }) => {
                       {/* Doctor Header */}
                       <div className="flex items-center space-x-2 mb-2">
                         <img
-                          src={doctor.imageDoctor || "/placeholder.svg?height=40&width=40"}
+                          src={
+                            doctor.imageDoctor ||
+                            "/placeholder.svg?height=40&width=40"
+                          }
                           alt={doctor.name}
                           className="w-10 h-10 rounded-full object-cover border-2 border-blue-500"
                           onError={(e) => {
-                            e.target.src = "/placeholder.svg?height=40&width=40"
+                            e.target.src =
+                              "/placeholder.svg?height=40&width=40";
                           }}
                         />
                         <div>
-                          <h4 className="font-bold text-sm text-gray-800">Dr. {doctor.name}</h4>
+                          <h4 className="font-bold text-sm text-gray-800">
+                            Dr. {doctor.name}
+                          </h4>
                           <p className="text-blue-600 font-medium text-xs">
-                            {doctor.category?.categoryName || "General Medicine"}
+                            {doctor.category?.categoryName ||
+                              "General Medicine"}
                           </p>
                         </div>
                       </div>
 
                       {/* Doctor Details */}
                       <div className="space-y-1 text-xs">
-                        {doctor.about && <p className="text-gray-700 line-clamp-2">{doctor.about}</p>}
+                        {doctor.about && (
+                          <p className="text-gray-700 line-clamp-2">
+                            {doctor.about}
+                          </p>
+                        )}
 
                         <div className="flex items-center justify-between">
                           {doctor.experianceYears > 0 && (
@@ -309,7 +368,9 @@ const DoctorsMap = ({ theme }) => {
 
                         <div className="flex items-center">
                           <i className="fas fa-map-marker-alt text-red-500 mr-1"></i>
-                          <span className="text-gray-600 text-xs">{doctor.location || "Location not specified"}</span>
+                          <span className="text-gray-600 text-xs">
+                            {doctor.location || "Location not specified"}
+                          </span>
                         </div>
 
                         {/* Contact Buttons */}
@@ -339,7 +400,7 @@ const DoctorsMap = ({ theme }) => {
                     </div>
                   </Popup>
                 </Marker>
-              )
+              );
             })}
           </MapContainer>
         </div>
@@ -347,14 +408,23 @@ const DoctorsMap = ({ theme }) => {
 
       {/* Simple Footer */}
       {doctors && Object.keys(doctorCoordinates).length > 0 && (
-        <div className={`p-2 text-center border-t ${theme === "light" ? "border-gray-200" : "border-gray-600"}`}>
-          <p className={`text-sm ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
-            Showing {Object.keys(doctorCoordinates).length} of {doctors.length} doctors on the map
+        <div
+          className={`p-2 text-center border-t ${
+            theme === "light" ? "border-gray-200" : "border-gray-600"
+          }`}
+        >
+          <p
+            className={`text-sm ${
+              theme === "light" ? "text-gray-600" : "text-gray-400"
+            }`}
+          >
+            Showing {Object.keys(doctorCoordinates).length} of {doctors.length}{" "}
+            doctors on the map
           </p>
         </div>
       )}
     </motion.div>
-  )
-}
+  );
+};
 
-export default DoctorsMap
+export default DoctorsMap;

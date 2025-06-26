@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react"
+import { useState, useEffect, useContext } from "react";
 import {
   MoreVertical,
   Search,
@@ -17,165 +17,191 @@ import {
   Trash,
   X,
   PlusCircle,
-} from "lucide-react"
-import { ThemeContext } from "../../context/ThemeProviderContext"
-import { getDoctorWorkingHours } from "../../services/apiDoctors"
-import { toast } from "react-hot-toast"
+} from "lucide-react";
+import { ThemeContext } from "../../context/ThemeProviderContext";
+import { getDoctorWorkingHours } from "../../services/apiDoctors";
+import { toast } from "react-hot-toast";
 
-const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorkingHours, isLoading = false }) => {
-  const { theme } = useContext(ThemeContext)
-  const [menuOpen, setMenuOpen] = useState(null)
-  const [currentPage, setCurrentPage] = useState(1)
-  const doctorsPerPage = 8
-  const [specializationFilter, setSpecializationFilter] = useState("")
-  const [locationFilter, setLocationFilter] = useState("")
-  const [filteredData, setFilteredData] = useState([])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedDoctor, setSelectedDoctor] = useState(null)
-  const [detailsModalOpen, setDetailsModalOpen] = useState(false)
-  const [doctorWorkingHours, setDoctorWorkingHours] = useState([])
-  const [loadingWorkingHours, setLoadingWorkingHours] = useState(false)
+const DoctorList = ({
+  doctors = [],
+  onEdit,
+  onDelete,
+  onAddDoctor,
+  onEditWorkingHours,
+  isLoading = false,
+}) => {
+  const { theme } = useContext(ThemeContext);
+  const [menuOpen, setMenuOpen] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const doctorsPerPage = 8;
+  const [specializationFilter, setSpecializationFilter] = useState("");
+  const [locationFilter, setLocationFilter] = useState("");
+  const [filteredData, setFilteredData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [doctorWorkingHours, setDoctorWorkingHours] = useState([]);
+  const [loadingWorkingHours, setLoadingWorkingHours] = useState(false);
 
-  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-
+  // Update the daysOfWeek array to map numeric values to full names for consistency
+  const daysOfWeek = [
+    { name: "Sunday", value: 0 },
+    { name: "Monday", value: 1 },
+    { name: "Tuesday", value: 2 },
+    { name: "Wednesday", value: 3 },
+    { name: "Thursday", value: 4 },
+    { name: "Friday", value: 5 },
+    { name: "Saturday", value: 6 },
+  ];
   useEffect(() => {
-    console.log("Doctors:", doctors)
-    setFilteredData(Array.isArray(doctors) ? doctors : [])
-  }, [doctors])
+    console.log("Doctors:", doctors);
+    setFilteredData(Array.isArray(doctors) ? doctors : []);
+  }, [doctors]);
 
   const toggleMenu = (id) => {
-    setMenuOpen(menuOpen === id ? null : id)
-  }
+    setMenuOpen(menuOpen === id ? null : id);
+  };
 
   const handleSpecializationFilterChange = (e) => {
-    const value = e.target.value
-    setSpecializationFilter(value)
-  }
+    const value = e.target.value;
+    setSpecializationFilter(value);
+  };
 
   const handleLocationFilterChange = (e) => {
-    const value = e.target.value
-    setLocationFilter(value)
-  }
+    const value = e.target.value;
+    setLocationFilter(value);
+  };
 
   const handleSearchChange = (value) => {
-    setSearchTerm(value)
-  }
+    setSearchTerm(value);
+  };
 
   const openDetailsModal = async (doctor) => {
-    setSelectedDoctor(doctor)
-    setDetailsModalOpen(true)
-    setDoctorWorkingHours([])
+    setSelectedDoctor(doctor);
+    setDetailsModalOpen(true);
+    setDoctorWorkingHours([]);
 
     // Fetch working hours for the selected doctor
     if (doctor?.id) {
-      setLoadingWorkingHours(true)
+      setLoadingWorkingHours(true);
       try {
-        const workingHours = await getDoctorWorkingHours(doctor.id)
-        setDoctorWorkingHours(workingHours || [])
+        const workingHours = await getDoctorWorkingHours(doctor.id);
+        setDoctorWorkingHours(workingHours || []);
       } catch (error) {
-        console.error("Error fetching working hours:", error)
-        toast.error("Failed to load working hours")
+        console.error("Error fetching working hours:", error);
+        toast.error("Failed to load working hours");
       } finally {
-        setLoadingWorkingHours(false)
+        setLoadingWorkingHours(false);
       }
     }
-  }
+  };
 
   const closeDetailsModal = () => {
-    setDetailsModalOpen(false)
-    setSelectedDoctor(null)
-    setDoctorWorkingHours([])
-  }
+    setDetailsModalOpen(false);
+    setSelectedDoctor(null);
+    setDoctorWorkingHours([]);
+  };
 
   // Format time for display
   const formatTime = (timeString) => {
-    if (!timeString) return "N/A"
-    return timeString.substring(0, 5) // Extract HH:MM from HH:MM:SS
-  }
+    if (!timeString) return "N/A";
+    return timeString.substring(0, 5); // Extract HH:MM from HH:MM:SS
+  };
 
   // Group working hours by day
   const groupWorkingHoursByDay = (workingHours) => {
-    const grouped = {}
+    const grouped = {};
     daysOfWeek.forEach((day) => {
-      grouped[day] = []
-    })
+      grouped[day.name] = [];
+    });
 
     workingHours.forEach((hour) => {
-      if (grouped[hour.dayOfWeek]) {
-        grouped[hour.dayOfWeek].push(hour)
+      const dayName = daysOfWeek.find(
+        (day) => day.value === hour.dayOfWeek
+      )?.name;
+      if (dayName && grouped[dayName]) {
+        grouped[dayName].push(hour);
       }
-    })
+    });
 
     // Sort hours within each day by start time
     Object.keys(grouped).forEach((day) => {
-      grouped[day].sort((a, b) => a.startTime.localeCompare(b.startTime))
-    })
+      grouped[day].sort((a, b) => a.startTime.localeCompare(b.startTime));
+    });
 
-    return grouped
-  }
+    return grouped;
+  };
 
   useEffect(() => {
     try {
-      let result = Array.isArray(doctors) ? [...doctors] : []
+      let result = Array.isArray(doctors) ? [...doctors] : [];
 
       if (searchTerm) {
         result = result.filter(
           (doctor) =>
             doctor?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            doctor?.emailDoctor?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            doctor?.emailDoctor
+              ?.toLowerCase()
+              .includes(searchTerm.toLowerCase()) ||
             doctor?.phone?.includes(searchTerm) ||
-            doctor?.teliphone?.includes(searchTerm),
-        )
+            doctor?.teliphone?.includes(searchTerm)
+        );
       }
 
       if (specializationFilter) {
         result = result.filter((doctor) => {
-          const specialization = doctor?.specialization?.toLowerCase() || ""
-          const categoryName = doctor?.category?.categoryName?.toLowerCase() || ""
+          const specialization = doctor?.specialization?.toLowerCase() || "";
+          const categoryName =
+            doctor?.category?.categoryName?.toLowerCase() || "";
           return (
             specialization.includes(specializationFilter.toLowerCase()) ||
             categoryName.includes(specializationFilter.toLowerCase())
-          )
-        })
+          );
+        });
       }
 
       if (locationFilter) {
-        result = result.filter((doctor) => doctor?.location?.toLowerCase().includes(locationFilter.toLowerCase()))
+        result = result.filter((doctor) =>
+          doctor?.location?.toLowerCase().includes(locationFilter.toLowerCase())
+        );
       }
 
-      setFilteredData(result)
-      setCurrentPage(1)
+      setFilteredData(result);
+      setCurrentPage(1);
     } catch (error) {
-      console.error("Error applying filters:", error)
-      setFilteredData([])
+      console.error("Error applying filters:", error);
+      setFilteredData([]);
     }
-  }, [searchTerm, specializationFilter, locationFilter, doctors])
+  }, [searchTerm, specializationFilter, locationFilter, doctors]);
 
   useEffect(() => {
     const handleClickOutside = () => {
-      if (menuOpen) setMenuOpen(null)
-    }
-    document.addEventListener("click", handleClickOutside)
-    return () => document.removeEventListener("click", handleClickOutside)
-  }, [menuOpen])
+      if (menuOpen) setMenuOpen(null);
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [menuOpen]);
 
   // Pagination calculations
-  const indexOfLastDoctor = currentPage * doctorsPerPage
-  const indexOfFirstDoctor = indexOfLastDoctor - doctorsPerPage
-  const currentDoctors = filteredData.slice(indexOfFirstDoctor, indexOfLastDoctor)
-  const totalPages = Math.ceil(filteredData.length / doctorsPerPage)
+  const indexOfLastDoctor = currentPage * doctorsPerPage;
+  const indexOfFirstDoctor = indexOfLastDoctor - doctorsPerPage;
+  const currentDoctors = filteredData.slice(
+    indexOfFirstDoctor,
+    indexOfLastDoctor
+  );
+  const totalPages = Math.ceil(filteredData.length / doctorsPerPage);
 
   const nextPage = () => {
     if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1)
+      setCurrentPage(currentPage + 1);
     }
-  }
+  };
 
   const prevPage = () => {
     if (currentPage > 1) {
-      setCurrentPage(currentPage - 1)
+      setCurrentPage(currentPage - 1);
     }
-  }
+  };
 
   return (
     <div className="w-full space-y-6">
@@ -192,10 +218,18 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
             <Stethoscope className="h-8 w-8 text-white" />
           </div>
           <div>
-            <h3 className={`text-xl font-bold ${theme === "light" ? "text-gray-900" : "text-gray-200"}`}>
+            <h3
+              className={`text-xl font-bold ${
+                theme === "light" ? "text-gray-900" : "text-gray-200"
+              }`}
+            >
               Manage Doctors
             </h3>
-            <p className={`text-sm ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
+            <p
+              className={`text-sm ${
+                theme === "light" ? "text-gray-600" : "text-gray-400"
+              }`}
+            >
               Manage and monitor doctor accounts
             </p>
           </div>
@@ -205,7 +239,9 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
           <button
             onClick={onAddDoctor}
             className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-white transition-colors ${
-              theme === "light" ? "bg-sky-600 hover:bg-sky-700" : "bg-sky-700 hover:bg-sky-800"
+              theme === "light"
+                ? "bg-sky-600 hover:bg-sky-700"
+                : "bg-sky-700 hover:bg-sky-800"
             }`}
           >
             <PlusCircle size={20} />
@@ -217,24 +253,35 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
       {/* Search and Filter Section */}
       <div
         className={`p-6 rounded-lg shadow-sm border ${
-          theme === "light" ? "bg-white border-sky-100" : "bg-gray-800 border-sky-600"
+          theme === "light"
+            ? "bg-white border-sky-100"
+            : "bg-gray-800 border-sky-600"
         }`}
       >
         <div className="flex flex-col lg:flex-row items-center justify-between space-y-4 lg:space-y-0 lg:space-x-4">
           {/* Search Input */}
           <div
             className={`flex items-center border rounded-md px-4 py-3 w-full lg:w-1/3 ${
-              theme === "light" ? "bg-gray-50 border-gray-200" : "bg-gray-700 border-gray-600"
+              theme === "light"
+                ? "bg-gray-50 border-gray-200"
+                : "bg-gray-700 border-gray-600"
             }`}
           >
-            <Search size={20} className={`mr-3 ${theme === "light" ? "text-gray-400" : "text-gray-500"}`} />
+            <Search
+              size={20}
+              className={`mr-3 ${
+                theme === "light" ? "text-gray-400" : "text-gray-500"
+              }`}
+            />
             <input
               type="text"
               placeholder="Search by name, email, or phone..."
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
               className={`w-full bg-transparent border-none outline-none ${
-                theme === "light" ? "text-gray-700 placeholder-gray-400" : "text-gray-200 placeholder-gray-500"
+                theme === "light"
+                  ? "text-gray-700 placeholder-gray-400"
+                  : "text-gray-200 placeholder-gray-500"
               }`}
             />
           </div>
@@ -243,17 +290,26 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
             {/* Specialization Filter */}
             <div
               className={`flex items-center border rounded-md px-4 py-3 min-w-0 lg:min-w-[200px] ${
-                theme === "light" ? "bg-gray-50 border-gray-200" : "bg-gray-700 border-gray-600"
+                theme === "light"
+                  ? "bg-gray-50 border-gray-200"
+                  : "bg-gray-700 border-gray-600"
               }`}
             >
-              <Stethoscope size={20} className={`mr-3 ${theme === "light" ? "text-gray-400" : "text-gray-500"}`} />
+              <Stethoscope
+                size={20}
+                className={`mr-3 ${
+                  theme === "light" ? "text-gray-400" : "text-gray-500"
+                }`}
+              />
               <input
                 type="text"
                 placeholder="Filter by specialization..."
                 value={specializationFilter}
                 onChange={handleSpecializationFilterChange}
                 className={`w-full bg-transparent border-none outline-none ${
-                  theme === "light" ? "text-gray-700 placeholder-gray-400" : "text-gray-200 placeholder-gray-500"
+                  theme === "light"
+                    ? "text-gray-700 placeholder-gray-400"
+                    : "text-gray-200 placeholder-gray-500"
                 }`}
               />
             </div>
@@ -261,24 +317,38 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
             {/* Location Filter */}
             <div
               className={`flex items-center border rounded-md px-4 py-3 min-w-0 lg:min-w-[200px] ${
-                theme === "light" ? "bg-gray-50 border-gray-200" : "bg-gray-700 border-gray-600"
+                theme === "light"
+                  ? "bg-gray-50 border-gray-200"
+                  : "bg-gray-700 border-gray-600"
               }`}
             >
-              <MapPin size={20} className={`mr-3 ${theme === "light" ? "text-gray-400" : "text-gray-500"}`} />
+              <MapPin
+                size={20}
+                className={`mr-3 ${
+                  theme === "light" ? "text-gray-400" : "text-gray-500"
+                }`}
+              />
               <input
                 type="text"
                 placeholder="Filter by location..."
                 value={locationFilter}
                 onChange={handleLocationFilterChange}
                 className={`w-full bg-transparent border-none outline-none ${
-                  theme === "light" ? "text-gray-700 placeholder-gray-400" : "text-gray-200 placeholder-gray-500"
+                  theme === "light"
+                    ? "text-gray-700 placeholder-gray-400"
+                    : "text-gray-200 placeholder-gray-500"
                 }`}
               />
             </div>
 
             {/* Results Count */}
-            <div className={`text-sm ${theme === "light" ? "text-gray-500" : "text-gray-400"} whitespace-nowrap`}>
-              {filteredData.length} doctor{filteredData.length !== 1 ? "s" : ""} found
+            <div
+              className={`text-sm ${
+                theme === "light" ? "text-gray-500" : "text-gray-400"
+              } whitespace-nowrap`}
+            >
+              {filteredData.length} doctor{filteredData.length !== 1 ? "s" : ""}{" "}
+              found
             </div>
           </div>
         </div>
@@ -287,12 +357,18 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
       {/* Doctors Table */}
       <div
         className={`rounded-lg shadow-sm border overflow-hidden ${
-          theme === "light" ? "bg-white border-sky-100" : "bg-sky-800 border-sky-600"
+          theme === "light"
+            ? "bg-white border-sky-100"
+            : "bg-sky-800 border-sky-600"
         }`}
       >
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <div className={`flex items-center space-x-3 ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}>
+            <div
+              className={`flex items-center space-x-3 ${
+                theme === "light" ? "text-gray-500" : "text-gray-400"
+              }`}
+            >
               <RefreshCw className="h-6 w-6 animate-spin" />
               <span className="text-lg">Loading doctors...</span>
             </div>
@@ -300,7 +376,11 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className={`min-w-full divide-y ${theme === "light" ? "divide-sky-200" : "divide-sky-500"}`}>
+              <table
+                className={`min-w-full divide-y ${
+                  theme === "light" ? "divide-sky-200" : "divide-sky-500"
+                }`}
+              >
                 <thead
                   className={`${
                     theme === "light"
@@ -354,13 +434,21 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                   </tr>
                 </thead>
                 <tbody
-                  className={`divide-y ${theme === "light" ? "bg-white divide-sky-200" : "bg-gray-800 divide-sky-600"}`}
+                  className={`divide-y ${
+                    theme === "light"
+                      ? "bg-white divide-sky-200"
+                      : "bg-gray-800 divide-sky-600"
+                  }`}
                 >
                   {currentDoctors.length > 0 ? (
                     currentDoctors.map((doctor, index) => (
                       <tr
                         key={doctor?.id || index}
-                        className={`${theme === "light" ? "hover:bg-gray-50" : "hover:bg-gray-700"} transition-colors`}
+                        className={`${
+                          theme === "light"
+                            ? "hover:bg-gray-50"
+                            : "hover:bg-gray-700"
+                        } transition-colors`}
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center space-x-4">
@@ -374,11 +462,13 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                                   }
                                   alt={doctor?.name || "Doctor"}
                                   className={`h-12 w-12 rounded-full object-cover border-2 ${
-                                    theme === "light" ? "border-gray-200" : "border-gray-600"
+                                    theme === "light"
+                                      ? "border-gray-200"
+                                      : "border-gray-600"
                                   }`}
                                   onError={(e) => {
-                                    e.target.style.display = "none"
-                                    e.target.nextSibling.style.display = "flex"
+                                    e.target.style.display = "none";
+                                    e.target.nextSibling.style.display = "flex";
                                   }}
                                 />
                               ) : null}
@@ -393,18 +483,23 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                             <div>
                               <div
                                 className={`text-sm font-semibold ${
-                                  theme === "light" ? "text-gray-900" : "text-gray-200"
+                                  theme === "light"
+                                    ? "text-gray-900"
+                                    : "text-gray-200"
                                 }`}
                               >
                                 Dr. {doctor?.name || "N/A"}
                               </div>
                               <div
                                 className={`text-sm flex items-center ${
-                                  theme === "light" ? "text-gray-500" : "text-gray-400"
+                                  theme === "light"
+                                    ? "text-gray-500"
+                                    : "text-gray-400"
                                 }`}
                               >
                                 <User className="h-3 w-3 mr-1" />
-                                ID: {doctor?.id?.toString().slice(0, 8) || "N/A"}...
+                                ID:{" "}
+                                {doctor?.id?.toString().slice(0, 8) || "N/A"}...
                               </div>
                             </div>
                           </div>
@@ -414,21 +509,33 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                           <div className="space-y-1">
                             <div
                               className={`flex items-center text-sm ${
-                                theme === "light" ? "text-gray-900" : "text-gray-200"
+                                theme === "light"
+                                  ? "text-gray-900"
+                                  : "text-gray-200"
                               }`}
                             >
                               <Mail
-                                className={`h-4 w-4 mr-2 ${theme === "light" ? "text-gray-400" : "text-gray-500"}`}
+                                className={`h-4 w-4 mr-2 ${
+                                  theme === "light"
+                                    ? "text-gray-400"
+                                    : "text-gray-500"
+                                }`}
                               />
                               {doctor?.emailDoctor || "N/A"}
                             </div>
                             <div
                               className={`flex items-center text-sm ${
-                                theme === "light" ? "text-gray-500" : "text-gray-400"
+                                theme === "light"
+                                  ? "text-gray-500"
+                                  : "text-gray-400"
                               }`}
                             >
                               <Phone
-                                className={`h-4 w-4 mr-2 ${theme === "light" ? "text-gray-400" : "text-gray-500"}`}
+                                className={`h-4 w-4 mr-2 ${
+                                  theme === "light"
+                                    ? "text-gray-400"
+                                    : "text-gray-500"
+                                }`}
                               />
                               {doctor?.phone || "N/A"}
                             </div>
@@ -436,12 +543,22 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                         </td>
 
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className={`text-sm ${theme === "light" ? "text-gray-900" : "text-gray-200"}`}>
-                            {doctor?.category?.categoryName || doctor?.specialization || "N/A"}
+                          <div
+                            className={`text-sm ${
+                              theme === "light"
+                                ? "text-gray-900"
+                                : "text-gray-200"
+                            }`}
+                          >
+                            {doctor?.category?.categoryName ||
+                              doctor?.specialization ||
+                              "N/A"}
                           </div>
                           <div
                             className={`text-sm flex items-center ${
-                              theme === "light" ? "text-gray-500" : "text-gray-400"
+                              theme === "light"
+                                ? "text-gray-500"
+                                : "text-gray-400"
                             }`}
                           >
                             <Users className="h-3 w-3 mr-1" />
@@ -452,11 +569,17 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div
                             className={`flex items-center text-sm ${
-                              theme === "light" ? "text-gray-900" : "text-gray-200"
+                              theme === "light"
+                                ? "text-gray-900"
+                                : "text-gray-200"
                             }`}
                           >
                             <MapPin
-                              className={`h-4 w-4 mr-2 ${theme === "light" ? "text-gray-400" : "text-gray-500"}`}
+                              className={`h-4 w-4 mr-2 ${
+                                theme === "light"
+                                  ? "text-gray-400"
+                                  : "text-gray-500"
+                              }`}
                             />
                             {doctor?.location || "N/A"}
                           </div>
@@ -465,11 +588,17 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div
                             className={`flex items-center text-sm ${
-                              theme === "light" ? "text-gray-900" : "text-gray-200"
+                              theme === "light"
+                                ? "text-gray-900"
+                                : "text-gray-200"
                             }`}
                           >
                             <Stethoscope
-                              className={`h-4 w-4 mr-2 ${theme === "light" ? "text-gray-400" : "text-gray-500"}`}
+                              className={`h-4 w-4 mr-2 ${
+                                theme === "light"
+                                  ? "text-gray-400"
+                                  : "text-gray-500"
+                              }`}
                             />
                             {doctor?.experianceYears || "0"} years
                           </div>
@@ -501,8 +630,8 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                             </button>
                             <button
                               onClick={(e) => {
-                                e.stopPropagation()
-                                toggleMenu(doctor?.id)
+                                e.stopPropagation();
+                                toggleMenu(doctor?.id);
                               }}
                               className={`transition-colors p-2 rounded-full ${
                                 theme === "light"
@@ -517,16 +646,18 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                           {menuOpen === doctor?.id && (
                             <div
                               className={`absolute right-0 top-12 w-48 border rounded-lg shadow-lg z-50 py-2 ${
-                                theme === "light" ? "bg-white border-gray-200" : "bg-gray-800 border-gray-600"
+                                theme === "light"
+                                  ? "bg-white border-gray-200"
+                                  : "bg-gray-800 border-gray-600"
                               }`}
                             >
                               <button
                                 onClick={(e) => {
-                                  e.stopPropagation()
+                                  e.stopPropagation();
                                   if (doctor) {
-                                    onEdit(doctor)
+                                    onEdit(doctor);
                                   }
-                                  setMenuOpen(null)
+                                  setMenuOpen(null);
                                 }}
                                 className={`w-full px-4 py-2 text-left flex items-center space-x-3 text-sm ${
                                   theme === "light"
@@ -534,19 +665,27 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                                     : "text-gray-200 hover:bg-gray-700"
                                 }`}
                               >
-                                <Edit className={`h-4 w-4 ${theme === "light" ? "text-blue-500" : "text-blue-300"}`} />
+                                <Edit
+                                  className={`h-4 w-4 ${
+                                    theme === "light"
+                                      ? "text-blue-500"
+                                      : "text-blue-300"
+                                  }`}
+                                />
                                 <span>Edit Doctor</span>
                               </button>
                               <button
                                 onClick={(e) => {
-                                  e.stopPropagation()
+                                  e.stopPropagation();
                                   if (doctor?.id) {
-                                    onDelete(doctor.id)
+                                    onDelete(doctor.id);
                                   }
-                                  setMenuOpen(null)
+                                  setMenuOpen(null);
                                 }}
                                 className={`w-full px-4 py-2 text-left flex items-center space-x-3 text-sm ${
-                                  theme === "light" ? "text-red-600 hover:bg-gray-50" : "text-red-300 hover:bg-gray-700"
+                                  theme === "light"
+                                    ? "text-red-600 hover:bg-gray-50"
+                                    : "text-red-300 hover:bg-gray-700"
                                 }`}
                               >
                                 <Trash className="h-4 w-4" />
@@ -562,16 +701,32 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                       <td colSpan="6" className="px-6 py-12 text-center">
                         <div className="flex flex-col items-center space-y-3">
                           <Stethoscope
-                            className={`h-12 w-12 ${theme === "light" ? "text-gray-300" : "text-gray-500"}`}
+                            className={`h-12 w-12 ${
+                              theme === "light"
+                                ? "text-gray-300"
+                                : "text-gray-500"
+                            }`}
                           />
                           <div>
                             <h3
-                              className={`text-lg font-medium ${theme === "light" ? "text-gray-900" : "text-gray-200"}`}
+                              className={`text-lg font-medium ${
+                                theme === "light"
+                                  ? "text-gray-900"
+                                  : "text-gray-200"
+                              }`}
                             >
                               No doctors found
                             </h3>
-                            <p className={`${theme === "light" ? "text-gray-500" : "text-gray-400"}`}>
-                              {searchTerm || specializationFilter || locationFilter
+                            <p
+                              className={`${
+                                theme === "light"
+                                  ? "text-gray-500"
+                                  : "text-gray-400"
+                              }`}
+                            >
+                              {searchTerm ||
+                              specializationFilter ||
+                              locationFilter
                                 ? "Try adjusting your search or filter criteria"
                                 : "Get started by adding your first doctor"}
                             </p>
@@ -588,14 +743,28 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
             {filteredData.length > 0 && totalPages > 1 && (
               <div
                 className={`px-6 py-4 border-t ${
-                  theme === "light" ? "bg-gray-50 border-gray-200" : "bg-gray-700 border-gray-600"
+                  theme === "light"
+                    ? "bg-gray-50 border-gray-200"
+                    : "bg-gray-700 border-gray-600"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className={`text-sm ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}>
-                    Showing <span className="font-medium">{indexOfFirstDoctor + 1}</span> to{" "}
-                    <span className="font-medium">{Math.min(indexOfLastDoctor, filteredData.length)}</span> of{" "}
-                    <span className="font-medium">{filteredData.length}</span> doctors
+                  <div
+                    className={`text-sm ${
+                      theme === "light" ? "text-gray-700" : "text-gray-300"
+                    }`}
+                  >
+                    Showing{" "}
+                    <span className="font-medium">
+                      {indexOfFirstDoctor + 1}
+                    </span>{" "}
+                    to{" "}
+                    <span className="font-medium">
+                      {Math.min(indexOfLastDoctor, filteredData.length)}
+                    </span>{" "}
+                    of{" "}
+                    <span className="font-medium">{filteredData.length}</span>{" "}
+                    doctors
                   </div>
 
                   <div className="flex items-center space-x-2">
@@ -608,8 +777,8 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                             ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
                             : "bg-gray-600 text-gray-500 cursor-not-allowed border-gray-600"
                           : theme === "light"
-                            ? "bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
-                            : "bg-gray-800 text-gray-200 hover:bg-gray-700 border-gray-600"
+                          ? "bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
+                          : "bg-gray-800 text-gray-200 hover:bg-gray-700 border-gray-600"
                       }`}
                     >
                       Previous
@@ -617,10 +786,11 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
 
                     <div className="flex items-center space-x-1">
                       {[...Array(totalPages)].map((_, index) => {
-                        const page = index + 1
-                        const isCurrentPage = page === currentPage
-                        const isNearCurrentPage = Math.abs(page - currentPage) <= 2
-                        const isFirstOrLast = page === 1 || page === totalPages
+                        const page = index + 1;
+                        const isCurrentPage = page === currentPage;
+                        const isNearCurrentPage =
+                          Math.abs(page - currentPage) <= 2;
+                        const isFirstOrLast = page === 1 || page === totalPages;
 
                         if (isNearCurrentPage || isFirstOrLast) {
                           return (
@@ -633,24 +803,31 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                                     ? "bg-sky-500 text-white"
                                     : "bg-sky-700 text-white"
                                   : theme === "light"
-                                    ? "text-gray-700 hover:bg-gray-100"
-                                    : "text-gray-200 hover:bg-gray-700"
+                                  ? "text-gray-700 hover:bg-gray-100"
+                                  : "text-gray-200 hover:bg-gray-700"
                               }`}
                             >
                               {page}
                             </button>
-                          )
-                        } else if (page === currentPage - 3 || page === currentPage + 3) {
+                          );
+                        } else if (
+                          page === currentPage - 3 ||
+                          page === currentPage + 3
+                        ) {
                           return (
                             <span
                               key={page}
-                              className={`px-2 ${theme === "light" ? "text-gray-400" : "text-gray-500"}`}
+                              className={`px-2 ${
+                                theme === "light"
+                                  ? "text-gray-400"
+                                  : "text-gray-500"
+                              }`}
                             >
                               ...
                             </span>
-                          )
+                          );
                         }
-                        return null
+                        return null;
                       })}
                     </div>
 
@@ -663,8 +840,8 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                             ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
                             : "bg-gray-600 text-gray-500 cursor-not-allowed border-gray-600"
                           : theme === "light"
-                            ? "bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
-                            : "bg-gray-800 text-gray-200 hover:bg-gray-700 border-gray-600"
+                          ? "bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
+                          : "bg-gray-800 text-gray-200 hover:bg-gray-700 border-gray-600"
                       }`}
                     >
                       Next
@@ -681,17 +858,23 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
       {detailsModalOpen && selectedDoctor && (
         <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50 p-2 sm:p-4">
           <div
-            className={`rounded-lg shadow-xl w-full max-w-3xl max-h-[85vh] ${
+            className={`rounded-lg shadow-xl w-full max-w-3xl max-h-[85vh] overflow-y-auto ${
               theme === "light" ? "bg-white" : "bg-gray-800"
             }`}
           >
             {/* Modal Header */}
             <div
               className={`flex justify-between items-center p-4 border-b ${
-                theme === "light" ? "bg-white border-gray-200" : "bg-gray-800 border-gray-600"
+                theme === "light"
+                  ? "bg-white border-gray-200"
+                  : "bg-gray-800 border-gray-600"
               }`}
             >
-              <h2 className={`text-xl font-bold ${theme === "light" ? "text-sky-600" : "text-sky-300"}`}>
+              <h2
+                className={`text-xl font-bold ${
+                  theme === "light" ? "text-sky-600" : "text-sky-300"
+                }`}
+              >
                 Dr. {selectedDoctor.name}
               </h2>
               <button
@@ -714,18 +897,30 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                   {/* Doctor Image and Basic Info */}
                   <div className="flex items-center space-x-3">
                     <img
-                      src={selectedDoctor.imageDoctor || "/placeholder.svg?height=60&width=60"}
+                      src={
+                        selectedDoctor.imageDoctor ||
+                        "/placeholder.svg?height=60&width=60"
+                      }
                       alt={selectedDoctor.name}
                       className={`w-16 h-16 rounded-full border-2 object-cover ${
                         theme === "light" ? "border-sky-200" : "border-sky-700"
                       } shadow-sm`}
                     />
                     <div className="flex-1">
-                      <h3 className={`text-lg font-semibold ${theme === "light" ? "text-gray-900" : "text-gray-200"}`}>
+                      <h3
+                        className={`text-lg font-semibold ${
+                          theme === "light" ? "text-gray-900" : "text-gray-200"
+                        }`}
+                      >
                         Dr. {selectedDoctor.name}
                       </h3>
-                      <p className={`text-sm ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
-                        {selectedDoctor.category?.categoryName || selectedDoctor.specialization}
+                      <p
+                        className={`text-sm ${
+                          theme === "light" ? "text-gray-600" : "text-gray-400"
+                        }`}
+                      >
+                        {selectedDoctor.category?.categoryName ||
+                          selectedDoctor.specialization}
                       </p>
                       <div
                         className={`flex items-center text-xs mt-1 ${
@@ -733,8 +928,8 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                         }`}
                       >
                         <Users className="w-3 h-3 mr-1" />
-                        {selectedDoctor.numOfPatients || "0"}+ patients • {selectedDoctor.experianceYears || "0"} years
-                        exp.
+                        {selectedDoctor.numOfPatients || "0"}+ patients •{" "}
+                        {selectedDoctor.experianceYears || "0"} years exp.
                       </div>
                     </div>
                   </div>
@@ -742,27 +937,65 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                   {/* Contact Information - Compact Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <h4 className={`font-medium text-sm ${theme === "light" ? "text-gray-900" : "text-gray-200"}`}>
+                      <h4
+                        className={`font-medium text-sm ${
+                          theme === "light" ? "text-gray-900" : "text-gray-200"
+                        }`}
+                      >
                         Contact Info
                       </h4>
                       <div className="space-y-1 text-xs">
                         <div className="flex items-center">
-                          <Mail className={`w-3 h-3 mr-2 ${theme === "light" ? "text-sky-500" : "text-sky-300"}`} />
-                          <span className={`truncate ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}>
+                          <Mail
+                            className={`w-3 h-3 mr-2 ${
+                              theme === "light"
+                                ? "text-sky-500"
+                                : "text-sky-300"
+                            }`}
+                          />
+                          <span
+                            className={`truncate ${
+                              theme === "light"
+                                ? "text-gray-700"
+                                : "text-gray-300"
+                            }`}
+                          >
                             {selectedDoctor.emailDoctor || "Not specified"}
                           </span>
                         </div>
                         <div className="flex items-center">
-                          <Phone className={`w-3 h-3 mr-2 ${theme === "light" ? "text-sky-500" : "text-sky-300"}`} />
-                          <span className={theme === "light" ? "text-gray-700" : "text-gray-300"}>
+                          <Phone
+                            className={`w-3 h-3 mr-2 ${
+                              theme === "light"
+                                ? "text-sky-500"
+                                : "text-sky-300"
+                            }`}
+                          />
+                          <span
+                            className={
+                              theme === "light"
+                                ? "text-gray-700"
+                                : "text-gray-300"
+                            }
+                          >
                             {selectedDoctor.phone || "Not specified"}
                           </span>
                         </div>
                         <div className="flex items-center">
                           <Smartphone
-                            className={`w-3 h-3 mr-2 ${theme === "light" ? "text-sky-500" : "text-sky-300"}`}
+                            className={`w-3 h-3 mr-2 ${
+                              theme === "light"
+                                ? "text-sky-500"
+                                : "text-sky-300"
+                            }`}
                           />
-                          <span className={theme === "light" ? "text-gray-700" : "text-gray-300"}>
+                          <span
+                            className={
+                              theme === "light"
+                                ? "text-gray-700"
+                                : "text-gray-300"
+                            }
+                          >
                             {selectedDoctor.teliphone || "Not specified"}
                           </span>
                         </div>
@@ -770,18 +1003,34 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                     </div>
 
                     <div className="space-y-2">
-                      <h4 className={`font-medium text-sm ${theme === "light" ? "text-gray-900" : "text-gray-200"}`}>
+                      <h4
+                        className={`font-medium text-sm ${
+                          theme === "light" ? "text-gray-900" : "text-gray-200"
+                        }`}
+                      >
                         Location
                       </h4>
                       <div className="space-y-1 text-xs">
                         <div className="flex items-center">
-                          <MapPin className={`w-3 h-3 mr-2 ${theme === "light" ? "text-sky-500" : "text-sky-300"}`} />
-                          <span className={theme === "light" ? "text-gray-700" : "text-gray-300"}>
+                          <MapPin
+                            className={`w-3 h-3 mr-2 ${
+                              theme === "light"
+                                ? "text-sky-500"
+                                : "text-sky-300"
+                            }`}
+                          />
+                          <span
+                            className={
+                              theme === "light"
+                                ? "text-gray-700"
+                                : "text-gray-300"
+                            }
+                          >
                             {selectedDoctor.location || "Not specified"}
                           </span>
                         </div>
-                        {/* Quick Links - Compact */}
-                        {(selectedDoctor.locationLink || selectedDoctor.whatsAppLink) && (
+                        {(selectedDoctor.locationLink ||
+                          selectedDoctor.whatsAppLink) && (
                           <div className="flex gap-1 mt-2">
                             {selectedDoctor.locationLink && (
                               <a
@@ -808,7 +1057,8 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                                     : "bg-green-900 text-green-300 hover:bg-green-800"
                                 }`}
                               >
-                                <ExternalLink size={10} className="mr-1" /> WhatsApp
+                                <ExternalLink size={10} className="mr-1" />{" "}
+                                WhatsApp
                               </a>
                             )}
                           </div>
@@ -820,11 +1070,17 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                   {/* About Section - Compact */}
                   {selectedDoctor.about && (
                     <div className="space-y-2">
-                      <h4 className={`font-medium text-sm ${theme === "light" ? "text-gray-900" : "text-gray-200"}`}>
+                      <h4
+                        className={`font-medium text-sm ${
+                          theme === "light" ? "text-gray-900" : "text-gray-200"
+                        }`}
+                      >
                         About
                       </h4>
                       <p
-                        className={`text-xs leading-relaxed line-clamp-3 ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}
+                        className={`text-xs leading-relaxed line-clamp-3 ${
+                          theme === "light" ? "text-gray-600" : "text-gray-400"
+                        }`}
                       >
                         {selectedDoctor.about}
                       </p>
@@ -840,13 +1096,17 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                         theme === "light" ? "text-gray-900" : "text-gray-200"
                       }`}
                     >
-                      <Clock className={`w-4 h-4 mr-1 ${theme === "light" ? "text-sky-500" : "text-sky-300"}`} />
+                      <Clock
+                        className={`w-4 h-4 mr-1 ${
+                          theme === "light" ? "text-sky-500" : "text-sky-300"
+                        }`}
+                      />
                       Schedule
                     </h4>
                     <button
                       onClick={() => {
-                        closeDetailsModal()
-                        onEditWorkingHours(selectedDoctor)
+                        closeDetailsModal();
+                        onEditWorkingHours(selectedDoctor);
                       }}
                       className={`text-xs px-2 py-1 rounded transition-colors ${
                         theme === "light"
@@ -863,24 +1123,30 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                     <div className="flex justify-center py-4">
                       <div
                         className={`animate-spin rounded-full h-4 w-4 border-b-2 ${
-                          theme === "light" ? "border-sky-600" : "border-sky-300"
+                          theme === "light"
+                            ? "border-sky-600"
+                            : "border-sky-300"
                         }`}
                       ></div>
                     </div>
                   ) : doctorWorkingHours.length === 0 ? (
                     <div
                       className={`text-center py-4 rounded border-2 border-dashed ${
-                        theme === "light" ? "border-gray-300 text-gray-500" : "border-gray-600 text-gray-400"
+                        theme === "light"
+                          ? "border-gray-300 text-gray-500"
+                          : "border-gray-600 text-gray-400"
                       }`}
                     >
                       <Clock
-                        className={`w-6 h-6 mx-auto mb-1 ${theme === "light" ? "text-gray-400" : "text-gray-500"}`}
+                        className={`w-6 h-6 mx-auto mb-1 ${
+                          theme === "light" ? "text-gray-400" : "text-gray-500"
+                        }`}
                       />
                       <p className="text-xs">No schedule</p>
                       <button
                         onClick={() => {
-                          closeDetailsModal()
-                          onEditWorkingHours(selectedDoctor)
+                          closeDetailsModal();
+                          onEditWorkingHours(selectedDoctor);
                         }}
                         className={`mt-1 text-xs px-2 py-1 rounded transition-colors ${
                           theme === "light"
@@ -893,47 +1159,86 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                     </div>
                   ) : (
                     <div
-                      className={`rounded border max-h-48 overflow-y-auto ${theme === "light" ? "border-gray-200" : "border-gray-600"}`}
+                      className={`rounded border max-h-48 overflow-y-auto ${
+                        theme === "light"
+                          ? "border-gray-200"
+                          : "border-gray-600"
+                      }`}
                     >
-                      {Object.entries(groupWorkingHoursByDay(doctorWorkingHours)).map(([day, hours]) => (
-                        <div
-                          key={day}
-                          className={`px-2 py-1.5 border-b last:border-b-0 ${
-                            theme === "light" ? "border-gray-200" : "border-gray-600"
-                          }`}
-                        >
-                          <div className="flex justify-between items-center">
-                            <span
-                              className={`font-medium text-xs ${theme === "light" ? "text-gray-900" : "text-gray-200"}`}
-                            >
-                              {day.substring(0, 3)}
-                            </span>
-                            <div className="text-right">
-                              {hours.length === 0 ? (
-                                <span className={`text-xs ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}>
-                                  Closed
-                                </span>
-                              ) : (
-                                <div className="space-y-0.5">
-                                  {hours.slice(0, 2).map((hour, index) => (
-                                    <div
-                                      key={index}
-                                      className={`text-xs ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}
-                                    >
-                                      {formatTime(hour.startTime)}-{formatTime(hour.endTime)}
-                                    </div>
-                                  ))}
-                                  {hours.length > 2 && (
-                                    <div className={`text-xs ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}>
-                                      +{hours.length - 2} more
-                                    </div>
-                                  )}
-                                </div>
-                              )}
+                      {Object.entries(
+                        groupWorkingHoursByDay(doctorWorkingHours)
+                      )
+                        .sort(([dayA], [dayB]) => {
+                          const dayValueA = daysOfWeek.find(
+                            (d) => d.name === dayA
+                          )?.value;
+                          const dayValueB = daysOfWeek.find(
+                            (d) => d.name === dayB
+                          )?.value;
+                          return dayValueA - dayValueB;
+                        })
+                        .map(([day, hours]) => (
+                          <div
+                            key={day}
+                            className={`px-3 py-2 border-b last:border-b-0 ${
+                              theme === "light"
+                                ? "border-gray-200"
+                                : "border-gray-600"
+                            }`}
+                          >
+                            <div className="flex justify-between items-center">
+                              <span
+                                className={`font-medium text-xs ${
+                                  theme === "light"
+                                    ? "text-gray-900"
+                                    : "text-gray-200"
+                                }`}
+                              >
+                                {day}
+                              </span>
+                              <div className="text-right">
+                                {hours.length === 0 ? (
+                                  <span
+                                    className={`text-xs ${
+                                      theme === "light"
+                                        ? "text-gray-500"
+                                        : "text-gray-400"
+                                    }`}
+                                  >
+                                    Closed
+                                  </span>
+                                ) : (
+                                  <div className="space-y-0.5">
+                                    {hours.slice(0, 2).map((hour, index) => (
+                                      <div
+                                        key={index}
+                                        className={`text-xs ${
+                                          theme === "light"
+                                            ? "text-gray-700"
+                                            : "text-gray-300"
+                                        }`}
+                                      >
+                                        {formatTime(hour.startTime)}-
+                                        {formatTime(hour.endTime)}
+                                      </div>
+                                    ))}
+                                    {hours.length > 2 && (
+                                      <div
+                                        className={`text-xs ${
+                                          theme === "light"
+                                            ? "text-gray-500"
+                                            : "text-gray-400"
+                                        }`}
+                                      >
+                                        +{hours.length - 2} more
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   )}
                 </div>
@@ -947,11 +1252,13 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
               >
                 <button
                   onClick={() => {
-                    closeDetailsModal()
-                    onEditWorkingHours(selectedDoctor)
+                    closeDetailsModal();
+                    onEditWorkingHours(selectedDoctor);
                   }}
                   className={`flex items-center space-x-1 px-3 py-1.5 rounded text-white text-sm transition-colors ${
-                    theme === "light" ? "bg-sky-600 hover:bg-sky-700" : "bg-sky-700 hover:bg-sky-800"
+                    theme === "light"
+                      ? "bg-sky-600 hover:bg-sky-700"
+                      : "bg-sky-700 hover:bg-sky-800"
                   }`}
                 >
                   <Clock size={14} />
@@ -959,11 +1266,13 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
                 </button>
                 <button
                   onClick={() => {
-                    closeDetailsModal()
-                    onEdit(selectedDoctor)
+                    closeDetailsModal();
+                    onEdit(selectedDoctor);
                   }}
                   className={`flex items-center space-x-1 px-3 py-1.5 rounded text-white text-sm transition-colors ${
-                    theme === "light" ? "bg-sky-600 hover:bg-sky-700" : "bg-sky-700 hover:bg-sky-800"
+                    theme === "light"
+                      ? "bg-sky-600 hover:bg-sky-700"
+                      : "bg-sky-700 hover:bg-sky-800"
                   }`}
                 >
                   <Edit size={14} />
@@ -975,7 +1284,7 @@ const DoctorList = ({ doctors = [], onEdit, onDelete, onAddDoctor, onEditWorking
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default DoctorList
+export default DoctorList;
