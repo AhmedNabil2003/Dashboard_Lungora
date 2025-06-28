@@ -1,5 +1,6 @@
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const getDiagnosisColor = (result) => {
   switch (result.toLowerCase()) {
@@ -18,9 +19,9 @@ const getSeverityColor = (severity) => {
   switch (severity.toLowerCase()) {
     case "high":
       return "bg-green-100 text-green-700 border-green-200";
-      case "medium":
-        return "bg-blue-100 text-blue-700  border-blue-200";
-        case "low":
+    case "medium":
+      return "bg-blue-100 text-blue-700  border-blue-200";
+    case "low":
       return "bg-red-100 text-red-700 border-red-200";
     default:
       return "bg-gray-100 text-gray-700 border-gray-200";
@@ -67,15 +68,19 @@ const MedicalHistory = ({ data, theme }) => {
             Medical History
           </h3>
         </div>
-        <span
-          className={`px-3 py-1 rounded-full text-xs ${
-            theme === "light"
-              ? "bg-gray-100 text-gray-600"
-              : "bg-gray-700 text-gray-300"
-          }`}
-        >
-          {medicalRecords.length} records
-        </span>
+
+        {medicalRecords.length > 0 && (
+          <Link
+            to="/dashboard/history"
+            className={`text-xs px-2 py-1 rounded ${
+              theme === "light"
+                ? "text-sky-600 hover:bg-sky-50"
+                : "text-sky-400 hover:bg-gray-700"
+            } transition-colors`}
+          >
+            View All →
+          </Link>
+        )}
       </div>
 
       <div
@@ -99,13 +104,13 @@ const MedicalHistory = ({ data, theme }) => {
               <motion.div
                 key={index}
                 whileHover={{ scale: 1.01 }}
-                className={`p-3 rounded-lg border ${
+                className={`p-3 rounded-lg border overflow-hidden break-words ${
                   theme === "light"
                     ? "bg-white border-gray-200"
                     : "bg-gray-800 border-gray-600"
                 } shadow-sm`}
               >
-                <div className="flex justify-between items-start mb-2">
+                <div className="flex justify-between items-start mb-2 flex-wrap">
                   <div className="flex items-center space-x-2">
                     <div
                       className={`w-2 h-2 rounded-full ${
@@ -131,8 +136,8 @@ const MedicalHistory = ({ data, theme }) => {
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center">
-                  <div>
+                <div className="flex justify-between items-center flex-wrap gap-2">
+                  <div className="max-w-full overflow-hidden">
                     <p
                       className={`text-xs ${
                         theme === "light" ? "text-gray-600" : "text-gray-400"
@@ -141,7 +146,7 @@ const MedicalHistory = ({ data, theme }) => {
                       Diagnosed by
                     </p>
                     <p
-                      className={`text-sm font-medium ${
+                      className={`text-sm font-medium break-words max-w-[200px] sm:max-w-full ${
                         theme === "light" ? "text-gray-800" : "text-gray-200"
                       }`}
                     >
@@ -155,7 +160,7 @@ const MedicalHistory = ({ data, theme }) => {
                         theme === "light" ? "text-gray-600" : "text-gray-400"
                       }`}
                     >
-                      Severity
+                      Certainty
                     </p>
                     <span
                       className={`px-2 py-1 rounded text-xs font-medium ${record.severityColor} border`}

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react"
-import { MapPin, Clock } from "lucide-react"
-import WorkingHoursEditor from "./WorkingHours"
+import { MapPin, Clock, AlertCircle, Plus, Trash, Edit, Save, X } from "lucide-react"
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
@@ -37,6 +36,387 @@ const LocationPicker = ({ onLocationSelect, initialPosition }) => {
   return null
 }
 
+// Working Hours Component
+const WorkingHoursSection = ({ workingHours, setWorkingHours, theme, isFormDisabled }) => {
+  const [isEditing, setIsEditing] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [newWorkingHour, setNewWorkingHour] = useState({
+    dayOfWeek: 1, // Default to Monday
+    startTime: "09:00",
+    endTime: "17:00",
+  })
+
+  // Map day names to integers (0=Sunday, 1=Monday, ..., 6=Saturday)
+  const daysOfWeek = [
+    { name: "Sunday", value: 0 },
+    { name: "Monday", value: 1 },
+    { name: "Tuesday", value: 2 },
+    { name: "Wednesday", value: 3 },
+    { name: "Thursday", value: 4 },
+    { name: "Friday", value: 5 },
+    { name: "Saturday", value: 6 },
+  ]
+
+  // Convert time string (HH:mm:ss) to (HH:mm) for input fields
+  const formatTimeForInput = (timeStr) => {
+    if (!timeStr) return "00:00"
+    const parts = timeStr.split(":")
+    return `${parts[0]}:${parts[1]}`
+  }
+
+  // Convert time input (HH:mm) to (HH:mm:ss) for API
+  const formatTimeForAPI = (timeStr) => {
+    if (!timeStr) return "00:00:00"
+    const parts = timeStr.split(":")
+    return `${parts[0]}:${parts[1]}:00`
+  }
+
+  const resetForm = () => {
+    setNewWorkingHour({
+      dayOfWeek: 1, // Default to Monday
+      startTime: "09:00",
+      endTime: "17:00",
+    })
+    setIsEditing(false)
+    setEditingId(null)
+  }
+
+  const validateWorkingHour = (workingHour, existingHours) => {
+    // Convert times to Date objects for comparison
+    const start = new Date(`1970-01-01T${workingHour.startTime}:00Z`)
+    const end = new Date(`1970-01-01T${workingHour.endTime}:00Z`)
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return "Invalid time values"
+    }
+
+    // Ensure endTime is at least 1 minute later than startTime
+    if (end - start <= 0) {
+      return "End time must be later than start time"
+    }
+
+    const sameDay = existingHours.filter(
+      (hour) => hour.dayOfWeek === workingHour.dayOfWeek && (isEditing ? hour.id !== editingId : true),
+    )
+
+    const hasOverlap = sameDay.some((hour) => {
+      const hourStart = new Date(`1970-01-01T${hour.startTime}:00Z`)
+      const hourEnd = new Date(`1970-01-01T${hour.endTime}:00Z`)
+
+      return (
+        (start >= hourStart && start < hourEnd) ||
+        (end > hourStart && end <= hourEnd) ||
+        (start <= hourStart && end >= hourEnd)
+      )
+    })
+
+    if (hasOverlap) {
+      return "Working hours cannot overlap for the same day"
+    }
+
+    return null
+  }
+
+  const handleAddWorkingHour = () => {
+    const error = validateWorkingHour(newWorkingHour, workingHours)
+    if (error) {
+      alert(error)
+      return
+    }
+
+    const newHour = {
+      ...newWorkingHour,
+      id: Date.now().toString(),
+      startTime: formatTimeForAPI(newWorkingHour.startTime),
+      endTime: formatTimeForAPI(newWorkingHour.endTime),
+    }
+
+    setWorkingHours([...workingHours, newHour])
+    resetForm()
+  }
+
+  const handleEditWorkingHour = () => {
+    const error = validateWorkingHour(newWorkingHour, workingHours)
+    if (error) {
+      alert(error)
+      return
+    }
+
+    setWorkingHours(
+      workingHours.map((hour) =>
+        hour.id === editingId
+          ? {
+              ...newWorkingHour,
+              id: editingId,
+              startTime: formatTimeForAPI(newWorkingHour.startTime),
+              endTime: formatTimeForAPI(newWorkingHour.endTime),
+            }
+          : hour,
+      ),
+    )
+    resetForm()
+  }
+
+  const handleDeleteWorkingHour = (id) => {
+    setWorkingHours(workingHours.filter((hour) => hour.id !== id))
+    if (editingId === id) {
+      resetForm()
+    }
+  }
+
+  const handleStartEdit = (id) => {
+    const hour = workingHours.find((h) => h.id === id)
+    if (hour) {
+      setNewWorkingHour({
+        dayOfWeek: hour.dayOfWeek,
+        startTime: formatTimeForInput(hour.startTime),
+        endTime: formatTimeForInput(hour.endTime),
+      })
+      setIsEditing(true)
+      setEditingId(id)
+    }
+  }
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setNewWorkingHour({
+      ...newWorkingHour,
+      [name]: name === "dayOfWeek" ? Number.parseInt(value, 10) : value,
+    })
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Left Column - Current Working Hours */}
+        <div className="space-y-2">
+          <h4 className={`text-sm font-medium ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}>
+            Current Schedule
+          </h4>
+          {workingHours.length === 0 ? (
+            <div
+              className={`text-center py-4 rounded border-2 border-dashed ${
+                theme === "light" ? "border-gray-300 text-gray-500" : "border-gray-600 text-gray-400"
+              }`}
+            >
+              <Clock className={`mx-auto mb-2 h-6 w-6 ${theme === "light" ? "text-gray-400" : "text-gray-500"}`} />
+              <p className="text-xs">No working hours specified</p>
+            </div>
+          ) : (
+            <div
+              className={`rounded border max-h-48 overflow-y-auto ${
+                theme === "light" ? "border-gray-200" : "border-gray-600"
+              }`}
+            >
+              {workingHours
+                .sort((a, b) => a.dayOfWeek - b.dayOfWeek || a.startTime.localeCompare(b.startTime))
+                .map((hour) => (
+                  <div
+                    key={hour.id}
+                    className={`flex items-center justify-between p-2 border-b last:border-b-0 ${
+                      theme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-600 hover:bg-gray-700"
+                    }`}
+                  >
+                    <div>
+                      <div className={`text-sm font-medium ${theme === "light" ? "text-sky-700" : "text-sky-200"}`}>
+                        {daysOfWeek.find((day) => day.value === hour.dayOfWeek)?.name}
+                      </div>
+                      <div className={`text-xs ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
+                        {formatTimeForInput(hour.startTime)} - {formatTimeForInput(hour.endTime)}
+                      </div>
+                    </div>
+                    <div className="flex space-x-1">
+                      <button
+                        type="button"
+                        onClick={() => handleStartEdit(hour.id)}
+                        disabled={isFormDisabled}
+                        className={`p-1 rounded transition-colors ${
+                          theme === "light"
+                            ? "text-sky-500 hover:text-sky-700 hover:bg-sky-50"
+                            : "text-sky-300 hover:text-sky-400 hover:bg-sky-900"
+                        } ${isFormDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                        title="Edit"
+                      >
+                        <Edit size={12} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteWorkingHour(hour.id)}
+                        disabled={isFormDisabled}
+                        className={`p-1 rounded transition-colors ${
+                          theme === "light"
+                            ? "text-red-500 hover:text-red-700 hover:bg-red-50"
+                            : "text-red-300 hover:text-red-400 hover:bg-red-900"
+                        } ${isFormDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                        title="Delete"
+                      >
+                        <Trash size={12} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
+
+        {/* Right Column - Add/Edit Form */}
+        <div className="space-y-3">
+          <h4 className={`text-sm font-medium ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}>
+            {isEditing ? "Edit Schedule" : "Add New Schedule"}
+          </h4>
+          <div className="space-y-2">
+            {/* Day Selection */}
+            <div>
+              <label
+                htmlFor="dayOfWeek"
+                className={`block text-xs font-medium mb-1 ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}
+              >
+                Day of Week
+              </label>
+              <select
+                id="dayOfWeek"
+                name="dayOfWeek"
+                value={newWorkingHour.dayOfWeek}
+                onChange={handleChange}
+                disabled={isFormDisabled}
+                className={`w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                  theme === "light"
+                    ? "bg-white border-gray-300 text-gray-900"
+                    : "bg-gray-800 border-gray-600 text-gray-200"
+                } ${isFormDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                {daysOfWeek.map((day) => (
+                  <option key={day.value} value={day.value}>
+                    {day.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Time Selection */}
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label
+                  htmlFor="startTime"
+                  className={`block text-xs font-medium mb-1 ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}
+                >
+                  Start Time
+                </label>
+                <input
+                  type="time"
+                  id="startTime"
+                  name="startTime"
+                  value={newWorkingHour.startTime}
+                  onChange={handleChange}
+                  disabled={isFormDisabled}
+                  className={`w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                    theme === "light"
+                      ? "bg-white border-gray-300 text-gray-900"
+                      : "bg-gray-800 border-gray-600 text-gray-200"
+                  } ${isFormDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="endTime"
+                  className={`block text-xs font-medium mb-1 ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}
+                >
+                  End Time
+                </label>
+                <input
+                  type="time"
+                  id="endTime"
+                  name="endTime"
+                  value={newWorkingHour.endTime}
+                  onChange={handleChange}
+                  disabled={isFormDisabled}
+                  className={`w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                    theme === "light"
+                      ? "bg-white border-gray-300 text-gray-900"
+                      : "bg-gray-800 border-gray-600 text-gray-200"
+                  } ${isFormDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            {isEditing ? (
+              <div className="flex space-x-2">
+                <button
+                  type="button"
+                  onClick={handleEditWorkingHour}
+                  disabled={isFormDisabled}
+                  className={`flex-1 flex items-center justify-center py-1 px-2 rounded text-white text-sm transition-colors ${
+                    theme === "light" ? "bg-sky-600 hover:bg-sky-700" : "bg-sky-700 hover:bg-sky-800"
+                  } ${isFormDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                >
+                  <Save size={12} className="mr-1" /> Update
+                </button>
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  disabled={isFormDisabled}
+                  className={`flex-1 flex items-center justify-center py-1 px-2 rounded text-white text-sm transition-colors ${
+                    theme === "light" ? "bg-gray-400 hover:bg-gray-500" : "bg-gray-600 hover:bg-gray-700"
+                  } ${isFormDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                >
+                  <X size={12} className="mr-1" /> Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleAddWorkingHour}
+                disabled={isFormDisabled}
+                className={`w-full flex items-center justify-center py-1 px-2 rounded text-white text-sm transition-colors ${
+                  theme === "light" ? "bg-sky-600 hover:bg-sky-700" : "bg-sky-700 hover:bg-sky-800"
+                } ${isFormDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <Plus size={12} className="mr-1" /> Add Working Hour
+              </button>
+            )}
+          </div>
+
+          {/* Quick Time Buttons */}
+          <div className="space-y-2">
+            <h5 className={`text-xs font-medium ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}>
+              Quick Add
+            </h5>
+            <div className="grid grid-cols-2 gap-1">
+              {[
+                { start: "09:00", end: "17:00" },
+                { start: "08:00", end: "16:00" },
+                { start: "10:00", end: "18:00" },
+                { start: "14:00", end: "22:00" },
+              ].map((time, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() =>
+                    setNewWorkingHour({
+                      ...newWorkingHour,
+                      startTime: time.start,
+                      endTime: time.end,
+                    })
+                  }
+                  disabled={isFormDisabled}
+                  className={`px-2 py-1 text-xs rounded border transition-colors ${
+                    theme === "light"
+                      ? "border-gray-300 text-gray-600 hover:bg-gray-50"
+                      : "border-gray-600 text-gray-400 hover:bg-gray-700"
+                  } ${isFormDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                >
+                  {time.start} - {time.end}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories, theme, isSubmitting = false }) => {
   const [formData, setFormData] = useState({
     name: "",
@@ -49,15 +429,16 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories, theme,
     about: "",
     whatsAppLink: "",
     locationLink: "",
-    imageDoctor: null, // Changed to null for better handling
+    imageDoctor: null,
     latitude: 30.0444,
     longitude: 31.2357,
     categoryId: "",
   })
+
+  const [workingHours, setWorkingHours] = useState([])
   const [activeTab, setActiveTab] = useState("basic")
   const [errors, setErrors] = useState({})
   const [imagePreview, setImagePreview] = useState(null)
-  const [showWorkingHours, setShowWorkingHours] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState(null)
 
@@ -93,7 +474,6 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories, theme,
 
     egyptGovernorates.forEach((gov) => {
       const distance = Math.sqrt(Math.pow(gov.lat - lat, 2) + Math.pow(gov.lng - lng, 2))
-
       if (distance < minDistance) {
         minDistance = distance
         nearest = gov
@@ -111,21 +491,26 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories, theme,
         emailDoctor: doctor.emailDoctor || "",
         phone: doctor.phone || "",
         teliphone: doctor.teliphone || "",
-        experianceYears: doctor.experianceYears || 0,
-        numOfPatients: doctor.numOfPatients || 0,
+        experianceYears: Number(doctor.experianceYears) || 0,
+        numOfPatients: Number(doctor.numOfPatients) || 0,
         location: doctor.location || "",
         about: doctor.about || "",
         whatsAppLink: doctor.whatsAppLink || "",
         locationLink: doctor.locationLink || "",
-        imageDoctor: null, // Reset to null, will be set if user uploads new image
-        latitude: doctor.latitude || 30.0444,
-        longitude: doctor.longitude || 31.2357,
-        categoryId: doctor.categoryId || "",
+        imageDoctor: null,
+        latitude: Number(doctor.latitude) || 30.0444,
+        longitude: Number(doctor.longitude) || 31.2357,
+        categoryId: doctor.categoryId ? String(doctor.categoryId) : "",
       })
 
       // Set image preview if doctor has existing image
       if (doctor.imageDoctor && typeof doctor.imageDoctor === "string") {
         setImagePreview(doctor.imageDoctor)
+      }
+
+      // Set working hours if available
+      if (doctor.workingHours) {
+        setWorkingHours(doctor.workingHours)
       }
     } else {
       // Reset form for new doctor
@@ -146,6 +531,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories, theme,
         categoryId: "",
       })
       setImagePreview(null)
+      setWorkingHours([])
     }
 
     // Reset errors when doctor changes
@@ -174,7 +560,9 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories, theme,
         }))
       }
     } else if (type === "number") {
-      setFormData({ ...formData, [name]: Number.parseFloat(value) || 0 })
+      // Ensure numbers are properly converted
+      const numValue = value === "" ? 0 : Number(value)
+      setFormData({ ...formData, [name]: numValue })
     } else {
       setFormData({ ...formData, [name]: value })
     }
@@ -185,13 +573,18 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories, theme,
       delete newErrors[name]
       setErrors(newErrors)
     }
+
+    // Clear general error message when user starts typing
+    if (errorMessage) {
+      setErrorMessage(null)
+    }
   }
 
   const handleLocationSelect = (lat, lng) => {
     const updatedFormData = {
       ...formData,
-      latitude: lat,
-      longitude: lng,
+      latitude: Number(lat),
+      longitude: Number(lng),
     }
 
     const googleMapsLink = `https://www.google.com/maps?q=${lat},${lng}`
@@ -208,6 +601,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories, theme,
   const validateForm = () => {
     const newErrors = {}
 
+    // Required field validations
     if (!formData.name?.trim()) {
       newErrors.name = "Name is required"
     }
@@ -226,8 +620,9 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories, theme,
       newErrors.teliphone = "Telephone is required"
     }
 
+    // Ensure experience years is a valid number
     if (formData.experianceYears === undefined || formData.experianceYears < 0) {
-      newErrors.experianceYears = "Experience years is required and must be non-negative"
+      newErrors.experianceYears = "Experience years must be a non-negative number"
     }
 
     if (!formData.location?.trim()) {
@@ -258,7 +653,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories, theme,
         setIsLoading(true)
         setErrorMessage(null)
 
-        // Prepare data for API - ensure all required fields are present
+        // Prepare data for API - ensure all required fields are present and properly formatted
         const doctorDataForAPI = {
           name: formData.name.trim(),
           emailDoctor: formData.emailDoctor.trim(),
@@ -272,8 +667,9 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories, theme,
           locationLink: formData.locationLink || "",
           latitude: Number(formData.latitude) || 30.0444,
           longitude: Number(formData.longitude) || 31.2357,
-          categoryId: Number(formData.categoryId),
-          imageDoctor: formData.imageDoctor, // File object or null
+          categoryId: Number(formData.categoryId), 
+          imageDoctor: formData.imageDoctor,
+          workingHours: workingHours, 
         }
 
         console.log("Submitting form data:", doctorDataForAPI)
@@ -303,7 +699,27 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories, theme,
     } catch (error) {
       console.error("Error during form submission:", error)
       setIsLoading(false)
-      setErrorMessage(error.message || "Failed to save doctor. Please try again.")
+
+      // Set specific error message based on the error type
+      let displayMessage = "Failed to save doctor. Please try again."
+
+      if (error.message.includes("already exists") || error.message.includes("duplicate")) {
+        displayMessage = error.message
+        // Switch to basic tab to show the conflicting fields
+        setActiveTab("basic")
+      } else if (error.message.includes("email")) {
+        displayMessage = error.message
+        setActiveTab("basic")
+        setErrors((prev) => ({ ...prev, emailDoctor: "This email is already in use" }))
+      } else if (error.message.includes("phone")) {
+        displayMessage = error.message
+        setActiveTab("basic")
+        setErrors((prev) => ({ ...prev, phone: "This phone number is already in use" }))
+      } else {
+        displayMessage = error.message || displayMessage
+      }
+
+      setErrorMessage(displayMessage)
     }
   }
 
@@ -332,20 +748,12 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories, theme,
     )
   }
 
-  const handleOpenWorkingHours = () => {
-    setShowWorkingHours(true)
-  }
-
-  const handleCloseWorkingHours = () => {
-    setShowWorkingHours(false)
-  }
-
   const isFormDisabled = isLoading || isSubmitting
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30">
       <div
-        className={`p-3 rounded-lg shadow-xl w-full max-w-[320px] md:max-w-[500px] lg:max-w-[800px] max-h-[90vh] overflow-y-auto ${
+        className={`p-3 rounded-lg shadow-xl w-full max-w-[320px] md:max-w-[500px] lg:max-w-[900px] max-h-[90vh] overflow-y-auto ${
           theme === "light" ? "bg-white" : "bg-gray-800"
         }`}
       >
@@ -389,6 +797,26 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories, theme,
                 />
               </svg>
               {isLoading ? "Saving..." : "Processing..."}
+            </div>
+          </div>
+        )}
+
+        {/* Error Message Display */}
+        {errorMessage && (
+          <div
+            className={`p-3 rounded border text-sm mb-3 flex items-start ${
+              theme === "light" ? "bg-red-50 border-red-200 text-red-800" : "bg-red-900 border-red-800 text-red-200"
+            }`}
+          >
+            <AlertCircle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
+            <div>
+              <div className="font-medium mb-1">Unable to save doctor</div>
+              <div className="text-xs">{errorMessage}</div>
+              {errorMessage.includes("already exists") && (
+                <div className="text-xs mt-2 opacity-75">
+                  Please check the email and phone number fields and use different values.
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -609,6 +1037,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories, theme,
                   name="experianceYears"
                   type="number"
                   min="0"
+                  step="1"
                   value={formData.experianceYears}
                   onChange={handleChange}
                   className={`w-full px-1 py-0.5 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
@@ -637,6 +1066,7 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories, theme,
                   name="numOfPatients"
                   type="number"
                   min="0"
+                  step="1"
                   value={formData.numOfPatients}
                   onChange={handleChange}
                   className={`w-full px-1 py-0.5 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 ${
@@ -819,68 +1249,26 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories, theme,
           {activeTab === "workinghours" && (
             <div className="space-y-1.5">
               <div
-                className={`p-2 rounded-md border ${
+                className={`p-3 rounded-md border ${
                   theme === "light" ? "bg-sky-50 border-sky-100" : "bg-sky-900 border-sky-800"
                 }`}
               >
-                <div className="flex items-center mb-1">
-                  <Clock className={`h-2.5 w-2.5 ${theme === "light" ? "text-sky-500" : "text-sky-300"} mr-1`} />
+                <div className="flex items-center mb-2">
+                  <Clock className={`h-4 w-4 ${theme === "light" ? "text-sky-500" : "text-sky-300"} mr-2`} />
                   <h3 className={`text-sm font-medium ${theme === "light" ? "text-sky-700" : "text-sky-200"}`}>
                     Doctor Working Hours
                   </h3>
                 </div>
-                <p className={`text-xs ${theme === "light" ? "text-gray-600" : "text-gray-400"} mb-1.5`}>
-                  Set up your working days and hours to let your patients know when you're available.
+                <p className={`text-xs ${theme === "light" ? "text-gray-600" : "text-gray-400"} mb-3`}>
+                  Set up working days and hours. You can add multiple time slots for each day.
                 </p>
-
-                {!doctor?.id ? (
-                  <div
-                    className={`p-1 rounded border text-xs ${
-                      theme === "light"
-                        ? "bg-amber-50 border-amber-200 text-amber-800"
-                        : "bg-amber-900 border-amber-800 text-amber-200"
-                    } mb-1.5`}
-                  >
-                    Please save the doctor profile first before adding working hours.
-                  </div>
-                ) : null}
-
-                <button
-                  type="button"
-                  onClick={handleOpenWorkingHours}
-                  disabled={!doctor?.id || isFormDisabled}
-                  className={`w-full flex items-center justify-center py-1 px-2 rounded-md text-sm font-medium ${
-                    doctor?.id && !isFormDisabled
-                      ? theme === "light"
-                        ? "bg-sky-600 text-white hover:bg-sky-700"
-                        : "bg-sky-700 text-white hover:bg-sky-800"
-                      : theme === "light"
-                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        : "bg-gray-600 text-gray-400 cursor-not-allowed"
-                  }`}
-                >
-                  <Clock
-                    className={`h-2.5 w-2.5 mr-1 ${
-                      doctor?.id && !isFormDisabled
-                        ? "text-white"
-                        : theme === "light"
-                          ? "text-gray-500"
-                          : "text-gray-400"
-                    }`}
-                  />
-                  {doctor?.id ? "Manage Working Hours" : "Save Profile First"}
-                </button>
+                <WorkingHoursSection
+                  workingHours={workingHours}
+                  setWorkingHours={setWorkingHours}
+                  theme={theme}
+                  isFormDisabled={isFormDisabled}
+                />
               </div>
-            </div>
-          )}
-
-          {errorMessage && (
-            <div
-              className={`p-2 rounded border text-xs mb-2 ${
-                theme === "light" ? "bg-red-50 border-red-200 text-red-800" : "bg-red-900 border-red-800 text-red-200"
-              }`}
-            >
-              {errorMessage}
             </div>
           )}
 
@@ -939,10 +1327,6 @@ const DoctorForm = ({ isOpen, onClose, onSave, title, doctor, categories, theme,
           </div>
         </form>
       </div>
-
-      {showWorkingHours && doctor?.id && (
-        <WorkingHoursEditor isOpen={showWorkingHours} onClose={handleCloseWorkingHours} doctor={doctor} theme={theme} />
-      )}
     </div>
   )
 }

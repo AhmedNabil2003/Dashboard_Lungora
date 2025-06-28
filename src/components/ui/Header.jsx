@@ -129,20 +129,6 @@ const Header = () => {
           <i className="fa-solid fa-user-plus mr-1"></i>
           <span>Add Admin</span>
         </Link>
-
-        <button
-          className="text-white flex items-center cursor-pointer hover:text-sky-200 transition-colors"
-          title="Notifications"
-        >
-          <div className="relative">
-            <i className="fa-solid fa-bell mr-1"></i>
-            <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-              3
-            </span>
-          </div>
-          <span>Notifications</span>
-        </button>
-
         <button
           onClick={toggleTheme}
           className="text-white flex items-center cursor-pointer hover:text-sky-200 transition-colors"
